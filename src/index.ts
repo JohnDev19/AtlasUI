@@ -1,12 +1,12 @@
 /**
- * atlasui-lib
+ * veloria-ui
  *
  * Build anything. Ship faster.
  * 90+ production-ready components — accessible, composable, dark-mode ready.
  *
- * By JohnDev19 — https://github.com/JohnDev19/AtlasUI
- * Docs: https://atlasui.vercel.app/
- * Issues: https://github.com/JohnDev19/AtlasUI/issues
+ * By JohnDev19 — https://github.com/JohnDev19/Veloria-UI
+ * Docs: https://veloria-ui.vercel.app/
+ * Issues: https://github.com/JohnDev19/Veloria-UI/issues
  *
  * @license MIT
  */

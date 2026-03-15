@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 // tailwindcss is a peerDep — it lives in the consumer's node_modules, never
-// bundled into atlasui-lib. We require() at runtime so tsup marks it external
+// bundled into veloria-ui. We require() at runtime so tsup marks it external
 // correctly instead of trying to resolve it at build time.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const plugin = require("tailwindcss/plugin") as (
@@ -10,17 +10,17 @@ const plugin = require("tailwindcss/plugin") as (
 ) => ReturnType<typeof import("tailwindcss/plugin")>;
 
 /**
- * AtlasUI Tailwind plugin.
+ * Veloria UI Tailwind plugin.
  *
  * Maps the CSS custom properties in atlas.css to Tailwind utilities.
  * Add to your tailwind.config.ts:
  *
- *   import { atlasPlugin } from "atlasui-lib/tailwind";
+ *   import { atlasPlugin } from "veloria-ui/tailwind";
  *   plugins: [atlasPlugin],
  *
  * Or use atlasPreset which also sets darkMode: ["class"]:
  *
- *   import { atlasPreset } from "atlasui-lib/tailwind";
+ *   import { atlasPreset } from "veloria-ui/tailwind";
  *   presets: [atlasPreset],
  */
 export const atlasPlugin = plugin(

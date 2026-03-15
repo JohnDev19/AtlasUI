@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge";
 
 /**
  * Merges Tailwind classes without conflicts.
- * Wrapper around clsx + tailwind-merge — use this everywhere in AtlasUI
+ * Wrapper around clsx + tailwind-merge — use this everywhere in Veloria UI
  * instead of raw string concatenation.
  *
  * @example

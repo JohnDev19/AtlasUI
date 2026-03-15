@@ -1,5 +1,5 @@
 /**
- * AtlasUI component registry.
+ * Veloria UI component registry.
  *
  * Every component lives here: name, category, description, and the npm deps
  * it needs. The `add` command reads this to know what to install.
@@ -12,7 +12,7 @@ export interface ComponentMeta {
   category: Category;
   description: string;
   deps: string[];
-  /** Other atlasui-lib components this one depends on */
+  /** Other veloria-ui components this one depends on */
   registryDeps?: string[];
 }
 

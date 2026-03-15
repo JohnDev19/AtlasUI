@@ -13,12 +13,12 @@
 90+ production-ready React components — accessible, composable, dark-mode ready.
 Works with Tailwind CSS and Next.js out of the box.
 
-[![npm](https://img.shields.io/npm/v/atlasui-lib?color=0ea5e9&label=atlasui-lib)](https://www.npmjs.com/package/atlasui-lib)
+[![npm](https://img.shields.io/npm/v/veloria-ui?color=0ea5e9&label=veloria-ui)](https://www.npmjs.com/package/veloria-ui)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178c6)](https://www.typescriptlang.org)
-[![GitHub](https://img.shields.io/github/stars/JohnDev19/AtlasUI?style=social)](https://github.com/JohnDev19/AtlasUI)
+[![GitHub](https://img.shields.io/github/stars/JohnDev19/Veloria-UI?style=social)](https://github.com/JohnDev19/Veloria-UI)
 
-**[Docs](https://atlasui.vercel.app/)** · **[Components](https://atlasui.vercel.app/components)** · **[Issues](https://github.com/JohnDev19/AtlasUI/issues)** · **[Changelog](CHANGELOG.md)**
+**[Docs](https://veloria-ui.vercel.app/)** · **[Components](https://veloria-ui.vercel.app/components)** · **[Issues](https://github.com/JohnDev19/Veloria-UI/issues)** · **[Changelog](CHANGELOG.md)**
 
 </div>
 
@@ -27,9 +27,9 @@ Works with Tailwind CSS and Next.js out of the box.
 ## Install
 
 ```bash
-npm install atlasui-lib
-# pnpm add atlasui-lib
-# bun add atlasui-lib
+npm install veloria-ui
+# pnpm add veloria-ui
+# bun add veloria-ui
 ```
 
 ---
@@ -40,14 +40,14 @@ npm install atlasui-lib
 
 ```tsx
 // app/layout.tsx
-import "atlasui-lib/styles";
+import "veloria-ui/styles";
 ```
 
 ### 2. Add the Tailwind plugin
 
 ```ts
 // tailwind.config.ts
-import { atlasPlugin } from "atlasui-lib/tailwind";
+import { atlasPlugin } from "veloria-ui/tailwind";
 
 export default {
   darkMode: ["class"],
@@ -60,7 +60,7 @@ export default {
 
 ```tsx
 // app/layout.tsx
-import { AtlasProvider } from "atlasui-lib/provider";
+import { AtlasProvider } from "veloria-ui/provider";
 
 export default function RootLayout({ children }) {
   return (
@@ -76,7 +76,7 @@ export default function RootLayout({ children }) {
 ### 4. Start building
 
 ```tsx
-import { Button, Card, CardContent, Input, Badge } from "atlasui-lib";
+import { Button, Card, CardContent, Input, Badge } from "veloria-ui";
 
 export default function Page() {
   return (
@@ -95,25 +95,25 @@ export default function Page() {
 
 ## CLI
 
-atlasui-lib ships with a CLI that copies components straight into your project — shadcn-style. You own the code.
+veloria-ui ships with a CLI that copies components straight into your project — shadcn-style. You own the code.
 
 ```bash
-# Set up atlasui-lib in your project (writes atlas.config.json)
-npx atlasui-lib init
+# Set up veloria-ui in your project (writes atlas.config.json)
+npx veloria-ui init
 
 # Add components
-npx atlasui-lib add button
-npx atlasui-lib add card modal drawer toast
+npx veloria-ui add button
+npx veloria-ui add card modal drawer toast
 
 # Browse all 90 components
-npx atlasui-lib list
-npx atlasui-lib list --category forms
+npx veloria-ui list
+npx veloria-ui list --category forms
 
 # Compare your local copy to the latest version
-npx atlasui-lib diff button
+npx veloria-ui diff button
 ```
 
-After running `add`, a file like `components/ui/button/index.tsx` appears in your project. It re-exports from `atlasui-lib` by default, or you can paste the full source in and go wild.
+After running `add`, a file like `components/ui/button/index.tsx` appears in your project. It re-exports from `veloria-ui` by default, or you can paste the full source in and go wild.
 
 ---
 
@@ -166,7 +166,7 @@ import {
   useKeydown,        // keyboard shortcut listener with modifier support
   useMounted,        // SSR-safe mount check
   useToast,          // fire toasts programmatically
-} from "atlasui-lib";
+} from "veloria-ui";
 ```
 
 ---
@@ -195,7 +195,7 @@ Full token list: `--background` `--foreground` `--primary` `--secondary` `--mute
 Uses the `class` strategy — add `dark` to `<html>` and everything flips automatically.
 
 ```tsx
-import { useTheme, ThemeSwitcher } from "atlasui-lib";
+import { useTheme, ThemeSwitcher } from "veloria-ui";
 
 function Header() {
   const { theme, setTheme } = useTheme();
@@ -208,7 +208,7 @@ function Header() {
 ## Package Structure
 
 ```
-atlasui-lib/
+veloria-ui/
 ├── src/
 │   ├── components/
 │   │   ├── basic/           Button, IconButton, Badge, Avatar, Tooltip…
@@ -225,7 +225,7 @@ atlasui-lib/
 │   ├── styles/              atlas.css — full design token system
 │   ├── types/               shared TypeScript types
 │   ├── utils/               cn() and helpers
-│   ├── cli/                 atlasui-lib CLI (add, init, list, diff)
+│   ├── cli/                 veloria-ui CLI (add, init, list, diff)
 │   ├── provider.tsx         AtlasProvider for Next.js
 │   └── tailwind.ts          atlasPlugin + atlasPreset
 ├── package.json
@@ -238,7 +238,7 @@ atlasui-lib/
 ## Contributing
 
 Issues and PRs welcome.
-→ [github.com/JohnDev19/AtlasUI/issues](https://github.com/JohnDev19/AtlasUI/issues)
+→ [github.com/JohnDev19/Veloria-UI/issues](https://github.com/JohnDev19/Veloria-UI/issues)
 
 ---
 

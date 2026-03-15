@@ -1,22 +1,22 @@
-# Contributing to AtlasUI
+# Contributing to Veloria UI
 
-Thanks for wanting to contribute! AtlasUI is a personal open-source project
+Thanks for wanting to contribute! Veloria UI is a personal open-source project
 by [JohnDev19](https://github.com/JohnDev19) and contributions are genuinely
 welcome — bug fixes, new components, docs improvements, whatever you've got.
 
 ## Development setup
 
 ```bash
-git clone https://github.com/JohnDev19/AtlasUI.git
-cd AtlasUI
+git clone https://github.com/JohnDev19/Veloria-UI.git
+cd Veloria UI
 npm install
 npm run build
 ```
 
 ## Repo structure
 
-- `packages/core` — the `@atlasui-lib/core` npm package (all 90 components live here)
-- `cli` — the `@atlasui-lib/cli` npm package
+- `packages/core` — the `@veloria-ui/core` npm package (all 90 components live here)
+- `cli` — the `@veloria-ui/cli` npm package
 
 ## Adding a new component
 
@@ -50,7 +50,7 @@ chore: bump @radix-ui/* to latest
 2. Branch off `main`: `git checkout -b feat/my-component`
 3. Open a PR — fill in the template and describe what you changed
 
-**Issues/questions:** https://github.com/JohnDev19/AtlasUI/issues
+**Issues/questions:** https://github.com/JohnDev19/Veloria-UI/issues
 
 ## License
 

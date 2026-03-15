@@ -6,7 +6,7 @@
  *
  * Usage in app/layout.tsx:
  *
- *   import { AtlasProvider } from "atlasui-lib/provider";
+ *   import { AtlasProvider } from "veloria-ui/provider";
  *
  *   export default function RootLayout({ children }) {
  *     return (
@@ -18,7 +18,7 @@
  *     );
  *   }
  *
- * — JohnDev19, AtlasUI
+ * — JohnDev19, Veloria UI
  */
 
 "use client";

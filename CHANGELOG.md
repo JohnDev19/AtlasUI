@@ -1,7 +1,7 @@
 # Changelog
 
-All notable changes to AtlasUI are documented here.  
-Project by [JohnDev19](https://github.com/JohnDev19) · [GitHub](https://github.com/JohnDev19/AtlasUI) · [atlasui.vercel.app](https://atlasui.vercel.app/)
+All notable changes to Veloria UI are documented here.  
+Project by [JohnDev19](https://github.com/JohnDev19) · [GitHub](https://github.com/JohnDev19/Veloria-UI) · [veloria-ui.vercel.app](https://veloria-ui.vercel.app/)
 
 This project follows [Semantic Versioning](https://semver.org).
 
@@ -11,12 +11,12 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ### Initial Release
 
-First public release of AtlasUI. 90 components, a full CLI, 10 hooks, a Tailwind
+First public release of Veloria UI. 90 components, a full CLI, 10 hooks, a Tailwind
 plugin, and a complete CSS token system with light + dark mode.
 
 ---
 
-#### atlasui-lib
+#### veloria-ui
 
 **Basic (10)**
 - `Button` — solid, outline, ghost, soft, link, danger variants · sizes xs–xl · loading state · left/right icon slots
@@ -144,9 +144,9 @@ plugin, and a complete CSS token system with light + dark mode.
 - Tree-shakeable ESM + CJS dual build via tsup
 - Turbo monorepo setup
 
-#### atlasui-lib CLI
+#### veloria-ui CLI
 - `init` — project setup wizard (detects Next.js, writes atlas.config.json)
-- `add` — copies components + installs npm deps, resolves AtlasUI peer deps
+- `add` — copies components + installs npm deps, resolves Veloria UI peer deps
 - `list` — browse all 90 components filtered by category
 - `diff` — compare local copy to latest (registry fetch, coming soon)
 - Auto-detects npm / pnpm / yarn / bun
@@ -163,7 +163,7 @@ plugin, and a complete CSS token system with light + dark mode.
 - Fixed `"types"` export condition ordering in `package.json` — `types` now comes before `import`/`require`
 - Fixed `use-toast.ts` renamed to `use-toast.tsx` — file contained JSX but had `.ts` extension
 - Fixed `TS2320` / `TS2322` conflicts across all component interfaces — `HTMLAttributes` built-in props (`color`, `size`, `title`, `prefix`, `onChange`, `onDrop`, `onDragOver`) now properly `Omit`-ed before extending
-- Renamed package from `atlasui-kit` to `atlasui-lib`
+- Renamed package from `veloria-ui-kit` to `veloria-ui`
 - CLI `--version` flag now reads dynamically from `package.json` instead of being hardcoded
 
 ---

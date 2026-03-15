@@ -153,7 +153,7 @@ export function useLocalStorage<T>(key: string, defaultValue: T): [T, (value: T 
 export type AtlasTheme = "light" | "dark" | "system";
 
 /**
- * Read and set the current AtlasUI theme.
+ * Read and set the current Veloria UI theme.
  * Persists the selection to localStorage under "atlas-theme".
  * Applies the "dark" class to <html> so Tailwind's dark: utilities kick in.
  *
@@ -206,7 +206,7 @@ export function useDebounce<T>(value: T, delay: number): T {
 
 /**
  * Fires the handler when a click happens outside of the ref'd element.
- * Used heavily inside AtlasUI popovers, dropdowns, and comboboxes.
+ * Used heavily inside Veloria UI popovers, dropdowns, and comboboxes.
  */
 export function useOnClickOutside<T extends HTMLElement>(
   ref: React.RefObject<T>,

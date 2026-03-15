@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 
 /**
- * atlasui-lib CLI
+ * veloria-ui CLI
  *
- * Copies AtlasUI components into your project so you own the code.
+ * Copies Veloria UI components into your project so you own the code.
  * Works exactly like shadcn/ui's CLI — pick what you want, paste it in.
  *
- * By JohnDev19 — https://github.com/JohnDev19/AtlasUI
- * Docs: https://atlasui.vercel.app/
+ * By JohnDev19 — https://github.com/JohnDev19/Veloria-UI
+ * Docs: https://veloria-ui.vercel.app/
  *
  * Commands:
- *   atlasui-lib init                    — project setup wizard
- *   atlasui-lib add button card modal   — copy components into your project
- *   atlasui-lib list                    — browse all 90 components
- *   atlasui-lib list --category forms   — filter by category
- *   atlasui-lib diff button             — compare local vs latest
+ *   veloria-ui init                    — project setup wizard
+ *   veloria-ui add button card modal   — copy components into your project
+ *   veloria-ui list                    — browse all 90 components
+ *   veloria-ui list --category forms   — filter by category
+ *   veloria-ui diff button             — compare local vs latest
  */
 
 import path from "path";
@@ -35,7 +35,7 @@ ${chalk.bold.blue("  ╔═╗╔╦╗╦  ╔═╗╔═╗╦ ╦╦")}
 ${chalk.bold.blue("  ╠═╣ ║ ║  ╠═╣╚═╗║ ║║")}
 ${chalk.bold.blue("  ╩ ╩ ╩ ╩═╝╩ ╩╚═╝╚═╝╩")}
   ${chalk.dim("Build anything. Ship faster.")}
-  ${chalk.dim("by JohnDev19  ·  https://github.com/JohnDev19/AtlasUI")}
+  ${chalk.dim("by JohnDev19  ·  https://github.com/JohnDev19/Veloria-UI")}
 `;
 
 // ─── Program ──────────────────────────────────────────────────────────────
@@ -43,8 +43,8 @@ ${chalk.bold.blue("  ╩ ╩ ╩ ╩═╝╩ ╩╚═╝╚═╝╩")}
 const program = new Command();
 
 program
-  .name("atlasui-lib")
-  .description("atlasui-lib CLI — copy components into your project")
+  .name("veloria-ui")
+  .description("veloria-ui CLI — copy components into your project")
   .version(PKG_VERSION, "-v, --version")
   .addHelpText("before", banner);
 
@@ -52,13 +52,13 @@ program
 
 program
   .command("init")
-  .description("Set up atlasui-lib in your project")
+  .description("Set up veloria-ui in your project")
   .option("--typescript", "Use TypeScript", true)
   .option("--tailwind", "Configure Tailwind", true)
   .option("--no-install", "Skip dependency install")
   .option("-y, --yes", "Skip all prompts, use defaults")
   .action(async (opts) => {
-    console.log(chalk.bold.blue("\n  AtlasUI Init\n") + chalk.dim("  Let's get you set up…\n"));
+    console.log(chalk.bold.blue("\n  Veloria UI Init\n") + chalk.dim("  Let's get you set up…\n"));
 
     const cwd = process.cwd();
     const pkgPath = path.join(cwd, "package.json");
@@ -86,7 +86,7 @@ program
 
     // Write atlas.config.json
     fs.writeJsonSync(path.join(cwd, "atlas.config.json"), {
-      $schema: "https://atlasui.vercel.app/schema.json",
+      $schema: "https://veloria-ui.vercel.app/schema.json",
       style: "default",
       typescript: opts.typescript ?? true,
       tailwind: { config: "tailwind.config.ts", css: answers.cssPath, baseColor: "slate", cssVariables: true },
@@ -123,13 +123,13 @@ program
     }
 
     console.log(`
-${chalk.bold.green("  AtlasUI is ready!")}
+${chalk.bold.green("  Veloria UI is ready!")}
 
   ${chalk.dim("Next steps:")}
-  ${chalk.cyan("1.")} Add components: ${chalk.bold("npx atlasui-lib add button card modal")}
-  ${chalk.cyan("2.")} Browse all:     ${chalk.bold("npx atlasui-lib list")}
-  ${chalk.cyan("3.")} Docs:           ${chalk.bold("https://atlasui.vercel.app/")}
-  ${chalk.cyan("4.")} Issues:         ${chalk.bold("https://github.com/JohnDev19/AtlasUI/issues")}
+  ${chalk.cyan("1.")} Add components: ${chalk.bold("npx veloria-ui add button card modal")}
+  ${chalk.cyan("2.")} Browse all:     ${chalk.bold("npx veloria-ui list")}
+  ${chalk.cyan("3.")} Docs:           ${chalk.bold("https://veloria-ui.vercel.app/")}
+  ${chalk.cyan("4.")} Issues:         ${chalk.bold("https://github.com/JohnDev19/Veloria-UI/issues")}
 `);
   });
 
@@ -147,18 +147,18 @@ program
 
     if (!components?.length) {
       console.log(chalk.red("\n  Specify at least one component.\n"));
-      console.log(`  ${chalk.dim("Example:")} ${chalk.cyan("npx atlasui-lib add button card modal\n")}`);
+      console.log(`  ${chalk.dim("Example:")} ${chalk.cyan("npx veloria-ui add button card modal\n")}`);
       process.exit(1);
     }
 
-    // Resolve components + their atlasui-lib registry deps
+    // Resolve components + their veloria-ui registry deps
     const toAdd = new Set<string>();
     function resolve(name: string) {
       const key = name.toLowerCase().replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
       const meta = COMPONENTS_BY_NAME.get(key) || COMPONENTS_BY_NAME.get(name);
       if (!meta) {
         console.error(chalk.red(`\n  "${name}" not found in the registry.\n`));
-        console.log(`  Run ${chalk.cyan("npx atlasui-lib list")} to see what's available.\n`);
+        console.log(`  Run ${chalk.cyan("npx veloria-ui list")} to see what's available.\n`);
         return;
       }
       toAdd.add(meta.name);
@@ -174,7 +174,7 @@ program
     const aliasDir = config?.aliases?.components?.replace(/^@\//, "");
     const targetDir = path.join(cwd, opts.dir ?? aliasDir ?? "components/ui");
 
-    console.log(chalk.bold.blue("\n  AtlasUI Add\n") + chalk.dim(`  Adding: ${[...toAdd].join(", ")}\n`));
+    console.log(chalk.bold.blue("\n  Veloria UI Add\n") + chalk.dim(`  Adding: ${[...toAdd].join(", ")}\n`));
 
     const allDeps = new Set<string>();
     for (const name of toAdd) COMPONENTS_BY_NAME.get(name)!.deps.forEach((d) => allDeps.add(d));
@@ -194,18 +194,18 @@ program
 
       await fs.writeFile(file,
 `/**
- * AtlasUI — ${pascal}
+ * Veloria UI — ${pascal}
  *
- * Added by the atlasui-lib CLI. This file is yours — edit it however you want.
- * Re-export from atlasui-lib to stay in sync, or paste the full source here
+ * Added by the veloria-ui CLI. This file is yours — edit it however you want.
+ * Re-export from veloria-ui to stay in sync, or paste the full source here
  * to customise the internals.
  *
- * Docs:   https://atlasui.vercel.app/components/${name}
- * Source: https://github.com/JohnDev19/AtlasUI
+ * Docs:   https://veloria-ui.vercel.app/components/${name}
+ * Source: https://github.com/JohnDev19/Veloria-UI
  */
 
-export { ${pascal} } from "atlasui-lib";
-export type { ${pascal}Props } from "atlasui-lib";
+export { ${pascal} } from "veloria-ui";
+export type { ${pascal}Props } from "veloria-ui";
 `);
       spinner.succeed(chalk.green(`${name}  →  ${path.relative(cwd, file)}`));
     }
@@ -241,7 +241,7 @@ program
   .option("-c, --category <category>", "Filter by category")
   .action((opts) => {
     const filterCat = opts.category?.toLowerCase() as Category | undefined;
-    console.log(chalk.bold.blue("\n  atlasui-lib Components\n"));
+    console.log(chalk.bold.blue("\n  veloria-ui Components\n"));
 
     const cats = filterCat ? [filterCat] : CATEGORIES;
     for (const cat of cats) {
@@ -256,7 +256,7 @@ program
     }
 
     console.log(chalk.dim(`  ${REGISTRY.length} components total\n`) +
-      chalk.dim("  Add one: ") + chalk.cyan("npx atlasui-lib add <name>\n"));
+      chalk.dim("  Add one: ") + chalk.cyan("npx veloria-ui add <name>\n"));
   });
 
 // ─── diff ─────────────────────────────────────────────────────────────────
@@ -266,16 +266,16 @@ program
   .description("Compare your local copy to the latest version")
   .action((component?: string) => {
     if (!component) {
-      console.log(chalk.dim("\n  Usage: npx atlasui-lib diff <component>\n"));
+      console.log(chalk.dim("\n  Usage: npx veloria-ui diff <component>\n"));
       return;
     }
     console.log(chalk.bold.blue(`\n  diff: ${component}\n`) +
-      chalk.dim("  Comparing local copy to latest in the atlasui-lib registry…\n"));
+      chalk.dim("  Comparing local copy to latest in the veloria-ui registry…\n"));
     // Full diff requires fetching from the registry — tracked here:
-    // https://github.com/JohnDev19/AtlasUI/issues
+    // https://github.com/JohnDev19/Veloria-UI/issues
     console.log(chalk.yellow("  ⚠  Registry diff isn't wired up yet."));
     console.log(chalk.dim(`  Check the latest source at:\n`) +
-      chalk.cyan(`  https://github.com/JohnDev19/AtlasUI/tree/main/src/components\n`));
+      chalk.cyan(`  https://github.com/JohnDev19/Veloria-UI/tree/main/src/components\n`));
   });
 
 // ─── Error handling ───────────────────────────────────────────────────────

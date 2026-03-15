@@ -43,9 +43,9 @@ export default defineConfig([
     outDir: "dist",
     banner: {
       js: `/**
- * atlasui-lib
+ * veloria-ui
  * Build anything. Ship faster.
- * By JohnDev19 — https://github.com/JohnDev19/AtlasUI
+ * By JohnDev19 — https://github.com/JohnDev19/Veloria-UI
  * MIT License
  */`,
     },

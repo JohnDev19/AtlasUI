@@ -9,7 +9,7 @@
  *   toast({ title: "Saved!", variant: "success" });
  *   toast({ title: "Uh oh", description: "Something broke.", variant: "danger" });
  *
- * — AtlasUI, https://atlasui.vercel.app/
+ * — Veloria UI, https://veloria-ui.vercel.app/
  */
 
 "use client";
@@ -67,7 +67,7 @@ export function useToast(): ToastContextValue {
   if (!ctx) {
     throw new Error(
       "useToast must be called inside <AtlasProvider>. " +
-      "Make sure you've wrapped your app root — see https://atlasui.vercel.app/docs/provider"
+      "Make sure you've wrapped your app root — see https://veloria-ui.vercel.app/docs/provider"
     );
   }
   return ctx;

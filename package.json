@@ -1,14 +1,14 @@
 {
-  "name": "atlasui-lib",
+  "name": "veloria-ui",
   "version": "0.1.2",
   "private": false,
-  "description": "AtlasUI — Build anything. Ship faster. 90+ accessible, composable React components with Tailwind CSS and dark mode.",
+  "description": "Veloria UI — Build anything. Ship faster. 90+ accessible, composable React components with Tailwind CSS and dark mode.",
   "keywords": [
     "react",
     "ui",
     "components",
-    "atlasui-lib",
-    "atlasui-lib",
+    "veloria-ui",
+    "veloria-ui",
     "design-system",
     "accessible",
     "aria",
@@ -20,13 +20,13 @@
     "radix-ui",
     "component-library"
   ],
-  "homepage": "https://atlasui.vercel.app/",
+  "homepage": "https://veloria-ui.vercel.app/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/JohnDev19/AtlasUI.git"
+    "url": "https://github.com/JohnDev19/Veloria-UI.git"
   },
   "bugs": {
-    "url": "https://github.com/JohnDev19/AtlasUI/issues"
+    "url": "https://github.com/JohnDev19/Veloria-UI/issues"
   },
   "license": "MIT",
   "author": {
@@ -55,7 +55,7 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "bin": {
-    "atlasui-lib": "./dist/cli/index.js",
+    "veloria-ui": "./dist/cli/index.js",
     "atlas":   "./dist/cli/index.js"
   },
   "files": [
