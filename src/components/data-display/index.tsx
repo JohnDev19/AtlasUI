@@ -790,7 +790,7 @@ TreeView.displayName = "TreeView";
 
 // ─── JsonViewer ───────────────────────────────────────────────────────────
 
-type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
 export interface JsonViewerProps extends React.HTMLAttributes<HTMLDivElement> {
   data: JsonValue;
