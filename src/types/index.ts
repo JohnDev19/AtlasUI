@@ -43,11 +43,11 @@ export type Side = "top" | "right" | "bottom" | "left";
 // ─── Shared Component Props ──────────────────────────────────────────────────
 
 export interface AtlasBaseProps {
-  /** additional CSS class names */
+  /** Additional CSS class names */
   className?: string;
-  /** inline style overrides */
+  /** Inline style overrides */
   style?: React.CSSProperties;
-  /** data attributes passthrough */
+  /** Data attributes passthrough */
   [key: `data-${string}`]: unknown;
 }
 

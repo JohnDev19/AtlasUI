@@ -1,55 +1,57 @@
 # Contributing to AtlasUI
 
-Thank you for your interest in contributing!
+Thanks for wanting to contribute! AtlasUI is a personal open-source project
+by [JohnDev19](https://github.com/JohnDev19) and contributions are genuinely
+welcome — bug fixes, new components, docs improvements, whatever you've got.
 
-## Development Setup
+## Development setup
 
 ```bash
 git clone https://github.com/JohnDev19/AtlasUI.git
-cd atlasui
+cd AtlasUI
 npm install
 npm run build
 ```
 
-## Project Structure
+## Repo structure
 
-- `packages/core` — The `@atlasui/core` npm package
-- `cli` — The `@atlasui/cli` npm package
+- `packages/core` — the `@atlasui/core` npm package (all 90 components live here)
+- `cli` — the `@atlasui/cli` npm package
 
-## Adding a New Component
+## Adding a new component
 
-1. Create the component in the appropriate category folder under `packages/core/src/components/`
-2. Export it from the category's `index.tsx`
-3. Export it from `packages/core/src/index.ts`
-4. Add it to `cli/src/registry.ts`
-5. Add TypeScript types
-6. Ensure ARIA / accessibility attributes are correct
+1. Create the component file inside the right category under `src/components/`
+2. Re-export it from that category's `index.tsx`
+3. Add the named export to `packages/core/src/index.ts`
+4. Register it in `cli/src/registry.ts` with its deps and category
+5. Export TypeScript types properly
 
-## Code Standards
+## Code standards
 
-- TypeScript strict mode
+- TypeScript strict mode — no `any` unless truly necessary
 - All components must use `React.forwardRef`
-- ARIA attributes required for all interactive components
-- Support `asChild` pattern via Radix `Slot` where appropriate
-- Dark mode via CSS variables (no hardcoded colors)
-- Use `cn()` utility for class merging
+- ARIA attributes on every interactive element — test with a screen reader if you can
+- Support `asChild` via Radix `Slot` for composable use cases
+- No hardcoded colors — everything goes through CSS custom properties
+- Use `cn()` from `utils/cn.ts` for class merging, never string concatenation
 
-## Commit Convention
+## Commit style
 
 ```
-feat: add <ComponentName> component
-fix: correct <ComponentName> focus trap
-docs: update <ComponentName> README
-chore: bump dependencies
+feat: add <ComponentName>
+fix: <ComponentName> keyboard focus not trapped
+docs: add usage example for <ComponentName>
+chore: bump @radix-ui/* to latest
 ```
 
-## Pull Request Process
+## Pull requests
 
 1. Fork the repo
-2. Create a branch: `feat/my-component`
-3. Open a PR against `main`
-4. Fill in the PR template
+2. Branch off `main`: `git checkout -b feat/my-component`
+3. Open a PR — fill in the template and describe what you changed
+
+**Issues/questions:** https://github.com/JohnDev19/AtlasUI/issues
 
 ## License
 
-By contributing, you agree your work will be licensed under MIT.
+By submitting a PR you agree your contribution will be licensed under MIT.

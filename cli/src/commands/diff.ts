@@ -1,1 +1,0 @@
-export { diff } from "./list";

@@ -1,10 +1,15 @@
 /**
- * useToast — Programmatic toast notifications
+ * useToast — fire toasts from anywhere without prop drilling.
  *
- * Usage:
+ * Pair this with <AtlasProvider> at the root of your app.
+ * The context lives there and this hook just taps into it.
+ *
+ * @example
  *   const { toast } = useToast();
+ *   toast({ title: "Saved!", variant: "success" });
+ *   toast({ title: "Uh oh", description: "Something broke.", variant: "danger" });
  *
- *   toast({ title: "Saved!", description: "Your changes were saved.", variant: "success" });
+ * — AtlasUI, https://atlasui.vercel.app/
  */
 
 "use client";
@@ -60,7 +65,10 @@ export function ToastContextProvider({ children }: { children: React.ReactNode }
 export function useToast(): ToastContextValue {
   const ctx = React.useContext(ToastContext);
   if (!ctx) {
-    throw new Error("useToast must be used within a ToastContextProvider (or AtlasProvider).");
+    throw new Error(
+      "useToast must be called inside <AtlasProvider>. " +
+      "Make sure you've wrapped your app root — see https://atlasui.vercel.app/docs/provider"
+    );
   }
   return ctx;
 }

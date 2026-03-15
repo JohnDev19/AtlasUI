@@ -54,13 +54,13 @@ const buttonVariants = cva(
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
-  /** child element */
+  /** Render as child element (Radix Slot pattern) */
   asChild?: boolean;
-  /** loading spinner */
+  /** Show loading spinner */
   loading?: boolean;
-  /** left icon slot */
+  /** Left icon slot */
   leftIcon?: React.ReactNode;
-  /** right icon slot */
+  /** Right icon slot */
   rightIcon?: React.ReactNode;
 }
 

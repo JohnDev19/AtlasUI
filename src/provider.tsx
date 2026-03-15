@@ -1,14 +1,12 @@
 /**
- * AtlasUI Provider for Next.js
+ * AtlasProvider — wrap your app with this once.
  *
- * Wrap your app with AtlasProvider to enable:
- *   - Toast notifications
- *   - Theme context
- *   - Tooltip provider
+ * Covers Toast (needed for useToast) and TooltipProvider (so you don't
+ * have to wrap every single Tooltip yourself).
  *
  * Usage in app/layout.tsx:
  *
- *   import { AtlasProvider } from "@atlasui/core/provider";
+ *   import { AtlasProvider } from "atlasui-kit/provider";
  *
  *   export default function RootLayout({ children }) {
  *     return (
@@ -19,6 +17,8 @@
  *       </html>
  *     );
  *   }
+ *
+ * — JohnDev19, AtlasUI
  */
 
 "use client";
@@ -29,11 +29,11 @@ import { TooltipProvider } from "./components/basic";
 
 export interface AtlasProviderProps {
   children: React.ReactNode;
-  /** Toast duration in ms (default: 5000) */
+  /** How long toasts stay on screen in ms. Default: 5000 */
   toastDuration?: number;
-  /** Toast swipe direction */
+  /** Swipe direction to dismiss toasts. Default: "right" */
   toastSwipeDirection?: "up" | "down" | "left" | "right";
-  /** Tooltip open delay in ms (default: 300) */
+  /** Delay before tooltips open in ms. Default: 300 */
   tooltipDelay?: number;
 }
 

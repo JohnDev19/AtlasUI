@@ -2,15 +2,20 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 /**
- * Atlas utility for merging Tailwind classes safely.
- * Combines clsx and tailwind-merge.
+ * Merges Tailwind classes without conflicts.
+ * Wrapper around clsx + tailwind-merge — use this everywhere in AtlasUI
+ * instead of raw string concatenation.
+ *
+ * @example
+ * cn("px-4 py-2", isLarge && "px-8", className)
  */
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
 /**
- * Compose multiple event handlers into one.
+ * Chains two event handlers so both fire, but respects defaultPrevented
+ * on the original handler before calling ours.
  */
 export function composeEventHandlers<E>(
   originalEventHandler?: (event: E) => void,
@@ -29,32 +34,28 @@ export function composeEventHandlers<E>(
 }
 
 /**
- * Generate unique IDs for accessibility attributes.
+ * Quick incrementing ID generator — used for linking labels to inputs
+ * when no explicit id prop is passed.
  */
 let idCounter = 0;
 export function generateId(prefix = "atlas"): string {
   return `${prefix}-${++idCounter}`;
 }
 
-/**
- * Safely access window object (SSR-safe).
- */
+/** True only in browser environments. Guards SSR code paths. */
 export const isBrowser = typeof window !== "undefined";
 
-/**
- * Noop function.
- */
+/** A do-nothing function. Handy as a default prop value. */
 export const noop = () => undefined;
 
-/**
- * Check if value is defined.
- */
+/** Narrows out null and undefined from a value. */
 export function isDefined<T>(value: T | undefined | null): value is T {
   return value !== undefined && value !== null;
 }
 
 /**
- * Slot helper for composable components.
+ * Filters React.Children down to only valid elements.
+ * Useful when mapping children and you need to skip strings/nulls.
  */
 export function getValidChildren(children: React.ReactNode) {
   return React.Children.toArray(children).filter((child) =>

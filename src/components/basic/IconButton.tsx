@@ -43,7 +43,7 @@ const iconButtonVariants = cva(
 export interface IconButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof iconButtonVariants> {
-  /** required for screen readers */
+  /** Accessible label — required for screen readers */
   "aria-label": string;
   asChild?: boolean;
   icon?: React.ReactNode;

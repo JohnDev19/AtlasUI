@@ -1,16 +1,18 @@
 /**
- * @atlasui/core
+ * atlasui-kit
+ *
  * Build anything. Ship faster.
- * JohnDev19
- * 
- * 90+ production-ready components — accessible, composable, dark-mode-ready.
- * Works with Tailwind CSS and Next.js out of the box.
+ * 90+ production-ready components — accessible, composable, dark-mode ready.
+ *
+ * By JohnDev19 — https://github.com/JohnDev19/AtlasUI
+ * Docs: https://atlasui.vercel.app/
+ * Issues: https://github.com/JohnDev19/AtlasUI/issues
  *
  * @version 0.1.0
  * @license MIT
  */
 
-// ─── Basic Components ─────────────────────────────────────────────────────
+// ─── Basic ────────────────────────────────────────────────────────────────
 export { Button, buttonVariants } from "./components/basic/Button";
 export type { ButtonProps } from "./components/basic/Button";
 export { IconButton, iconButtonVariants } from "./components/basic/IconButton";
@@ -40,7 +42,7 @@ export type {
   TooltipProps,
 } from "./components/basic";
 
-// ─── Layout Components ────────────────────────────────────────────────────
+// ─── Layout ───────────────────────────────────────────────────────────────
 export {
   Container,
   Stack,
@@ -64,7 +66,7 @@ export type {
   MasonryProps,
 } from "./components/layout";
 
-// ─── Navigation Components ────────────────────────────────────────────────
+// ─── Navigation ───────────────────────────────────────────────────────────
 export {
   Navbar,
   Sidebar,
@@ -99,7 +101,7 @@ export type {
   StepperProps,
 } from "./components/navigation";
 
-// ─── Form Components ──────────────────────────────────────────────────────
+// ─── Forms ────────────────────────────────────────────────────────────────
 export {
   Input, inputVariants,
   TextArea,
@@ -130,7 +132,7 @@ export type {
   TimePickerProps,
 } from "./components/forms";
 
-// ─── Advanced Form Components ─────────────────────────────────────────────
+// ─── Advanced Forms ───────────────────────────────────────────────────────
 export {
   FileUpload,
   OTPInput,
@@ -157,7 +159,7 @@ export type {
   FormErrorProps,
 } from "./components/advanced-forms";
 
-// ─── Data Display Components ──────────────────────────────────────────────
+// ─── Data Display ─────────────────────────────────────────────────────────
 export {
   Card,
   CardHeader,
@@ -195,7 +197,7 @@ export type {
   ChartProps,
 } from "./components/data-display";
 
-// ─── Feedback Components ──────────────────────────────────────────────────
+// ─── Feedback ─────────────────────────────────────────────────────────────
 export {
   Alert,
   AlertTitle,
@@ -228,7 +230,7 @@ export type {
   NotificationProps,
 } from "./components/feedback";
 
-// ─── Overlay Components ───────────────────────────────────────────────────
+// ─── Overlay ──────────────────────────────────────────────────────────────
 export {
   Modal,
   Dialog,
@@ -272,7 +274,7 @@ export type {
   LightboxProps,
 } from "./components/overlay";
 
-// ─── Media Components ─────────────────────────────────────────────────────
+// ─── Media ────────────────────────────────────────────────────────────────
 export {
   Image,
   VideoPlayer,
@@ -289,7 +291,7 @@ export type {
   GalleryProps,
 } from "./components/media";
 
-// ─── Utility Components ───────────────────────────────────────────────────
+// ─── Utility ──────────────────────────────────────────────────────────────
 export {
   ThemeSwitcher,
   CopyButton,
@@ -319,11 +321,13 @@ export {
   useMounted,
   useId,
 } from "./hooks";
-export type {
-  UseDisclosureOptions,
-  UseClipboardOptions,
-  AtlasTheme,
-} from "./hooks";
+export type { UseDisclosureOptions, UseClipboardOptions, AtlasTheme } from "./hooks";
+
+export {
+  useToast,
+  ToastContextProvider,
+} from "./hooks/use-toast";
+export type { ToastVariant, ToastData, ToastInput } from "./hooks/use-toast";
 
 // ─── Types ────────────────────────────────────────────────────────────────
 export type {
@@ -345,5 +349,5 @@ export type {
 // ─── Utils ────────────────────────────────────────────────────────────────
 export { cn, composeEventHandlers, generateId, isBrowser, isDefined, noop } from "./utils/cn";
 
-// ─── Tailwind Plugin ──────────────────────────────────────────────────────
-export { atlasPlugin, atlasPreset } from "./tailwind-plugin";
+// ─── Tailwind plugin ──────────────────────────────────────────────────────
+export { atlasPlugin, atlasPreset } from "./tailwind";
