@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * atlasui CLI
+ * atlasui-lib CLI
  *
  * Copies AtlasUI components into your project so you own the code.
  * Works exactly like shadcn/ui's CLI — pick what you want, paste it in.
@@ -10,11 +10,11 @@
  * Docs: https://atlasui.vercel.app/
  *
  * Commands:
- *   atlasui init                    — project setup wizard
- *   atlasui add button card modal   — copy components into your project
- *   atlasui list                    — browse all 90 components
- *   atlasui list --category forms   — filter by category
- *   atlasui diff button             — compare local vs latest
+ *   atlasui-lib init                    — project setup wizard
+ *   atlasui-lib add button card modal   — copy components into your project
+ *   atlasui-lib list                    — browse all 90 components
+ *   atlasui-lib list --category forms   — filter by category
+ *   atlasui-lib diff button             — compare local vs latest
  */
 
 import path from "path";
@@ -41,8 +41,8 @@ ${chalk.bold.blue("  ╩ ╩ ╩ ╩═╝╩ ╩╚═╝╚═╝╩")}
 const program = new Command();
 
 program
-  .name("atlasui")
-  .description("atlasui CLI — copy components into your project")
+  .name("atlasui-lib")
+  .description("atlasui-lib CLI — copy components into your project")
   .version("0.1.0", "-v, --version")
   .addHelpText("before", banner);
 
@@ -50,7 +50,7 @@ program
 
 program
   .command("init")
-  .description("Set up atlasui in your project")
+  .description("Set up atlasui-lib in your project")
   .option("--typescript", "Use TypeScript", true)
   .option("--tailwind", "Configure Tailwind", true)
   .option("--no-install", "Skip dependency install")
@@ -124,8 +124,8 @@ program
 ${chalk.bold.green("  AtlasUI is ready!")}
 
   ${chalk.dim("Next steps:")}
-  ${chalk.cyan("1.")} Add components: ${chalk.bold("npx atlasui add button card modal")}
-  ${chalk.cyan("2.")} Browse all:     ${chalk.bold("npx atlasui list")}
+  ${chalk.cyan("1.")} Add components: ${chalk.bold("npx atlasui-lib add button card modal")}
+  ${chalk.cyan("2.")} Browse all:     ${chalk.bold("npx atlasui-lib list")}
   ${chalk.cyan("3.")} Docs:           ${chalk.bold("https://atlasui.vercel.app/")}
   ${chalk.cyan("4.")} Issues:         ${chalk.bold("https://github.com/JohnDev19/AtlasUI/issues")}
 `);
@@ -145,18 +145,18 @@ program
 
     if (!components?.length) {
       console.log(chalk.red("\n  Specify at least one component.\n"));
-      console.log(`  ${chalk.dim("Example:")} ${chalk.cyan("npx atlasui add button card modal\n")}`);
+      console.log(`  ${chalk.dim("Example:")} ${chalk.cyan("npx atlasui-lib add button card modal\n")}`);
       process.exit(1);
     }
 
-    // Resolve components + their atlasui registry deps
+    // Resolve components + their atlasui-lib registry deps
     const toAdd = new Set<string>();
     function resolve(name: string) {
       const key = name.toLowerCase().replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
       const meta = COMPONENTS_BY_NAME.get(key) || COMPONENTS_BY_NAME.get(name);
       if (!meta) {
         console.error(chalk.red(`\n  "${name}" not found in the registry.\n`));
-        console.log(`  Run ${chalk.cyan("npx atlasui list")} to see what's available.\n`);
+        console.log(`  Run ${chalk.cyan("npx atlasui-lib list")} to see what's available.\n`);
         return;
       }
       toAdd.add(meta.name);
@@ -194,16 +194,16 @@ program
 `/**
  * AtlasUI — ${pascal}
  *
- * Added by the atlasui CLI. This file is yours — edit it however you want.
- * Re-export from atlasui to stay in sync, or paste the full source here
+ * Added by the atlasui-lib CLI. This file is yours — edit it however you want.
+ * Re-export from atlasui-lib to stay in sync, or paste the full source here
  * to customise the internals.
  *
  * Docs:   https://atlasui.vercel.app/components/${name}
  * Source: https://github.com/JohnDev19/AtlasUI
  */
 
-export { ${pascal} } from "atlasui";
-export type { ${pascal}Props } from "atlasui";
+export { ${pascal} } from "atlasui-lib";
+export type { ${pascal}Props } from "atlasui-lib";
 `);
       spinner.succeed(chalk.green(`${name}  →  ${path.relative(cwd, file)}`));
     }
@@ -239,7 +239,7 @@ program
   .option("-c, --category <category>", "Filter by category")
   .action((opts) => {
     const filterCat = opts.category?.toLowerCase() as Category | undefined;
-    console.log(chalk.bold.blue("\n  atlasui Components\n"));
+    console.log(chalk.bold.blue("\n  atlasui-lib Components\n"));
 
     const cats = filterCat ? [filterCat] : CATEGORIES;
     for (const cat of cats) {
@@ -254,7 +254,7 @@ program
     }
 
     console.log(chalk.dim(`  ${REGISTRY.length} components total\n`) +
-      chalk.dim("  Add one: ") + chalk.cyan("npx atlasui add <name>\n"));
+      chalk.dim("  Add one: ") + chalk.cyan("npx atlasui-lib add <name>\n"));
   });
 
 // ─── diff ─────────────────────────────────────────────────────────────────
@@ -264,11 +264,11 @@ program
   .description("Compare your local copy to the latest version")
   .action((component?: string) => {
     if (!component) {
-      console.log(chalk.dim("\n  Usage: npx atlasui diff <component>\n"));
+      console.log(chalk.dim("\n  Usage: npx atlasui-lib diff <component>\n"));
       return;
     }
     console.log(chalk.bold.blue(`\n  diff: ${component}\n`) +
-      chalk.dim("  Comparing local copy to latest in the atlasui registry…\n"));
+      chalk.dim("  Comparing local copy to latest in the atlasui-lib registry…\n"));
     // Full diff requires fetching from the registry — tracked here:
     // https://github.com/JohnDev19/AtlasUI/issues
     console.log(chalk.yellow("  ⚠  Registry diff isn't wired up yet."));

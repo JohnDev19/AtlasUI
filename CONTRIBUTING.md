@@ -15,8 +15,8 @@ npm run build
 
 ## Repo structure
 
-- `packages/core` — the `@atlasui/core` npm package (all 90 components live here)
-- `cli` — the `@atlasui/cli` npm package
+- `packages/core` — the `@atlasui-lib/core` npm package (all 90 components live here)
+- `cli` — the `@atlasui-lib/cli` npm package
 
 ## Adding a new component
 

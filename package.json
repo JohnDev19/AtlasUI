@@ -1,5 +1,5 @@
 {
-  "name": "atlasui",
+  "name": "atlasui-lib",
   "version": "0.1.0",
   "private": false,
   "description": "AtlasUI — Build anything. Ship faster. 90+ accessible, composable React components with Tailwind CSS and dark mode.",
@@ -7,8 +7,8 @@
     "react",
     "ui",
     "components",
-    "atlasui",
-    "atlasui",
+    "atlasui-lib",
+    "atlasui-lib",
     "design-system",
     "accessible",
     "aria",
@@ -55,7 +55,7 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "bin": {
-    "atlasui": "./dist/cli/index.js",
+    "atlasui-lib": "./dist/cli/index.js",
     "atlas":   "./dist/cli/index.js"
   },
   "files": [

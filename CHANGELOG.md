@@ -7,8 +7,7 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
-## [0.1.0] — 2025-06-26
-## [0.1.0] — 2026-03-13 (Updated)
+## [0.1.0] — 2025-03-15
 
 ### 🎉 Initial Release
 
@@ -17,7 +16,7 @@ plugin, and a complete CSS token system with light + dark mode.
 
 ---
 
-#### atlasui
+#### atlasui-lib
 
 **Basic (10)**
 - `Button` — solid, outline, ghost, soft, link, danger variants · sizes xs–xl · loading state · left/right icon slots
@@ -145,7 +144,7 @@ plugin, and a complete CSS token system with light + dark mode.
 - Tree-shakeable ESM + CJS dual build via tsup
 - Turbo monorepo setup
 
-#### atlasui CLI
+#### atlasui-lib CLI
 - `init` — project setup wizard (detects Next.js, writes atlas.config.json)
 - `add` — copies components + installs npm deps, resolves AtlasUI peer deps
 - `list` — browse all 90 components filtered by category

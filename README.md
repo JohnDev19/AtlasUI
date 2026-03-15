@@ -13,7 +13,7 @@
 90+ production-ready React components — accessible, composable, dark-mode ready.
 Works with Tailwind CSS and Next.js out of the box.
 
-[![npm](https://img.shields.io/npm/v/atlasui?color=0ea5e9&label=atlasui)](https://www.npmjs.com/package/atlasui)
+[![npm](https://img.shields.io/npm/v/atlasui-lib?color=0ea5e9&label=atlasui-lib)](https://www.npmjs.com/package/atlasui-lib)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178c6)](https://www.typescriptlang.org)
 [![GitHub](https://img.shields.io/github/stars/JohnDev19/AtlasUI?style=social)](https://github.com/JohnDev19/AtlasUI)
@@ -27,9 +27,9 @@ Works with Tailwind CSS and Next.js out of the box.
 ## Install
 
 ```bash
-npm install atlasui
-# pnpm add atlasui
-# bun add atlasui
+npm install atlasui-lib
+# pnpm add atlasui-lib
+# bun add atlasui-lib
 ```
 
 ---
@@ -40,14 +40,14 @@ npm install atlasui
 
 ```tsx
 // app/layout.tsx
-import "atlasui/styles";
+import "atlasui-lib/styles";
 ```
 
 ### 2. Add the Tailwind plugin
 
 ```ts
 // tailwind.config.ts
-import { atlasPlugin } from "atlasui/tailwind";
+import { atlasPlugin } from "atlasui-lib/tailwind";
 
 export default {
   darkMode: ["class"],
@@ -60,7 +60,7 @@ export default {
 
 ```tsx
 // app/layout.tsx
-import { AtlasProvider } from "atlasui/provider";
+import { AtlasProvider } from "atlasui-lib/provider";
 
 export default function RootLayout({ children }) {
   return (
@@ -76,7 +76,7 @@ export default function RootLayout({ children }) {
 ### 4. Start building
 
 ```tsx
-import { Button, Card, CardContent, Input, Badge } from "atlasui";
+import { Button, Card, CardContent, Input, Badge } from "atlasui-lib";
 
 export default function Page() {
   return (
@@ -95,25 +95,25 @@ export default function Page() {
 
 ## CLI
 
-atlasui ships with a CLI that copies components straight into your project — shadcn-style. You own the code.
+atlasui-lib ships with a CLI that copies components straight into your project — shadcn-style. You own the code.
 
 ```bash
-# Set up atlasui in your project (writes atlas.config.json)
-npx atlasui init
+# Set up atlasui-lib in your project (writes atlas.config.json)
+npx atlasui-lib init
 
 # Add components
-npx atlasui add button
-npx atlasui add card modal drawer toast
+npx atlasui-lib add button
+npx atlasui-lib add card modal drawer toast
 
 # Browse all 90 components
-npx atlasui list
-npx atlasui list --category forms
+npx atlasui-lib list
+npx atlasui-lib list --category forms
 
 # Compare your local copy to the latest version
-npx atlasui diff button
+npx atlasui-lib diff button
 ```
 
-After running `add`, a file like `components/ui/button/index.tsx` appears in your project. It re-exports from `atlasui` by default, or you can paste the full source in and go wild.
+After running `add`, a file like `components/ui/button/index.tsx` appears in your project. It re-exports from `atlasui-lib` by default, or you can paste the full source in and go wild.
 
 ---
 
@@ -166,7 +166,7 @@ import {
   useKeydown,        // keyboard shortcut listener with modifier support
   useMounted,        // SSR-safe mount check
   useToast,          // fire toasts programmatically
-} from "atlasui";
+} from "atlasui-lib";
 ```
 
 ---
@@ -195,7 +195,7 @@ Full token list: `--background` `--foreground` `--primary` `--secondary` `--mute
 Uses the `class` strategy — add `dark` to `<html>` and everything flips automatically.
 
 ```tsx
-import { useTheme, ThemeSwitcher } from "atlasui";
+import { useTheme, ThemeSwitcher } from "atlasui-lib";
 
 function Header() {
   const { theme, setTheme } = useTheme();
@@ -208,7 +208,7 @@ function Header() {
 ## Package Structure
 
 ```
-atlasui/
+atlasui-lib/
 ├── src/
 │   ├── components/
 │   │   ├── basic/           Button, IconButton, Badge, Avatar, Tooltip…
@@ -225,7 +225,7 @@ atlasui/
 │   ├── styles/              atlas.css — full design token system
 │   ├── types/               shared TypeScript types
 │   ├── utils/               cn() and helpers
-│   ├── cli/                 atlasui CLI (add, init, list, diff)
+│   ├── cli/                 atlasui-lib CLI (add, init, list, diff)
 │   ├── provider.tsx         AtlasProvider for Next.js
 │   └── tailwind.ts          atlasPlugin + atlasPreset
 ├── package.json
@@ -249,5 +249,5 @@ MIT © [JohnDev19](https://github.com/JohnDev19)
 ---
 
 <div align="center">
-  <sub>Built by JohnDev19.</sub>
+  <sub>Built by JohnDev19 on top of Radix UI primitives.</sub>
 </div>

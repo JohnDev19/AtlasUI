@@ -1,5 +1,5 @@
 /**
- * atlasui
+ * atlasui-lib
  *
  * Build anything. Ship faster.
  * 90+ production-ready components — accessible, composable, dark-mode ready.

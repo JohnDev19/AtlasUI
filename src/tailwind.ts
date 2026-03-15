@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 // tailwindcss is a peerDep — it lives in the consumer's node_modules, never
-// bundled into atlasui. We require() at runtime so tsup marks it external
+// bundled into atlasui-lib. We require() at runtime so tsup marks it external
 // correctly instead of trying to resolve it at build time.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const plugin = require("tailwindcss/plugin") as (
@@ -15,12 +15,12 @@ const plugin = require("tailwindcss/plugin") as (
  * Maps the CSS custom properties in atlas.css to Tailwind utilities.
  * Add to your tailwind.config.ts:
  *
- *   import { atlasPlugin } from "atlasui/tailwind";
+ *   import { atlasPlugin } from "atlasui-lib/tailwind";
  *   plugins: [atlasPlugin],
  *
  * Or use atlasPreset which also sets darkMode: ["class"]:
  *
- *   import { atlasPreset } from "atlasui/tailwind";
+ *   import { atlasPreset } from "atlasui-lib/tailwind";
  *   presets: [atlasPreset],
  */
 export const atlasPlugin = plugin(
