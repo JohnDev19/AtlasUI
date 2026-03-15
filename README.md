@@ -249,5 +249,5 @@ MIT © [JohnDev19](https://github.com/JohnDev19)
 ---
 
 <div align="center">
-  <sub>Built by JohnDev19.</sub>
+  <sub>Built by JohnDev19</sub>
 </div>

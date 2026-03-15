@@ -1,6 +1,6 @@
 # Changelog
 
-All changes to AtlasUI are documented here.  
+All notable changes to AtlasUI are documented here.  
 Project by [JohnDev19](https://github.com/JohnDev19) · [GitHub](https://github.com/JohnDev19/AtlasUI) · [atlasui.vercel.app](https://atlasui.vercel.app/)
 
 This project follows [Semantic Versioning](https://semver.org).
