@@ -7,7 +7,7 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
-## [0.1.7] — 2026-03-17
+## [0.1.5] — 2026-03-17
 
 ### New Components (5)
 
@@ -100,8 +100,7 @@ Five new entries added to `src/cli/registry.ts` under `// ── v0.1.7 addition
 
 ---
 
-
-## [0.1.6] — 2026-03-17
+## [0.1.4] — 2026-03-17
 
 ### CLI
 
@@ -163,8 +162,7 @@ npx veloria-ui upgrade --check --json
 
 ---
 
-
-## [0.1.5] — 2026-03-17
+## [0.1.4] — 2026-03-17
 
 ### CLI
 

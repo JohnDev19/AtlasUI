@@ -17,6 +17,9 @@ const sharedExternal = [
   "clsx",
   "tailwind-merge",
   "class-variance-authority",
+  // tiptap — all packages are peer deps, never bundle them
+  /^@tiptap\/.*/,
+  "lowlight",
 ];
 
 const cliExternal = [
@@ -88,7 +91,7 @@ export default defineConfig([
   //   1. Keep "#!/usr/bin/env node" as the first line of src/cli/index.ts
   //   2. Set platform: "node" — tsup preserves the source shebang at
   //      byte 0 in the output and skips adding its own file header.
-    // bakit kasi ganun.
+  // bakit kasi ganun.
   //
   {
     entry:    { "cli/index": "src/cli/index.ts" },
