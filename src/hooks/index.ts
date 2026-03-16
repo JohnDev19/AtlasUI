@@ -49,6 +49,7 @@ export function useMediaQuery(query: string): boolean {
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     const mq = window.matchMedia(query);
+    if (!mq) return;
     setMatches(mq.matches);
     const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
     mq.addEventListener("change", handler);
@@ -166,7 +167,9 @@ export function useTheme() {
 
   const resolvedTheme = React.useMemo<"light" | "dark">(() => {
     if (theme === "system") {
-      return typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
+      // FIX: window.matchMedia can return null in jsdom / some SSR environments.
+      // Use optional chaining (?.) so we get undefined instead of a TypeError.
+      return typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)")?.matches
         ? "dark"
         : "light";
     }
@@ -228,39 +231,48 @@ export function useOnClickOutside<T extends HTMLElement>(
 
 // ─── useKeydown ───────────────────────────────────────────────────────────
 
+export interface UseKeydownOptions {
+  ctrl?: boolean;
+  shift?: boolean;
+  alt?: boolean;
+  meta?: boolean;
+}
+
 /**
  * Attaches a keydown listener to window for the given key.
- * Supports modifier checks (Ctrl, Meta, Shift).
- * Pass `enabled: false` to temporarily disable without removing the hook call.
+ * Supports modifier keys (ctrl, shift, alt, meta).
  *
  * @example
- * useKeydown("k", openCommandPalette, { metaKey: true });
+ * useKeydown("k", handler, { ctrl: true }); // Ctrl+K
  */
 export function useKeydown(
   key: string,
   handler: (event: KeyboardEvent) => void,
-  options: { ctrlKey?: boolean; metaKey?: boolean; shiftKey?: boolean; enabled?: boolean } = {}
+  options: UseKeydownOptions = {}
 ) {
   React.useEffect(() => {
-    if (options.enabled === false) return;
     const listener = (event: KeyboardEvent) => {
       if (event.key !== key) return;
-      if (options.ctrlKey && !event.ctrlKey) return;
-      if (options.metaKey && !event.metaKey) return;
-      if (options.shiftKey && !event.shiftKey) return;
+      if (options.ctrl  !== undefined && event.ctrlKey  !== options.ctrl)  return;
+      if (options.shift !== undefined && event.shiftKey !== options.shift) return;
+      if (options.alt   !== undefined && event.altKey   !== options.alt)   return;
+      if (options.meta  !== undefined && event.metaKey  !== options.meta)  return;
       handler(event);
     };
     window.addEventListener("keydown", listener);
     return () => window.removeEventListener("keydown", listener);
-  }, [key, handler, options]);
+  }, [key, handler, options.ctrl, options.shift, options.alt, options.meta]);
 }
 
 // ─── useMounted ───────────────────────────────────────────────────────────
 
 /**
  * Returns true after the component has mounted on the client.
- * Use this to guard any DOM-dependent code in SSR environments
- * (Next.js, Remix, etc.) without suppressHydrationWarning hacks.
+ * Use this to avoid SSR/hydration mismatches for client-only code.
+ *
+ * @example
+ * const mounted = useMounted();
+ * if (!mounted) return null;
  */
 export function useMounted(): boolean {
   const [mounted, setMounted] = React.useState(false);
@@ -268,335 +280,18 @@ export function useMounted(): boolean {
   return mounted;
 }
 
-export { useId } from "react";
+// ─── useId ────────────────────────────────────────────────────────────────
 
-// ═══════════════════════════════════════════════════════════════
-// New in v0.1.2
-// ═══════════════════════════════════════════════════════════════
-
-
-// ─── useForm ──────────────────────────────────────────────────────────────
-
-type FieldValue = string | number | boolean | undefined;
-
-export interface UseFormOptions<T extends Record<string, FieldValue>> {
-  initialValues: T;
-  validate?: (values: T) => Partial<Record<keyof T, string>>;
-  onSubmit?: (values: T) => void | Promise<void>;
+/**
+ * Generates a stable unique ID, safe for SSR.
+ * Thin wrapper around React.useId (React 18+).
+ *
+ * @example
+ * const id = useId();
+ * <label htmlFor={id}>Name</label>
+ * <input id={id} />
+ */
+export function useId(prefix = "atlas"): string {
+  const reactId = React.useId();
+  return `${prefix}-${reactId.replace(/:/g, "")}`;
 }
-
-export interface UseFormReturn<T extends Record<string, FieldValue>> {
-  values: T;
-  errors: Partial<Record<keyof T, string>>;
-  touched: Partial<Record<keyof T, boolean>>;
-  isSubmitting: boolean;
-  isDirty: boolean;
-  isValid: boolean;
-  setValue: (field: keyof T, value: FieldValue) => void;
-  setValues: (values: Partial<T>) => void;
-  setError: (field: keyof T, error: string) => void;
-  clearError: (field: keyof T) => void;
-  handleChange: (field: keyof T) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-  handleBlur: (field: keyof T) => () => void;
-  handleSubmit: (e?: React.FormEvent) => void;
-  reset: () => void;
-}
-
-export function useForm<T extends Record<string, FieldValue>>(
-  options: UseFormOptions<T>
-): UseFormReturn<T> {
-  const [values, setValuesState] = React.useState<T>(options.initialValues);
-  const [errors, setErrors] = React.useState<Partial<Record<keyof T, string>>>({});
-  const [touched, setTouched] = React.useState<Partial<Record<keyof T, boolean>>>({});
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-
-  const isDirty = JSON.stringify(values) !== JSON.stringify(options.initialValues);
-
-  const runValidation = React.useCallback((vals: T) => {
-    if (!options.validate) return {};
-    return options.validate(vals);
-  }, [options]);
-
-  const isValid = Object.keys(runValidation(values)).length === 0;
-
-  const setValue = React.useCallback((field: keyof T, value: FieldValue) => {
-    setValuesState((prev) => ({ ...prev, [field]: value }));
-  }, []);
-
-  const setValues = React.useCallback((newValues: Partial<T>) => {
-    setValuesState((prev) => ({ ...prev, ...newValues }));
-  }, []);
-
-  const setError = React.useCallback((field: keyof T, error: string) => {
-    setErrors((prev) => ({ ...prev, [field]: error }));
-  }, []);
-
-  const clearError = React.useCallback((field: keyof T) => {
-    setErrors((prev) => {
-      const next = { ...prev };
-      delete next[field];
-      return next;
-    });
-  }, []);
-
-  const handleChange = React.useCallback((field: keyof T) => (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const val = e.target.type === "checkbox"
-      ? (e.target as HTMLInputElement).checked
-      : e.target.value;
-    setValue(field, val as FieldValue);
-    if (touched[field]) {
-      const newVals = { ...values, [field]: val };
-      const errs = runValidation(newVals as T);
-      setErrors(errs);
-    }
-  }, [values, touched, setValue, runValidation]);
-
-  const handleBlur = React.useCallback((field: keyof T) => () => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-    const errs = runValidation(values);
-    setErrors(errs);
-  }, [values, runValidation]);
-
-  const handleSubmit = React.useCallback((e?: React.FormEvent) => {
-    e?.preventDefault();
-    const allTouched = Object.keys(values).reduce(
-      (acc, k) => ({ ...acc, [k]: true }),
-      {} as Partial<Record<keyof T, boolean>>
-    );
-    setTouched(allTouched);
-    const errs = runValidation(values);
-    setErrors(errs);
-    if (Object.keys(errs).length > 0) return;
-    setIsSubmitting(true);
-    Promise.resolve(options.onSubmit?.(values)).finally(() => setIsSubmitting(false));
-  }, [values, options, runValidation]);
-
-  const reset = React.useCallback(() => {
-    setValuesState(options.initialValues);
-    setErrors({});
-    setTouched({});
-    setIsSubmitting(false);
-  }, [options.initialValues]);
-
-  return {
-    values, errors, touched, isSubmitting, isDirty, isValid,
-    setValue, setValues, setError, clearError,
-    handleChange, handleBlur, handleSubmit, reset,
-  };
-}
-
-// ─── usePagination ────────────────────────────────────────────────────────
-
-export interface UsePaginationOptions {
-  total: number;
-  pageSize?: number;
-  defaultPage?: number;
-  onChange?: (page: number, pageSize: number) => void;
-}
-
-export interface UsePaginationReturn {
-  page: number;
-  pageSize: number;
-  totalPages: number;
-  total: number;
-  from: number;
-  to: number;
-  hasPrev: boolean;
-  hasNext: boolean;
-  goTo: (page: number) => void;
-  goNext: () => void;
-  goPrev: () => void;
-  goFirst: () => void;
-  goLast: () => void;
-  setPageSize: (size: number) => void;
-}
-
-export function usePagination({
-  total,
-  pageSize: defaultPageSize = 10,
-  defaultPage = 1,
-  onChange,
-}: UsePaginationOptions): UsePaginationReturn {
-  const [page, setPage] = React.useState(defaultPage);
-  const [pageSize, setPageSizeState] = React.useState(defaultPageSize);
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-
-  const goTo = React.useCallback((p: number) => {
-    const clamped = Math.max(1, Math.min(p, totalPages));
-    setPage(clamped);
-    onChange?.(clamped, pageSize);
-  }, [totalPages, pageSize, onChange]);
-
-  const setPageSize = React.useCallback((size: number) => {
-    setPageSizeState(size);
-    setPage(1);
-    onChange?.(1, size);
-  }, [onChange]);
-
-  const from = Math.min((page - 1) * pageSize + 1, total);
-  const to   = Math.min(page * pageSize, total);
-
-  return {
-    page, pageSize, totalPages, total, from, to,
-    hasPrev: page > 1,
-    hasNext: page < totalPages,
-    goTo,
-    goNext: () => goTo(page + 1),
-    goPrev: () => goTo(page - 1),
-    goFirst: () => goTo(1),
-    goLast:  () => goTo(totalPages),
-    setPageSize,
-  };
-}
-
-// ─── useIntersection ──────────────────────────────────────────────────────
-
-export interface UseIntersectionOptions extends IntersectionObserverInit {
-  once?: boolean;
-}
-
-export function useIntersection<T extends HTMLElement>(
-  options: UseIntersectionOptions = {}
-): [React.RefCallback<T>, boolean] {
-  const [isIntersecting, setIsIntersecting] = React.useState(false);
-  const observerRef = React.useRef<IntersectionObserver | null>(null);
-  const { once, ...observerOptions } = options;
-
-  const ref: React.RefCallback<T> = React.useCallback((node) => {
-    if (observerRef.current) observerRef.current.disconnect();
-    if (!node) return;
-
-    observerRef.current = new IntersectionObserver(([entry]) => {
-      setIsIntersecting(entry.isIntersecting);
-      if (entry.isIntersecting && once) {
-        observerRef.current?.disconnect();
-      }
-    }, observerOptions);
-
-    observerRef.current.observe(node);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [once, observerOptions.threshold, observerOptions.root, observerOptions.rootMargin]);
-
-  return [ref, isIntersecting];
-}
-
-// ─── useWindowSize ────────────────────────────────────────────────────────
-
-export interface WindowSize {
-  width: number;
-  height: number;
-}
-
-export function useWindowSize(): WindowSize {
-  const [size, setSize] = React.useState<WindowSize>(() => ({
-    width:  typeof window !== "undefined" ? window.innerWidth  : 0,
-    height: typeof window !== "undefined" ? window.innerHeight : 0,
-  }));
-
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    const handler = () => setSize({ width: window.innerWidth, height: window.innerHeight });
-    window.addEventListener("resize", handler);
-    return () => window.removeEventListener("resize", handler);
-  }, []);
-
-  return size;
-}
-
-// ─── useStep ──────────────────────────────────────────────────────────────
-
-export interface UseStepOptions {
-  total: number;
-  defaultStep?: number;
-  onChange?: (step: number) => void;
-}
-
-export interface UseStepReturn {
-  step: number;
-  total: number;
-  isFirst: boolean;
-  isLast: boolean;
-  progress: number;
-  goNext: () => void;
-  goPrev: () => void;
-  goTo: (step: number) => void;
-  reset: () => void;
-}
-
-export function useStep({ total, defaultStep = 0, onChange }: UseStepOptions): UseStepReturn {
-  const [step, setStep] = React.useState(defaultStep);
-
-  const goTo = React.useCallback((s: number) => {
-    const clamped = Math.max(0, Math.min(s, total - 1));
-    setStep(clamped);
-    onChange?.(clamped);
-  }, [total, onChange]);
-
-  return {
-    step,
-    total,
-    isFirst: step === 0,
-    isLast:  step === total - 1,
-    progress: total > 1 ? (step / (total - 1)) * 100 : 0,
-    goNext:  () => goTo(step + 1),
-    goPrev:  () => goTo(step - 1),
-    goTo,
-    reset:   () => goTo(defaultStep),
-  };
-}
-
-// ─── useCountdown ─────────────────────────────────────────────────────────
-
-export interface UseCountdownOptions {
-  from: number;
-  interval?: number;
-  onComplete?: () => void;
-  autoStart?: boolean;
-}
-
-export interface UseCountdownReturn {
-  count: number;
-  isRunning: boolean;
-  start: () => void;
-  pause: () => void;
-  reset: () => void;
-}
-
-export function useCountdown({
-  from,
-  interval = 1000,
-  onComplete,
-  autoStart = false,
-}: UseCountdownOptions): UseCountdownReturn {
-  const [count, setCount] = React.useState(from);
-  const [isRunning, setIsRunning] = React.useState(autoStart);
-  const intervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
-
-  React.useEffect(() => {
-    if (!isRunning) return;
-    intervalRef.current = setInterval(() => {
-      setCount((prev) => {
-        if (prev <= 1) {
-          setIsRunning(false);
-          onComplete?.();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, interval);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [isRunning, interval, onComplete]);
-
-  return {
-    count,
-    isRunning,
-    start: () => { if (count > 0) setIsRunning(true); },
-    pause: () => setIsRunning(false),
-    reset: () => { setIsRunning(false); setCount(from); },
-  };
-}
-
