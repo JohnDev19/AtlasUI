@@ -1,9 +1,12 @@
 import * as React from "react";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
-import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu";
-import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { cva } from "class-variance-authority";
 import { cn } from "../../utils/cn";
+
+// NavigationMenuPrimitive (@radix-ui/react-navigation-menu) removed — not
+// exported from the public API and causes TS2307 in pnpm non-hoisted envs.
+// TabsPrimitive (@radix-ui/react-tabs) replaced with plain HTML/ARIA
+// implementation so the import chain stays clean.
 
 // ─── Navbar ────────────────────────────────────────────────────────────────
 
@@ -18,7 +21,7 @@ const Navbar = React.forwardRef<HTMLElement, NavbarProps>(
     <header
       ref={ref}
       className={cn(
-        "atlas-navbar z-40 w-full",
+        "veloria-navbar z-40 w-full",
         sticky && "sticky top-0",
         bordered && "border-b border-border",
         blurred && "backdrop-blur-md bg-background/80 supports-[backdrop-filter]:bg-background/60",
@@ -46,7 +49,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
       ref={ref}
       aria-label="Sidebar navigation"
       className={cn(
-        "atlas-sidebar relative flex flex-col border-r border-border bg-background",
+        "veloria-sidebar relative flex flex-col border-r border-border bg-background",
         "transition-[width] duration-300 ease-in-out overflow-hidden shrink-0",
         collapsed && "!w-0 border-transparent",
         className
@@ -77,7 +80,7 @@ const MenuItem = React.forwardRef<HTMLDivElement, MenuItemProps>(
       aria-current={active ? "page" : undefined}
       aria-disabled={disabled}
       className={cn(
-        "atlas-menu-item flex items-center gap-3 px-3 py-2 rounded-md text-sm",
+        "veloria-menu-item flex items-center gap-3 px-3 py-2 rounded-md text-sm",
         "transition-colors duration-150 cursor-pointer select-none",
         active
           ? "bg-accent text-accent-foreground font-medium"
@@ -97,23 +100,18 @@ MenuItem.displayName = "MenuItem";
 
 const Menu = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      role="menu"
-      className={cn("atlas-menu flex flex-col gap-0.5 p-1", className)}
-      {...props}
-    />
+    <div ref={ref} role="menu" className={cn("veloria-menu flex flex-col gap-0.5 p-1", className)} {...props} />
   )
 );
 Menu.displayName = "Menu";
 
 // ─── DropdownMenu ─────────────────────────────────────────────────────────
 
-const DropdownMenu = DropdownMenuPrimitive.Root;
+const DropdownMenu        = DropdownMenuPrimitive.Root;
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
-const DropdownMenuGroup = DropdownMenuPrimitive.Group;
-const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
-const DropdownMenuSub = DropdownMenuPrimitive.Sub;
+const DropdownMenuGroup   = DropdownMenuPrimitive.Group;
+const DropdownMenuPortal  = DropdownMenuPrimitive.Portal;
+const DropdownMenuSub     = DropdownMenuPrimitive.Sub;
 const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
 const DropdownMenuContent = React.forwardRef<
@@ -125,7 +123,7 @@ const DropdownMenuContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        "atlas-dropdown-content z-50 min-w-[8rem] overflow-hidden rounded-md border border-border",
+        "veloria-dropdown-content z-50 min-w-[8rem] overflow-hidden rounded-md border border-border",
         "bg-popover p-1 text-popover-foreground shadow-md",
         "animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
@@ -165,11 +163,7 @@ const DropdownMenuSeparator = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>
 >(({ className, ...props }, ref) => (
-  <DropdownMenuPrimitive.Separator
-    ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-border", className)}
-    {...props}
-  />
+  <DropdownMenuPrimitive.Separator ref={ref} className={cn("-mx-1 my-1 h-px bg-border", className)} {...props} />
 ));
 DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName;
 
@@ -200,7 +194,7 @@ export interface BreadcrumbProps extends React.HTMLAttributes<HTMLElement> {
 
 const Breadcrumb = React.forwardRef<HTMLElement, BreadcrumbProps>(
   ({ className, items, separator, ...props }, ref) => (
-    <nav ref={ref} aria-label="Breadcrumb" className={cn("atlas-breadcrumb", className)} {...props}>
+    <nav ref={ref} aria-label="Breadcrumb" className={cn("veloria-breadcrumb", className)} {...props}>
       <ol className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
         {items.map((item, i) => (
           <li key={i} className="flex items-center gap-1">
@@ -214,14 +208,9 @@ const Breadcrumb = React.forwardRef<HTMLElement, BreadcrumbProps>(
               </span>
             )}
             {item.href && !item.current ? (
-              <a href={item.href} className="hover:text-foreground transition-colors">
-                {item.label}
-              </a>
+              <a href={item.href} className="hover:text-foreground transition-colors">{item.label}</a>
             ) : (
-              <span
-                className={cn(item.current && "text-foreground font-medium")}
-                aria-current={item.current ? "page" : undefined}
-              >
+              <span aria-current={item.current ? "page" : undefined} className={cn(item.current && "text-foreground font-medium")}>
                 {item.label}
               </span>
             )}
@@ -236,40 +225,27 @@ Breadcrumb.displayName = "Breadcrumb";
 // ─── Pagination ───────────────────────────────────────────────────────────
 
 export interface PaginationProps extends React.HTMLAttributes<HTMLElement> {
-  total: number;
   page: number;
-  pageSize?: number;
+  totalPages: number;
   onPageChange?: (page: number) => void;
   siblingCount?: number;
-  showEdges?: boolean;
 }
 
 const Pagination = React.forwardRef<HTMLElement, PaginationProps>(
-  ({ className, total, page, pageSize = 10, onPageChange, siblingCount = 1, showEdges = true, ...props }, ref) => {
-    const totalPages = Math.ceil(total / pageSize);
+  ({ className, page, totalPages, onPageChange, siblingCount = 1, ...props }, ref) => {
+    const pages: (number | "...")[] = [];
+    const delta = siblingCount;
 
-    const getPageNumbers = () => {
-      const pages: (number | "...")[] = [];
-      const delta = siblingCount;
-
-      for (let i = 1; i <= totalPages; i++) {
-        if (
-          i === 1 ||
-          i === totalPages ||
-          (i >= page - delta && i <= page + delta)
-        ) {
-          pages.push(i);
-        } else if (pages[pages.length - 1] !== "...") {
-          pages.push("...");
-        }
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= page - delta && i <= page + delta)) {
+        pages.push(i);
+      } else if (pages[pages.length - 1] !== "...") {
+        pages.push("...");
       }
-      return pages;
-    };
-
-    if (totalPages <= 1) return null;
+    }
 
     return (
-      <nav ref={ref} aria-label="Pagination" className={cn("atlas-pagination flex items-center gap-1", className)} {...props}>
+      <nav ref={ref} aria-label="Pagination" className={cn("veloria-pagination flex items-center gap-1", className)} {...props}>
         <button
           onClick={() => onPageChange?.(page - 1)}
           disabled={page <= 1}
@@ -280,7 +256,8 @@ const Pagination = React.forwardRef<HTMLElement, PaginationProps>(
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        {getPageNumbers().map((p, i) =>
+
+        {pages.map((p, i) =>
           p === "..." ? (
             <span key={`ellipsis-${i}`} className="px-1 text-sm text-muted-foreground">…</span>
           ) : (
@@ -290,15 +267,14 @@ const Pagination = React.forwardRef<HTMLElement, PaginationProps>(
               aria-current={p === page ? "page" : undefined}
               className={cn(
                 "h-8 min-w-[2rem] px-2 flex items-center justify-center rounded-md text-sm font-medium transition-colors",
-                p === page
-                  ? "bg-primary text-primary-foreground"
-                  : "border border-border hover:bg-accent"
+                p === page ? "bg-primary text-primary-foreground" : "border border-border hover:bg-accent"
               )}
             >
               {p}
             </button>
           )
         )}
+
         <button
           onClick={() => onPageChange?.(page + 1)}
           disabled={page >= totalPages}
@@ -306,7 +282,7 @@ const Pagination = React.forwardRef<HTMLElement, PaginationProps>(
           aria-label="Next page"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7 7 7" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
       </nav>
@@ -316,77 +292,154 @@ const Pagination = React.forwardRef<HTMLElement, PaginationProps>(
 Pagination.displayName = "Pagination";
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────
+// NOTE: Rewritten with plain HTML/ARIA instead of @radix-ui/react-tabs to
+// eliminate the import and prevent TS2307 in pnpm non-hoisted environments.
 
-const Tabs = TabsPrimitive.Root;
+type TabsVariant = "line" | "pills" | "enclosed";
 
-const TabsList = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List> & {
-    variant?: "line" | "pills" | "enclosed";
+interface TabsContextValue {
+  activeTab: string;
+  setActiveTab: (id: string) => void;
+  variant: TabsVariant;
+}
+
+const TabsContext = React.createContext<TabsContextValue>({
+  activeTab: "",
+  setActiveTab: () => undefined,
+  variant: "line",
+});
+
+export interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
+  defaultValue?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
+  variant?: TabsVariant;
+}
+
+const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
+  ({ className, defaultValue = "", value, onValueChange, variant = "line", children, ...props }, ref) => {
+    const [activeTab, setActiveTabInternal] = React.useState(value ?? defaultValue);
+
+    const setActiveTab = React.useCallback((id: string) => {
+      setActiveTabInternal(id);
+      onValueChange?.(id);
+    }, [onValueChange]);
+
+    React.useEffect(() => {
+      if (value !== undefined) setActiveTabInternal(value);
+    }, [value]);
+
+    return (
+      <TabsContext.Provider value={{ activeTab, setActiveTab, variant }}>
+        <div ref={ref} className={cn("veloria-tabs", className)} {...props}>
+          {children}
+        </div>
+      </TabsContext.Provider>
+    );
   }
->(({ className, variant = "line", ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn(
-      "atlas-tabs-list inline-flex items-center",
-      variant === "line" && "border-b border-border gap-0 w-full",
-      variant === "pills" && "gap-1 bg-muted p-1 rounded-lg",
-      variant === "enclosed" && "border border-border rounded-t-lg gap-0",
-      className
-    )}
-    {...props}
-  />
-));
-TabsList.displayName = TabsPrimitive.List.displayName;
+);
+Tabs.displayName = "Tabs";
 
-const TabsTrigger = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> & {
-    variant?: "line" | "pills" | "enclosed";
+export interface TabsListProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: TabsVariant;
+}
+
+const TabsList = React.forwardRef<HTMLDivElement, TabsListProps>(
+  ({ className, variant: variantProp, ...props }, ref) => {
+    const { variant: ctxVariant } = React.useContext(TabsContext);
+    const variant = variantProp ?? ctxVariant;
+    return (
+      <div
+        ref={ref}
+        role="tablist"
+        className={cn(
+          "veloria-tabs-list inline-flex items-center",
+          variant === "line"     && "border-b border-border gap-0 w-full",
+          variant === "pills"    && "gap-1 bg-muted p-1 rounded-lg",
+          variant === "enclosed" && "border border-border rounded-t-lg gap-0",
+          className
+        )}
+        {...props}
+      />
+    );
   }
->(({ className, variant = "line", ...props }, ref) => (
-  <TabsPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium",
-      "transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-      "disabled:pointer-events-none disabled:opacity-50",
-      variant === "line" && [
-        "px-4 py-2.5 border-b-2 border-transparent -mb-px",
-        "text-muted-foreground hover:text-foreground",
-        "data-[state=active]:border-primary data-[state=active]:text-foreground",
-      ],
-      variant === "pills" && [
-        "px-3 py-1.5 rounded-md text-muted-foreground",
-        "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
-      ],
-      variant === "enclosed" && [
-        "px-4 py-2 border-r last:border-r-0 border-border",
-        "text-muted-foreground hover:text-foreground bg-muted",
-        "data-[state=active]:bg-background data-[state=active]:text-foreground",
-      ],
-      className
-    )}
-    {...props}
-  />
-));
-TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
+);
+TabsList.displayName = "TabsList";
 
-const TabsContent = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content
-    ref={ref}
-    className={cn(
-      "atlas-tabs-content mt-4",
-      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-      className
-    )}
-    {...props}
-  />
-));
-TabsContent.displayName = TabsPrimitive.Content.displayName;
+export interface TabsTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  value: string;
+  variant?: TabsVariant;
+}
+
+const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
+  ({ className, value, variant: variantProp, children, ...props }, ref) => {
+    const { activeTab, setActiveTab, variant: ctxVariant } = React.useContext(TabsContext);
+    const variant = variantProp ?? ctxVariant;
+    const isActive = activeTab === value;
+
+    return (
+      <button
+        ref={ref}
+        role="tab"
+        type="button"
+        aria-selected={isActive}
+        data-state={isActive ? "active" : "inactive"}
+        onClick={() => setActiveTab(value)}
+        className={cn(
+          "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium",
+          "transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "disabled:pointer-events-none disabled:opacity-50",
+          variant === "line" && [
+            "px-4 py-2.5 border-b-2 border-transparent -mb-px",
+            "text-muted-foreground hover:text-foreground",
+            isActive && "border-primary text-foreground",
+          ],
+          variant === "pills" && [
+            "px-3 py-1.5 rounded-md text-muted-foreground",
+            isActive && "bg-background text-foreground shadow-sm",
+          ],
+          variant === "enclosed" && [
+            "px-4 py-2 border-r last:border-r-0 border-border bg-muted",
+            "text-muted-foreground hover:text-foreground",
+            isActive && "bg-background text-foreground",
+          ],
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </button>
+    );
+  }
+);
+TabsTrigger.displayName = "TabsTrigger";
+
+export interface TabsContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  value: string;
+}
+
+const TabsContent = React.forwardRef<HTMLDivElement, TabsContentProps>(
+  ({ className, value, children, ...props }, ref) => {
+    const { activeTab } = React.useContext(TabsContext);
+    if (activeTab !== value) return null;
+    return (
+      <div
+        ref={ref}
+        role="tabpanel"
+        data-state="active"
+        className={cn(
+          "veloria-tabs-content mt-4",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+TabsContent.displayName = "TabsContent";
 
 // ─── Stepper ──────────────────────────────────────────────────────────────
 
@@ -407,7 +460,7 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
     <div
       ref={ref}
       className={cn(
-        "atlas-stepper flex",
+        "veloria-stepper flex",
         orientation === "horizontal" ? "flex-row items-center" : "flex-col",
         className
       )}
@@ -417,23 +470,19 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
     >
       {steps.map((step, i) => {
         const status = i < current ? "complete" : i === current ? "current" : "upcoming";
-
         return (
           <React.Fragment key={i}>
             <div
               role="listitem"
               aria-current={status === "current" ? "step" : undefined}
-              className={cn(
-                "flex items-center gap-3",
-                orientation === "vertical" && "flex-col items-start",
-              )}
+              className={cn("flex items-center gap-3", orientation === "vertical" && "flex-col items-start")}
             >
               <div className={cn(
                 "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
                 "transition-colors border-2",
-                status === "complete" && "bg-primary border-primary text-primary-foreground",
-                status === "current" && "border-primary text-primary bg-primary/10",
-                status === "upcoming" && "border-border text-muted-foreground",
+                status === "complete"  && "bg-primary border-primary text-primary-foreground",
+                status === "current"   && "border-primary text-primary bg-primary/10",
+                status === "upcoming"  && "border-border text-muted-foreground",
               )}>
                 {status === "complete" ? (
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -442,20 +491,14 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                 ) : (step.icon ?? <span>{i + 1}</span>)}
               </div>
               <div className={orientation === "horizontal" ? "hidden sm:block" : ""}>
-                <p className={cn("text-sm font-medium", status === "upcoming" && "text-muted-foreground")}>
-                  {step.title}
-                </p>
-                {step.description && (
-                  <p className="text-xs text-muted-foreground">{step.description}</p>
-                )}
+                <p className={cn("text-sm font-medium", status === "upcoming" && "text-muted-foreground")}>{step.title}</p>
+                {step.description && <p className="text-xs text-muted-foreground">{step.description}</p>}
               </div>
             </div>
             {i < steps.length - 1 && (
               <div className={cn(
                 "transition-colors",
-                orientation === "horizontal"
-                  ? "flex-1 h-px mx-3"
-                  : "ml-4 w-px h-8",
+                orientation === "horizontal" ? "flex-1 h-px mx-3" : "ml-4 w-px h-8",
                 i < current ? "bg-primary" : "bg-border"
               )} aria-hidden="true" />
             )}
@@ -466,10 +509,6 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
   )
 );
 Stepper.displayName = "Stepper";
-
-// ─── CommandPalette ─────────────────────────────────────────────────────
-// Thin wrapper - full implementation in overlay/CommandDialog
-export { Stepper as CommandPalette } from "./index"; // Placeholder, see CommandDialog
 
 export {
   Navbar, Sidebar,

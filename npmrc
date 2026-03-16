@@ -1,0 +1,6 @@
+# Hoist @radix-ui packages to root node_modules so TypeScript and the
+# tsup DTS build worker can resolve their type declarations.
+# This is more targeted than shamefully-hoist=true (which hoists everything).
+public-hoist-pattern[]=@radix-ui/*
+public-hoist-pattern[]=cmdk
+auto-install-peers=true
