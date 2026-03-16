@@ -24,7 +24,6 @@ export interface RadialProgressChartProps extends React.HTMLAttributes<HTMLDivEl
   animated?: boolean;
 }
 
-// Fallback palette using design token colours
 const FALLBACK_COLORS = [
   "hsl(var(--primary))",
   "hsl(var(--success))",
@@ -51,7 +50,6 @@ const RadialProgressChart = React.forwardRef<HTMLDivElement, RadialProgressChart
 
     React.useEffect(() => {
       if (!animated) return;
-      // Small delay so the CSS transition fires after mount
       const t = setTimeout(() => setReady(true), 60);
       return () => clearTimeout(t);
     }, [animated]);
@@ -62,11 +60,10 @@ const RadialProgressChart = React.forwardRef<HTMLDivElement, RadialProgressChart
     const circumference = 2 * Math.PI * r;
 
     const total = segments.reduce((s, seg) => s + seg.value, 0) || 1;
-    // Gap between segments in circumference units (≈3 px rendered)
+    // wait, saan na 'yon. Yawa.
     const gapLen = segments.length > 1 ? Math.min(4, circumference * 0.02) : 0;
     const usableLen = circumference - gapLen * segments.length;
 
-    // Pre-compute offsets
     const offsets: number[] = [];
     let acc = 0;
     segments.forEach((seg) => {

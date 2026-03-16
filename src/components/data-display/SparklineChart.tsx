@@ -34,7 +34,6 @@ const SparklineChart = React.forwardRef<SVGSVGElement, SparklineChartProps>(
   ) => {
     const uid = React.useId().replace(/:/g, "");
 
-    // Need at least 2 points for a line
     if (data.length < 2) {
       return (
         <svg
@@ -74,7 +73,8 @@ const SparklineChart = React.forwardRef<SVGSVGElement, SparklineChartProps>(
     const linePath = pts
       .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`)
       .join(" ");
-
+      
+      // yawa dito ka lang pala.
     const areaPath =
       linePath +
       ` L ${pts[pts.length - 1].x.toFixed(2)} ${H} L ${pts[0].x.toFixed(2)} ${H} Z`;
