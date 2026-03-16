@@ -23,20 +23,25 @@ export { veloriaPlugin, veloriaPreset } from "./tailwind";
 
 // ─── Basic ────────────────────────────────────────────────────────────────
 export {
-  Button,
+  Button, buttonVariants,
   IconButton,
   Link,
-  Badge,
+  Badge, badgeVariants,
   Avatar,
   AvatarGroup,
   Divider,
   Tag,
   Chip,
   Tooltip,
+  TooltipProvider,
+  TooltipRoot,
+  TooltipTrigger,
+  TooltipContent,
 } from "./components/basic";
 export type {
   ButtonProps,
   IconButtonProps,
+  LinkProps,
   BadgeProps,
   AvatarProps,
   AvatarGroupProps,
@@ -44,7 +49,6 @@ export type {
   TagProps,
   ChipProps,
   TooltipProps,
-  TooltipProvider,
 } from "./components/basic";
 
 // ─── Layout ───────────────────────────────────────────────────────────────
@@ -66,8 +70,6 @@ export type {
   GridProps,
   FlexProps,
   SectionProps,
-  SpacerProps,
-  CenterProps,
   MasonryProps,
 } from "./components/layout";
 
@@ -85,7 +87,11 @@ export {
   DropdownMenuLabel,
   DropdownMenuGroup,
   DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
   DropdownMenuRadioGroup,
+  DropdownMenuCheckboxItem,
+  DropdownMenuRadioItem,
   Breadcrumb,
   Pagination,
   Tabs,
@@ -101,52 +107,78 @@ export {
 export type {
   NavbarProps,
   SidebarProps,
-  MenuProps,
   MenuItemProps,
   BreadcrumbProps,
   PaginationProps,
-  TabsProps,
   StepperProps,
+  CommandDialogProps,
 } from "./components/navigation";
 
 // ─── Forms ────────────────────────────────────────────────────────────────
 export {
-  Input,
+  Input, inputVariants,
   TextArea,
   Select,
+  SelectGroup,
+  SelectValue,
   SelectTrigger,
   SelectContent,
   SelectItem,
-  SelectValue,
+  SelectLabel,
+  SelectSeparator,
   Checkbox,
   RadioGroup,
-  RadioGroupItem,
   Switch,
   Slider,
   RangeSlider,
   DatePicker,
   TimePicker,
-  FileUpload,
-  OTPInput,
-  ColorPicker,
-  Combobox,
-  MultiSelect,
 } from "./components/forms";
 export type {
   InputProps,
   TextAreaProps,
   CheckboxProps,
+  RadioGroupProps,
+  RadioOption,
   SwitchProps,
-  SliderProps,
-  RangeSliderProps,
   DatePickerProps,
   TimePickerProps,
+} from "./components/forms";
+
+// ─── Advanced Forms ───────────────────────────────────────────────────────
+export {
+  FileUpload,
+  OTPInput,
+  ColorPicker,
+  SearchInput,
+  PasswordInput,
+  Combobox,
+  MultiSelect,
+  FormField,
+  FormLabel,
+  FormError,
+  PhoneInput,
+  TagInput,
+  CurrencyInput,
+  RatingInput,
+} from "./components/advanced-forms";
+export type {
   FileUploadProps,
   OTPInputProps,
   ColorPickerProps,
+  SearchInputProps,
+  PasswordInputProps,
+  ComboboxOption,
   ComboboxProps,
   MultiSelectProps,
-} from "./components/forms";
+  FormFieldProps,
+  FormLabelProps,
+  FormErrorProps,
+  PhoneInputProps,
+  TagInputProps,
+  CurrencyInputProps,
+  RatingInputProps,
+} from "./components/advanced-forms";
 
 // ─── Data Display ─────────────────────────────────────────────────────────
 export {
@@ -156,33 +188,49 @@ export {
   CardDescription,
   CardContent,
   CardFooter,
-  DataTable,
-  List,
-  ListItem,
-  Statistic,
-  Timeline,
-  TimelineItem,
-  Calendar,
-  CodeBlock,
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
   Table,
   TableHeader,
   TableBody,
   TableRow,
   TableHead,
   TableCell,
+  TableCaption,
+  DataTable,
+  List,
+  ListItem,
+  Statistic,
+  Timeline,
+  Calendar,
+  CodeBlock,
+  Chart,
+  StatsCard,
+  TreeView,
+  JsonViewer,
+  Heatmap,
+  KanbanBoard,
 } from "./components/data-display";
 export type {
   CardProps,
+  DataTableColumn,
   DataTableProps,
   ListProps,
+  ListItemProps,
   StatisticProps,
   TimelineEvent,
+  TimelineProps,
   CalendarProps,
   CodeBlockProps,
+  ChartProps,
+  StatsCardProps,
+  TreeNode,
+  TreeViewProps,
+  JsonViewerProps,
+  JsonValue,
+  HeatmapCell,
+  HeatmapProps,
+  KanbanCard,
+  KanbanColumn,
+  KanbanBoardProps,
 } from "./components/data-display";
 
 // ─── Feedback ─────────────────────────────────────────────────────────────
@@ -190,29 +238,44 @@ export {
   Alert,
   AlertTitle,
   AlertDescription,
-  Toast,
   ToastProvider,
   ToastViewport,
+  Toast,
   ToastTitle,
   ToastDescription,
   ToastClose,
   ToastAction,
-  Skeleton,
+  Snackbar,
   Progress,
-  Spinner,
+  CircularProgress,
+  Skeleton,
   LoadingSpinner,
   EmptyState,
   StatusIndicator,
   Notification,
+  BannerAlert,
+  ConfirmDialog,
+  FloatingActionButton,
+  RichTooltip,
+  Tour,
 } from "./components/feedback";
 export type {
   AlertProps,
-  SkeletonProps,
+  SnackbarProps,
   ProgressProps,
-  SpinnerProps,
+  CircularProgressProps,
+  SkeletonProps,
+  LoadingSpinnerProps,
   EmptyStateProps,
   StatusIndicatorProps,
   NotificationProps,
+  BannerAlertProps,
+  ConfirmDialogProps,
+  FABAction,
+  FloatingActionButtonProps,
+  RichTooltipProps,
+  TourStep,
+  TourProps,
 } from "./components/feedback";
 
 // ─── Overlay ──────────────────────────────────────────────────────────────
@@ -251,7 +314,7 @@ export {
 export type {
   ModalProps,
   DrawerProps,
-  CommandDialogProps,
+  CommandDialogProps as OverlayCommandDialogProps,
   LightboxProps,
 } from "./components/overlay";
 
@@ -279,6 +342,8 @@ export {
   KeyboardShortcut,
   ResizablePanel,
   DragDropArea,
+  InfiniteScroll,
+  VirtualList,
 } from "./components/utility";
 export type {
   ThemeSwitcherProps,
@@ -286,6 +351,8 @@ export type {
   KeyboardShortcutProps,
   ResizablePanelProps,
   DragDropAreaProps,
+  InfiniteScrollProps,
+  VirtualListProps,
 } from "./components/utility";
 
 // ─── Hooks ────────────────────────────────────────────────────────────────
@@ -301,44 +368,6 @@ export {
   useKeydown,
   useMounted,
   useId,
-} from "./hooks";
-export type { UseDisclosureOptions, UseClipboardOptions, VeloriaTheme } from "./hooks";
-
-export {
-  useToast,
-  ToastContextProvider,
-} from "./hooks/use-toast";
-export type { ToastVariant, ToastData, ToastInput } from "./hooks/use-toast";
-
-// ─── v0.1.2 — New Components ─────────────────────────────────────────────
-
-// Advanced Forms
-export { PhoneInput, TagInput, CurrencyInput, RatingInput } from "./components/advanced-forms";
-export type { PhoneInputProps, TagInputProps, CurrencyInputProps, RatingInputProps } from "./components/advanced-forms";
-
-// Data Display
-export { StatsCard, TreeView, JsonViewer, Heatmap, KanbanBoard } from "./components/data-display";
-export type {
-  StatsCardProps, TreeNode, TreeViewProps,
-  JsonViewerProps, JsonValue,
-  HeatmapCell, HeatmapProps,
-  KanbanCard, KanbanColumn, KanbanBoardProps,
-} from "./components/data-display";
-
-// Feedback & Overlay
-export { BannerAlert, ConfirmDialog, FloatingActionButton, RichTooltip, Tour } from "./components/feedback";
-export type {
-  BannerAlertProps, ConfirmDialogProps,
-  FABAction, FloatingActionButtonProps,
-  RichTooltipProps, TourStep, TourProps,
-} from "./components/feedback";
-
-// Utility
-export { InfiniteScroll, VirtualList } from "./components/utility";
-export type { InfiniteScrollProps, VirtualListProps } from "./components/utility";
-
-// ─── v0.1.2 — New Hooks ──────────────────────────────────────────────────
-export {
   useForm,
   usePagination,
   useIntersection,
@@ -347,9 +376,23 @@ export {
   useCountdown,
 } from "./hooks";
 export type {
-  UseFormOptions, UseFormReturn,
-  UsePaginationOptions, UsePaginationReturn,
-  UseIntersectionOptions, WindowSize,
-  UseStepOptions, UseStepReturn,
-  UseCountdownOptions, UseCountdownReturn,
+  UseDisclosureOptions,
+  UseClipboardOptions,
+  VeloriaTheme,
+  UseFormOptions,
+  UseFormReturn,
+  UsePaginationOptions,
+  UsePaginationReturn,
+  UseIntersectionOptions,
+  WindowSize,
+  UseStepOptions,
+  UseStepReturn,
+  UseCountdownOptions,
+  UseCountdownReturn,
 } from "./hooks";
+
+export {
+  useToast,
+  ToastContextProvider,
+} from "./hooks/use-toast";
+export type { ToastVariant, ToastData, ToastInput } from "./hooks/use-toast";

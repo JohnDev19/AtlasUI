@@ -3,11 +3,8 @@ import type { Config } from "tailwindcss";
 // tailwindcss is a peerDep — it lives in the consumer's node_modules, never
 // bundled into veloria-ui. We require() at runtime so tsup marks it external
 // correctly instead of trying to resolve it at build time.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const plugin = require("tailwindcss/plugin") as (
-  handler: Parameters<typeof import("tailwindcss/plugin")>[0],
-  config?: Parameters<typeof import("tailwindcss/plugin")>[1]
-) => ReturnType<typeof import("tailwindcss/plugin")>;
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-explicit-any
+const plugin = require("tailwindcss/plugin") as any;
 
 /**
  * Veloria UI Tailwind plugin.
@@ -24,7 +21,7 @@ const plugin = require("tailwindcss/plugin") as (
  *   presets: [veloriaPreset],
  */
 export const veloriaPlugin = plugin(
-  ({ addBase, addUtilities }) => {
+  ({ addBase, addUtilities }: { addBase: any; addUtilities: any }) => {
     addBase({
       "*": { "border-color": "hsl(var(--border))" },
       body: {
@@ -117,7 +114,8 @@ export const veloriaPlugin = plugin(
 
 /** Full preset — includes the plugin + darkMode: ["class"]. Recommended for new projects. */
 export const veloriaPreset: Partial<Config> = {
-  darkMode: ["class"],
+  // Cast needed because tailwindcss 4.x changed DarkModeStrategy tuple requirements
+  darkMode: ["class"] as unknown as Config["darkMode"],
   plugins: [veloriaPlugin],
 };
 
