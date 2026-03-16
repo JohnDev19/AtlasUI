@@ -1,6 +1,6 @@
 import { defineConfig } from "tsup";
 
-// Everything that ships as a peer dep or is only needed at
+// everything that ships as a peer dep or is only needed at
 // the consumer's build time goes here — never bundle these.
 const sharedExternal = [
   "react",
@@ -50,37 +50,55 @@ export default defineConfig([
  */`,
     },
   },
-  // ── AtlasProvider (separate entry, needs "use client") ──────────────────
+
+  // ── VeloriaProvider (separate entry, needs "use client") ────────────────
   {
-    entry: { provider: "src/provider.tsx" },
-    format: ["cjs", "esm"],
-    dts: true,
+    entry:     { provider: "src/provider.tsx" },
+    format:    ["cjs", "esm"],
+    dts:       true,
     sourcemap: true,
-    clean: false,
-    external: sharedExternal,
-    outDir: "dist",
+    clean:     false,
+    external:  sharedExternal,
+    outDir:    "dist",
   },
+
   // ── Tailwind plugin ─────────────────────────────────────────────────────
-  // tailwindcss itself must be external — it's a devDep of the consumer,
-  // not something we should bundle. Same with the /plugin subpath.
+  // tailwindcss itself must stay external — it is a devDep of the consumer.
   {
-    entry: { tailwind: "src/tailwind.ts" },
-    format: ["cjs"],
-    dts: true,
+    entry:     { tailwind: "src/tailwind.ts" },
+    format:    ["cjs"],
+    dts:       true,
     sourcemap: false,
-    clean: false,
-    external: ["tailwindcss", "tailwindcss/plugin"],
-    outDir: "dist",
+    clean:     false,
+    external:  ["tailwindcss", "tailwindcss/plugin"],
+    outDir:    "dist",
   },
+
   // ── CLI binary ──────────────────────────────────────────────────────────
+  //
+  // IMPORTANT — shebang handling:
+  //
+  // Do NOT use banner: { js: "#!/usr/bin/env node" } here.
+  // tsup's banner is appended after its own generated file header, which
+  // puts the shebang on line 2+. Node.js requires the shebang to be the
+  // very first bytes of the file (byte 0), otherwise it throws:
+  //   SyntaxError: Invalid or unexpected token
+  //
+  // Correct approach:
+  //   1. Keep "#!/usr/bin/env node" as the first line of src/cli/index.ts
+  //   2. Set platform: "node" — tsup preserves the source shebang at
+  //      byte 0 in the output and skips adding its own file header.
+    // bakit kasi ganun.
+  //
   {
-    entry: { "cli/index": "src/cli/index.ts" },
-    format: ["cjs"],
-    dts: false,
+    entry:    { "cli/index": "src/cli/index.ts" },
+    format:   ["cjs"],
+    platform: "node",        // tells tsup this is a Node binary
+    dts:      false,
     sourcemap: false,
-    clean: false,
-    outDir: "dist",
-    banner: { js: "#!/usr/bin/env node" },
+    clean:    false,
+    outDir:   "dist",
     external: cliExternal,
+    // no banner... shebang lives in src/cli/index.ts line 1
   },
 ]);
