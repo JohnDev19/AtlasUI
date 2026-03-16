@@ -20,6 +20,8 @@ const sharedExternal = [
   // tiptap — all packages are peer deps, never bundle them
   /^@tiptap\/.*/,
   "lowlight",
+  // react-hook-form — optional peer dep, never bundle it
+  "react-hook-form",
 ];
 
 const cliExternal = [
@@ -52,6 +54,19 @@ export default defineConfig([
  * MIT License
  */`,
     },
+  },
+
+  // ── RHF adapter (optional, only if react-hook-form is installed) ────────
+  {
+    entry:     { rhf: "src/rhf/index.ts" },
+    format:    ["cjs", "esm"],
+    dts:       true,
+    splitting: false,
+    sourcemap: true,
+    clean:     false,
+    treeshake: true,
+    external:  sharedExternal,
+    outDir:    "dist",
   },
 
   // ── VeloriaProvider (separate entry, needs "use client") ────────────────
