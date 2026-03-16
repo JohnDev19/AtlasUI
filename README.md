@@ -109,194 +109,51 @@ npx veloria-ui add card modal drawer toast
 npx veloria-ui list
 npx veloria-ui list --category forms
 
-# Compare your local copy to the latest version
+# Compare your local copy to the latest upstream version  ✨ new in v0.1.5
 npx veloria-ui diff button
+npx veloria-ui diff modal --context 6
+npx veloria-ui diff input --json
 ```
 
-After running `add`, a file like `components/ui/button/index.tsx` appears in your project. It re-exports from `veloria-ui` by default, or you can paste the full source in and go wild.
+### `diff` — upstream comparison
 
----
+`veloria-ui diff` is a first-of-its-kind feature in the React UI component space. After you've customised a component that was originally added via `veloria-ui add`, you can run diff at any time to see exactly what changed in the upstream source — without leaving your terminal.
 
-## Components
+```
+$ npx veloria-ui diff button
 
-### Basic (10)
-`Button` `IconButton` `Link` `Badge` `Avatar` `AvatarGroup` `Divider` `Tag` `Chip` `Tooltip`
+  diff  button
+  local     components/ui/button/index.tsx
+  upstream  https://raw.githubusercontent.com/JohnDev19/Veloria-UI/main/…
 
-> All interactive components now support a `classic` variant — beveled edges that mimic physical plastic or rubber with a tactile press effect.
+  +3 additions    -1 deletion
 
-### Layout (10)
-`Container` `Stack` `Grid` `Flex` `Section` `Spacer` `AspectRatio` `Center` `ScrollArea` `Masonry`
-
-### Navigation (10)
-`Navbar` `Sidebar` `Menu` `DropdownMenu` `Breadcrumb` `Pagination` `Tabs` `CommandPalette` `NavigationMenu` `Stepper`
-
-### Forms (12)
-`Input` `TextArea` `Select` `Checkbox` `RadioGroup` `Switch` `Slider` `RangeSlider` `DatePicker` `TimePicker` `NumberInput` `AvatarUpload`
-
-> `Select` now uses a fully custom animated dropdown — no OS picker. Includes scroll buttons, chevron animation, and directional slide-in/out transitions.
-
-### Advanced Forms (14)
-`FileUpload` `OTPInput` `ColorPicker` `SearchInput` `PasswordInput` `Combobox` `MultiSelect` `FormField` `FormLabel` `FormError` `PhoneInput` `TagInput` `CurrencyInput` `RatingInput`
-
-### Data Display (19)
-`Card` `Table` `DataTable` `List` `ListItem` `Statistic` `Timeline` `Calendar` `Chart` `CodeBlock` `StatsCard` `TreeView` `JsonViewer` `Heatmap` `KanbanBoard` `SparklineChart` `RadialProgressChart` `GaugeChart` `AuroraCard` `FileCard` `PricingCard`
-
-### Feedback (15)
-`Alert` `Toast` `Snackbar` `Progress` `CircularProgress` `Skeleton` `LoadingSpinner` `EmptyState` `StatusIndicator` `Notification` `BannerAlert` `ConfirmDialog` `FloatingActionButton` `RichTooltip` `Tour` `StepProgress`
-
-### Overlay (10)
-`Modal` `Dialog` `Drawer` `Popover` `HoverCard` `ContextMenu` `CommandDialog` `Sheet` `Lightbox` `ImageViewer`
-
-### Media (5)
-`Image` `VideoPlayer` `AudioPlayer` `Carousel` `Gallery`
-
-### Utility (8)
-`ThemeSwitcher` `CopyButton` `KeyboardShortcut` `ResizablePanel` `DragDropArea` `InfiniteScroll` `VirtualList` `TypewriterText`
-
----
-
-## New in v0.1.4
-
-### Charts
-
-```tsx
-import { SparklineChart, RadialProgressChart, GaugeChart } from "veloria-ui";
-
-// Inline trend line — slots into any stat card
-<SparklineChart data={[12, 18, 14, 22, 19, 28, 31]} color="hsl(var(--primary))" />
-
-// Animated multi-segment ring
-<RadialProgressChart
-  segments={[
-    { value: 65, label: "Series A", color: "#7F77DD" },
-    { value: 25, label: "Series B", color: "#1D9E75" },
-    { value: 10, label: "Series C", color: "#EF9F27" },
-  ]}
-  size={140}
-  centerLabel={<span className="text-lg font-bold">90%</span>}
-/>
-
-// Gauge with animated needle
-<GaugeChart value={72} label="CPU usage" size={200} />
+    12     const buttonVariants = cva(
+    13  -    "inline-flex items-center justify-center rounded-md text-sm",
+    14  +    "inline-flex items-center justify-center gap-2 rounded-md text-sm",
+    15       {
+   ···
+    31  +    loading: "opacity-70 cursor-wait",
+    32       },
 ```
 
-### Modern & Unique
+**How it works:**
+1. Fetches the latest source directly from the GitHub raw API — no npm round-trip.
+2. Locates your local copy via `veloria.config.json` (falls back to common paths).
+3. Runs a Myers diff (the same algorithm Git uses) and renders unified-style hunks.
 
-```tsx
-import { AuroraCard, TypewriterText } from "veloria-ui";
+**Flags:**
 
-// Dark card with mouse-reactive aurora blobs
-<AuroraCard className="p-8 text-white">
-  <h2 className="text-2xl font-bold">Ship faster</h2>
-  <p className="mt-2 text-white/70">Aurora reacts to your cursor.</p>
-</AuroraCard>
-
-// Typewriter cycling through strings
-<TypewriterText
-  strings={["Build anything.", "Ship faster.", "Dark mode ready."]}
-  speed={80}
-  pause={2000}
-/>
-```
-
-### New Form Components
-
-```tsx
-import { NumberInput, AvatarUpload } from "veloria-ui";
-
-<NumberInput value={qty} onChange={setQty} min={1} max={99} step={1} size="md" />
-
-<AvatarUpload
-  value={avatarUrl}
-  onChange={(file, preview) => upload(file)}
-  onRemove={() => setAvatarUrl(undefined)}
-  maxSize={2 * 1024 * 1024}
-  fallback="JD"
-  size="lg"
-/>
-```
-
-### StepProgress
-
-```tsx
-import { StepProgress } from "veloria-ui";
-
-<StepProgress steps={4} current={2} showLabel size="md" />
-// → Step 2 of 4 · 50%
-```
-
-### PricingCard & FileCard
-
-```tsx
-import { PricingCard, FileCard } from "veloria-ui";
-
-<PricingCard
-  name="Pro"
-  price={29}
-  period="/month"
-  description="For teams that ship fast."
-  popular
-  features={[
-    { label: "Unlimited projects", included: true },
-    { label: "Priority support", included: true },
-    { label: "Custom domain", included: false },
-  ]}
-  onCtaClick={() => checkout("pro")}
-/>
-
-<FileCard
-  filename="Q4_report_final.pdf"
-  size={2.4 * 1024 * 1024}
-  progress={100}
-  onDownload={() => download()}
-  onRemove={() => remove()}
-/>
-```
-
----
-
-## Classic variant
-
-All interactive components now accept `variant="classic"` — a beveled style that mimics physical plastic or rubber:
-
-```tsx
-<Button variant="classic">Classic button</Button>
-<Badge variant="classic" color="success">New</Badge>
-<Card variant="classic" interactive>Classic card</Card>
-<Chip classic>Filter</Chip>
-```
-
----
-
-## Hooks
-
-```tsx
-import {
-  useDisclosure,     // open/close state for modals, drawers, anything toggle
-  useMediaQuery,     // subscribe to any CSS media query
-  useBreakpoint,     // Tailwind breakpoint detection (sm, md, lg, xl, 2xl)
-  useClipboard,      // clipboard copy with "copied!" feedback
-  useLocalStorage,   // useState that persists to localStorage
-  useTheme,          // read/set light · dark · system theme
-  useDebounce,       // debounce any value — perfect for search inputs
-  useOnClickOutside, // detect clicks outside a ref'd element
-  useKeydown,        // keyboard shortcut listener with modifier support
-  useMounted,        // SSR-safe mount check
-  useToast,          // fire toasts programmatically
-  useForm,           // form state + validation, no dependencies
-  usePagination,     // pagination logic decoupled from UI
-  useIntersection,   // IntersectionObserver wrapper
-  useWindowSize,     // reactive viewport dimensions, SSR-safe
-  useStep,           // multi-step wizard state
-  useCountdown,      // countdown timer with start/pause/reset
-} from "veloria-ui";
-```
+| Flag | Description |
+|------|-------------|
+| `--context <n>` | Lines of context around each change (default: `3`) |
+| `--json` | Output machine-readable JSON — useful in CI |
 
 ---
 
 ## Theming
 
-All colors are CSS custom properties. Override them in your global CSS:
+Override them in your global CSS:
 
 ```css
 :root {
@@ -361,8 +218,20 @@ veloria-ui/
 
 ## Contributing
 
-Issues and PRs welcome.
+Issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 → [github.com/JohnDev19/Veloria-UI/issues](https://github.com/JohnDev19/Veloria-UI/issues)
+
+---
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for our vulnerability disclosure policy.
+
+---
+
+## Code of Conduct
+
+This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). Be kind.
 
 ---
 
@@ -373,5 +242,5 @@ MIT © [JohnDev19](https://github.com/JohnDev19)
 ---
 
 <div align="center">
-  <sub>Built by JohnDev19</sub>
+  <sub>Built by JohnDev19 · v0.1.5</sub>
 </div>

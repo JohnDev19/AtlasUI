@@ -429,3 +429,20 @@ export type { StepProgressProps } from "./components/feedback";
 // Utility
 export { TypewriterText } from "./components/utility";
 export type { TypewriterTextProps } from "./components/utility";
+
+// ─── v0.1.7 — New Components ─────────────────────────────────────────────
+
+export { DataGrid } from "./components/data-display";
+export type { DataGridColumn, DataGridProps } from "./components/data-display";
+
+export { DateRangePicker } from "./components/forms";
+export type { DateRange, DateRangePickerProps } from "./components/forms";
+
+export { RichTextEditor } from "./components/advanced-forms";
+export type { RichTextEditorProps } from "./components/advanced-forms";
+
+export { MultiStepForm, MultiStepFormStepPanel, MultiStepFormNav, useMultiStepForm } from "./components/advanced-forms";
+export type { MultiStepFormStep, MultiStepFormProps, MultiStepFormContextValue, MultiStepFormNavProps, MultiStepFormStepPanelProps } from "./components/advanced-forms";
+
+export { CommandBar, useCommandBar } from "./components/overlay";
+export type { CommandBarAction, CommandBarProps } from "./components/overlay";

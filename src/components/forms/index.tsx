@@ -646,6 +646,9 @@ export type { NumberInputProps } from "./NumberInput";
 export { AvatarUpload } from "./AvatarUpload";
 export type { AvatarUploadProps } from "./AvatarUpload";
 
+export { DateRangePicker } from "./DateRangePicker";
+export type { DateRange, DateRangePickerProps } from "./DateRangePicker";
+
 // ─── Exports ───────────────────────────────────────────────────────────────
 
 export {

@@ -958,6 +958,12 @@ const RatingInput = React.forwardRef<HTMLDivElement, RatingInputProps>(
 );
 RatingInput.displayName = "RatingInput";
 
+export { RichTextEditor } from "./RichTextEditor";
+export type { RichTextEditorProps } from "./RichTextEditor";
+
+export { MultiStepForm, MultiStepFormStepPanel, MultiStepFormNav, useMultiStepForm } from "./MultiStepForm";
+export type { MultiStepFormStep, MultiStepFormProps, MultiStepFormContextValue, MultiStepFormNavProps, MultiStepFormStepPanelProps } from "./MultiStepForm";
+
 
 export {
 

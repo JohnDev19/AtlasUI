@@ -1136,6 +1136,9 @@ export type { GaugeZone, GaugeChartProps } from "./GaugeChart";
 export { FileCard } from "./FileCard";
 export type { FileCardProps } from "./FileCard";
 
+export { DataGrid } from "./DataGrid";
+export type { DataGridColumn, DataGridProps } from "./DataGrid";
+
 export { PricingCard } from "./PricingCard";
 export type { PricingFeature, PricingCardProps } from "./PricingCard";
 

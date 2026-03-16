@@ -12,7 +12,6 @@ export interface ComponentMeta {
   category: Category;
   description: string;
   deps: string[];
-  /** Other veloria-ui components this one depends on */
   registryDeps?: string[];
 }
 
@@ -29,6 +28,7 @@ export type Category =
   | "utility";
 
 export const REGISTRY: ComponentMeta[] = [
+
   // ── Basic ──────────────────────────────────────────────────────────────
   { name: "button",             category: "basic",          description: "Solid, outline, ghost, soft, link, classic, danger variants. Loading state, icon slots.", deps: ["@radix-ui/react-slot", "class-variance-authority", "clsx", "tailwind-merge"] },
   { name: "icon-button",        category: "basic",          description: "Square or circular icon-only button including classic bevel variant.", deps: ["@radix-ui/react-slot", "class-variance-authority", "clsx", "tailwind-merge"] },
@@ -171,6 +171,48 @@ export const REGISTRY: ComponentMeta[] = [
   { name: "avatar-upload",      category: "forms",          description: "Avatar circle with hover camera overlay, instant preview, and size validation.", deps: [] },
   { name: "step-progress",      category: "feedback",       description: "Animated segmented progress bar for multi-step checkout and onboarding flows.", deps: [] },
   { name: "typewriter-text",    category: "utility",        description: "Cycles through strings with character-by-character typing and deleting animation.", deps: [] },
+
+  // ── v0.1.7 additions ───────────────────────────────────────────────────
+  {
+    name: "data-grid",
+    category: "data-display",
+    description: "Spreadsheet-grade grid with column resizing, row virtualisation, inline editing, multi-column sorting, and copy-paste.",
+    deps: [],
+  },
+  {
+    name: "rich-text-editor",
+    category: "advanced-forms",
+    description: "Tiptap-based editor with toolbar, bubble menu, headings, lists, code blocks, links, text alignment, and undo/redo.",
+    deps: [
+      "@tiptap/react",
+      "@tiptap/starter-kit",
+      "@tiptap/extension-placeholder",
+      "@tiptap/extension-link",
+      "@tiptap/extension-underline",
+      "@tiptap/extension-text-align",
+      "@tiptap/extension-code-block-lowlight",
+      "lowlight",
+    ],
+  },
+  {
+    name: "date-range-picker",
+    category: "forms",
+    description: "Two-calendar date range selector with hover preview, keyboard nav, min/max constraints, and clear button.",
+    deps: ["@radix-ui/react-popover"],
+  },
+  {
+    name: "command-bar",
+    category: "overlay",
+    description: "Persistent ⌘K command bar with grouped actions, recent items, keyboard shortcut hints, and live search.",
+    deps: ["cmdk", "@radix-ui/react-dialog"],
+    registryDeps: ["command-dialog"],
+  },
+  {
+    name: "multi-step-form",
+    category: "advanced-forms",
+    description: "Compound component wrapping per-step validation, shared form state, animated transitions, and a progress stepper.",
+    deps: [],
+  },
 ];
 
 export const COMPONENTS_BY_NAME = new Map(REGISTRY.map((c) => [c.name, c]));

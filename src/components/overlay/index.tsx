@@ -457,6 +457,9 @@ Lightbox.displayName = "Lightbox";
 
 const ImageViewer = Lightbox;
 
+export { CommandBar, useCommandBar } from "./CommandBar";
+export type { CommandBarAction, CommandBarProps } from "./CommandBar";
+
 export {
   Modal,
   Dialog, DialogTrigger, DialogPortal, DialogOverlay, DialogClose,
