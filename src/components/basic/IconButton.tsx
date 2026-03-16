@@ -19,6 +19,13 @@ const iconButtonVariants = cva(
         ghost: "bg-transparent hover:bg-accent hover:text-accent-foreground",
         soft: "bg-primary/10 text-primary hover:bg-primary/20",
         danger: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        /**
+         * Classic — tactile beveled icon button mimicking physical plastic/rubber.
+         * Top-left edge highlighted, bottom-right edge shadowed.
+         * Bevel inverts on press to simulate a physical click-down.
+         */
+        classic:
+          "veloria-classic bg-secondary text-secondary-foreground border border-border/60 hover:brightness-[0.97] active:veloria-classic-pressed active:scale-[0.96]",
       },
       size: {
         xs: "h-6 w-6 [&>svg]:h-3 [&>svg]:w-3",

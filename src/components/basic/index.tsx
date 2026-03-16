@@ -1,14 +1,12 @@
-// ─── Link ─────────────────────────────────────────────────────────────────
-
 import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 import * as SeparatorPrimitive from "@radix-ui/react-separator";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../utils/cn";
 
-// ─── Link ─────────────────────────────────────────────────────────────────
+// ─── Link ──────────────────────────────────────────────────────────────────
 
 export interface LinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   asChild?: boolean;
@@ -67,6 +65,11 @@ const badgeVariants = cva(
         outline: "border border-current bg-transparent",
         soft: "bg-primary/10 text-primary",
         neutral: "bg-muted text-muted-foreground",
+        /**
+         * Classic — raised bevel badge. Highlights on top-left, shadow on
+         * bottom-right, mimicking a physical embossed label or rubber stamp.
+         */
+        classic: "veloria-classic bg-secondary text-secondary-foreground border border-border/50",
       },
       size: {
         sm: "px-1.5 py-0.5 text-[10px]",
@@ -91,6 +94,12 @@ const badgeVariants = cva(
       { variant: "soft", color: "warning", className: "bg-warning/10 text-warning" },
       { variant: "soft", color: "danger", className: "bg-destructive/10 text-destructive" },
       { variant: "soft", color: "info", className: "bg-info/10 text-info" },
+      // Classic color tints — keep the bevel, tint the background
+      { variant: "classic", color: "success",  className: "bg-success/15 text-success" },
+      { variant: "classic", color: "warning",  className: "bg-warning/15 text-warning" },
+      { variant: "classic", color: "danger",   className: "bg-destructive/15 text-destructive" },
+      { variant: "classic", color: "info",     className: "bg-info/15 text-info" },
+      { variant: "classic", color: "primary",  className: "bg-primary/15 text-primary" },
     ],
     defaultVariants: {
       variant: "soft",
@@ -108,9 +117,16 @@ export interface BadgeProps
 
 const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
   ({ className, variant, size, color, dot, children, ...props }, ref) => (
-    <span ref={ref} className={cn(badgeVariants({ variant, size, color, className }))} {...props}>
+    <span
+      ref={ref}
+      className={cn(badgeVariants({ variant, size, color, className }))}
+      {...props}
+    >
       {dot && (
-        <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
+        <span
+          className="inline-block h-1.5 w-1.5 rounded-full bg-current shrink-0"
+          aria-hidden="true"
+        />
       )}
       {children}
     </span>
@@ -118,9 +134,9 @@ const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
 );
 Badge.displayName = "Badge";
 
-// ─── Avatar ────────────────────────────────────────────────────────────────
+// ─── Avatar ─────────────────────────────────────────────────────────────────
 
-const avatarSizes = {
+const sizeMap = {
   xs: "h-6 w-6 text-[10px]",
   sm: "h-8 w-8 text-xs",
   md: "h-10 w-10 text-sm",
@@ -129,26 +145,33 @@ const avatarSizes = {
   "2xl": "h-20 w-20 text-xl",
 };
 
+const statusMap = {
+  online: "bg-success",
+  offline: "bg-muted-foreground",
+  busy: "bg-destructive",
+  away: "bg-warning",
+};
+
 export interface AvatarProps
   extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> {
   src?: string;
   alt?: string;
-  fallback?: string;
-  size?: keyof typeof avatarSizes;
+  fallback?: React.ReactNode;
+  size?: keyof typeof sizeMap;
+  status?: keyof typeof statusMap;
   shape?: "circle" | "square";
-  status?: "online" | "offline" | "busy" | "away";
 }
 
 const Avatar = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,
   AvatarProps
->(({ className, src, alt, fallback, size = "md", shape = "circle", status, ...props }, ref) => (
-  <div className="atlas-avatar relative inline-flex shrink-0">
+>(({ className, src, alt, fallback, size = "md", status, shape = "circle", ...props }, ref) => (
+  <span className="atlas-avatar relative inline-flex shrink-0">
     <AvatarPrimitive.Root
       ref={ref}
       className={cn(
         "relative flex shrink-0 overflow-hidden",
-        avatarSizes[size],
+        sizeMap[size],
         shape === "circle" ? "rounded-full" : "rounded-md",
         className
       )}
@@ -156,73 +179,64 @@ const Avatar = React.forwardRef<
     >
       <AvatarPrimitive.Image
         src={src}
-        alt={alt}
+        alt={alt ?? ""}
         className="aspect-square h-full w-full object-cover"
       />
       <AvatarPrimitive.Fallback
-        className={cn(
-          "flex h-full w-full items-center justify-center",
-          "bg-muted font-medium text-muted-foreground uppercase"
-        )}
+        className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground font-medium"
       >
-        {fallback ?? (alt ? alt.slice(0, 2) : "?")}
+        {fallback}
       </AvatarPrimitive.Fallback>
     </AvatarPrimitive.Root>
     {status && (
       <span
-        aria-label={`Status: ${status}`}
         className={cn(
           "absolute bottom-0 right-0 block rounded-full ring-2 ring-background",
-          size === "xs" || size === "sm" ? "h-2 w-2" : "h-2.5 w-2.5",
-          status === "online" && "bg-success",
-          status === "offline" && "bg-muted-foreground",
-          status === "busy" && "bg-destructive",
-          status === "away" && "bg-warning"
+          statusMap[status],
+          size === "xs" || size === "sm" ? "h-1.5 w-1.5" : "h-2.5 w-2.5"
         )}
+        aria-label={status}
       />
     )}
-  </div>
+  </span>
 ));
 Avatar.displayName = "Avatar";
 
-// ─── AvatarGroup ──────────────────────────────────────────────────────────
+// ─── AvatarGroup ─────────────────────────────────────────────────────────────
 
-export interface AvatarGroupProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "size"> {
+export interface AvatarGroupProps extends React.HTMLAttributes<HTMLDivElement> {
+  avatars: Array<{ src?: string; alt?: string; fallback?: React.ReactNode }>;
   max?: number;
   size?: AvatarProps["size"];
-  spacing?: "tight" | "normal" | "loose";
 }
 
 const AvatarGroup = React.forwardRef<HTMLDivElement, AvatarGroupProps>(
-  ({ className, children, max, size = "md", spacing = "tight", ...props }, ref) => {
-    const validChildren = React.Children.toArray(children).filter(React.isValidElement);
-    const visible = max ? validChildren.slice(0, max) : validChildren;
-    const overflow = max ? validChildren.length - max : 0;
-
-    const spacingMap = { tight: "-space-x-2", normal: "-space-x-1", loose: "space-x-1" };
-
+  ({ className, avatars, max = 4, size = "md", ...props }, ref) => {
+    const visible = avatars.slice(0, max);
+    const overflow = avatars.length - max;
     return (
       <div
         ref={ref}
-        className={cn("atlas-avatar-group flex items-center", spacingMap[spacing], className)}
+        className={cn("atlas-avatar-group flex -space-x-2", className)}
         {...props}
       >
-        {visible.map((child, i) =>
-          React.cloneElement(child as React.ReactElement<AvatarProps>, {
-            key: i,
-            size,
-            className: cn(
-              "ring-2 ring-background",
-              (child as React.ReactElement<AvatarProps>).props.className
-            ),
-          })
-        )}
+        {visible.map((av, i) => (
+          <Avatar
+            key={i}
+            src={av.src}
+            alt={av.alt}
+            fallback={av.fallback}
+            size={size}
+            className="ring-2 ring-background"
+          />
+        ))}
         {overflow > 0 && (
           <span
             className={cn(
-              "atlas-avatar relative flex shrink-0 items-center justify-center rounded-full",
+              "relative inline-flex items-center justify-center rounded-full",
               "bg-muted text-muted-foreground font-medium ring-2 ring-background",
-              avatarSizes[size]
+              sizeMap[size],
+              "text-[10px]"
             )}
             aria-label={`${overflow} more`}
           >
@@ -235,59 +249,54 @@ const AvatarGroup = React.forwardRef<HTMLDivElement, AvatarGroupProps>(
 );
 AvatarGroup.displayName = "AvatarGroup";
 
-// ─── Divider ──────────────────────────────────────────────────────────────
+// ─── Divider ──────────────────────────────────────────────────────────────────
 
 export interface DividerProps
   extends React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root> {
   label?: React.ReactNode;
-  labelPosition?: "left" | "center" | "right";
 }
 
 const Divider = React.forwardRef<
   React.ElementRef<typeof SeparatorPrimitive.Root>,
   DividerProps
->(
-  ({ className, orientation = "horizontal", label, labelPosition = "center", ...props }, ref) => {
-    if (!label) {
-      return (
+>(({ className, label, orientation = "horizontal", ...props }, ref) => {
+  if (label && orientation !== "vertical") {
+    return (
+      <div className={cn("atlas-divider flex items-center gap-3", className)}>
         <SeparatorPrimitive.Root
           ref={ref}
-          orientation={orientation}
-          className={cn(
-            "atlas-divider shrink-0 bg-border",
-            orientation === "horizontal" ? "h-px w-full" : "h-full w-px",
-            className
-          )}
+          className="shrink grow border-none bg-border h-px"
           {...props}
         />
-      );
-    }
-
-    return (
-      <div
-        className={cn(
-          "atlas-divider relative flex items-center gap-3 w-full",
-          className
-        )}
-        role="separator"
-      >
-        {labelPosition !== "left" && <span className="flex-1 bg-border h-px" />}
         <span className="text-xs text-muted-foreground whitespace-nowrap">{label}</span>
-        {labelPosition !== "right" && <span className="flex-1 bg-border h-px" />}
+        <SeparatorPrimitive.Root className="shrink grow border-none bg-border h-px" />
       </div>
     );
   }
-);
+
+  return (
+    <SeparatorPrimitive.Root
+      ref={ref}
+      orientation={orientation}
+      className={cn(
+        "atlas-divider shrink-0 bg-border",
+        orientation === "horizontal" ? "h-px w-full" : "h-full w-px",
+        className
+      )}
+      {...props}
+    />
+  );
+});
 Divider.displayName = "Divider";
 
-// ─── Tag ──────────────────────────────────────────────────────────────────
+// ─── Tag ──────────────────────────────────────────────────────────────────────
 
-export interface TagProps extends Omit<React.HTMLAttributes<HTMLSpanElement>, "color" | "size"> {
+export interface TagProps extends React.HTMLAttributes<HTMLSpanElement> {
   closable?: boolean;
   onClose?: () => void;
   icon?: React.ReactNode;
   size?: "sm" | "md" | "lg";
-  variant?: "solid" | "outline" | "soft";
+  variant?: "solid" | "outline" | "soft" | "classic";
   color?: "primary" | "success" | "warning" | "danger" | "neutral";
 }
 
@@ -300,13 +309,26 @@ const Tag = React.forwardRef<HTMLSpanElement, TagProps>(
         size === "sm" && "px-1.5 py-0.5 text-[10px]",
         size === "md" && "px-2 py-1 text-xs",
         size === "lg" && "px-3 py-1.5 text-sm",
-        variant === "soft" && color === "neutral" && "bg-muted text-muted-foreground",
-        variant === "soft" && color === "primary" && "bg-primary/10 text-primary",
-        variant === "soft" && color === "success" && "bg-success/10 text-success",
-        variant === "soft" && color === "warning" && "bg-warning/10 text-warning",
-        variant === "soft" && color === "danger" && "bg-destructive/10 text-destructive",
+        // soft
+        variant === "soft" && color === "neutral"  && "bg-muted text-muted-foreground",
+        variant === "soft" && color === "primary"  && "bg-primary/10 text-primary",
+        variant === "soft" && color === "success"  && "bg-success/10 text-success",
+        variant === "soft" && color === "warning"  && "bg-warning/10 text-warning",
+        variant === "soft" && color === "danger"   && "bg-destructive/10 text-destructive",
+        // outline
         variant === "outline" && "border border-current bg-transparent",
+        // solid
         variant === "solid" && color === "neutral" && "bg-muted-foreground text-background",
+        variant === "solid" && color === "primary" && "bg-primary text-primary-foreground",
+        variant === "solid" && color === "success" && "bg-success text-success-foreground",
+        variant === "solid" && color === "warning" && "bg-warning text-warning-foreground",
+        variant === "solid" && color === "danger"  && "bg-destructive text-destructive-foreground",
+        // classic — beveled edges, tactile plastic/rubber feel
+        variant === "classic" && "veloria-classic border border-border/50 bg-secondary text-secondary-foreground",
+        variant === "classic" && color === "primary" && "bg-primary/15 text-primary border-primary/30",
+        variant === "classic" && color === "success" && "bg-success/15 text-success border-success/30",
+        variant === "classic" && color === "warning" && "bg-warning/15 text-warning border-warning/30",
+        variant === "classic" && color === "danger"  && "bg-destructive/15 text-destructive border-destructive/30",
         className
       )}
       {...props}
@@ -339,10 +361,12 @@ export interface ChipProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
   closable?: boolean;
   onClose?: (e: React.MouseEvent) => void;
   size?: "sm" | "md" | "lg";
+  /** Use the classic bevel style instead of the default flat selection style */
+  classic?: boolean;
 }
 
 const Chip = React.forwardRef<HTMLButtonElement, ChipProps>(
-  ({ className, selected, avatar, icon, closable, onClose, size = "md", children, ...props }, ref) => (
+  ({ className, selected, avatar, icon, closable, onClose, size = "md", classic: isClassic = false, children, ...props }, ref) => (
     <button
       ref={ref}
       type="button"
@@ -354,9 +378,15 @@ const Chip = React.forwardRef<HTMLButtonElement, ChipProps>(
         size === "sm" && "h-6 px-2 text-xs",
         size === "md" && "h-8 px-3 text-sm",
         size === "lg" && "h-9 px-4 text-sm",
-        selected
-          ? "bg-primary text-primary-foreground border-primary"
-          : "bg-background text-foreground border-border hover:bg-accent",
+        isClassic
+          ? cn(
+              "veloria-classic bg-secondary text-secondary-foreground border-border/60",
+              "hover:brightness-[0.97] active:veloria-classic-pressed",
+              selected && "bg-primary/15 text-primary border-primary/40"
+            )
+          : selected
+            ? "bg-primary text-primary-foreground border-primary"
+            : "bg-background text-foreground border-border hover:bg-accent",
         className
       )}
       aria-pressed={selected}
@@ -386,9 +416,7 @@ Chip.displayName = "Chip";
 // ─── Tooltip ──────────────────────────────────────────────────────────────
 
 const TooltipProvider = TooltipPrimitive.Provider;
-
 const TooltipRoot = TooltipPrimitive.Root;
-
 const TooltipTrigger = TooltipPrimitive.Trigger;
 
 const TooltipContent = React.forwardRef<

@@ -28,6 +28,13 @@ const buttonVariants = cva(
           "bg-destructive text-destructive-foreground shadow hover:bg-destructive/90",
         success:
           "bg-success text-success-foreground shadow hover:bg-success/90",
+        /**
+         * Classic — tactile beveled button mimicking physical plastic/rubber.
+         * Top-left edge is highlighted, bottom-right edge is shadowed.
+         * On press the bevel inverts to simulate a physical click-down.
+         */
+        classic:
+          "veloria-classic bg-secondary text-secondary-foreground border border-border/60 hover:brightness-[0.97] active:veloria-classic-pressed active:scale-[0.98]",
       },
       size: {
         xs: "h-6 px-2 text-xs rounded",
@@ -82,18 +89,17 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const Comp = asChild ? Slot : "button";
-
     return (
       <Comp
         ref={ref}
         className={cn(buttonVariants({ variant, size, fullWidth, loading, className }))}
         disabled={disabled || loading === true}
-        aria-busy={loading}
+        aria-busy={loading === true}
         {...props}
       >
         {loading && (
           <svg
-            className="animate-spin -ml-0.5 h-4 w-4"
+            className="h-4 w-4 animate-spin shrink-0"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -115,13 +121,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           </svg>
         )}
         {!loading && leftIcon && (
-          <span className="shrink-0" aria-hidden="true">
+          <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">
             {leftIcon}
           </span>
         )}
         {children}
-        {rightIcon && !loading && (
-          <span className="shrink-0" aria-hidden="true">
+        {!loading && rightIcon && (
+          <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">
             {rightIcon}
           </span>
         )}

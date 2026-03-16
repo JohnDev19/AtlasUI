@@ -55,6 +55,20 @@
     /* ── Typography ── */
     --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+    /* ── Classic Bevel (light mode) ─────────────────────────────────────────
+       Top-left inset highlight  → mimics a light source hitting the top-left
+       Bottom-right inset shadow → deepens the bottom-right edge
+       Together they create the tactile raised-plastic / rubber feel.
+    ── */
+    --classic-highlight: rgba(255, 255, 255, 0.72);
+    --classic-shadow:    rgba(0,   0,   0,   0.14);
+    --classic-bevel:
+      inset  2px  2px 0 var(--classic-highlight),
+      inset -2px -2px 0 var(--classic-shadow);
+    --classic-bevel-pressed:
+      inset -1px -1px 0 var(--classic-highlight),
+      inset  1px  1px 0 var(--classic-shadow);
   }
 
   .dark {
@@ -80,46 +94,64 @@
     --destructive-foreground: 210 20% 98%;
     --success: 142.1 70.6% 45.3%;
     --success-foreground: 144.9 80.4% 10%;
-    --warning: 32 95% 44%;
+    --warning: 32 95% 55%;
     --warning-foreground: 26 83.3% 14.1%;
-    --info: 213.1 93.9% 67.8%;
+    --info: 217.2 91.2% 59.8%;
     --info-foreground: 222.2 47.4% 11.2%;
 
     --border: 215 27.9% 16.9%;
     --input: 215 27.9% 16.9%;
     --ring: 216 12.2% 83.9%;
-  }
 
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-    font-family: var(--font-sans);
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply tracking-tight;
-  }
-
-  :focus-visible {
-    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+    /* ── Classic Bevel (dark mode) ──────────────────────────────────────────
+       Much subtler highlight (dark surfaces can't bounce much light) and a
+       deeper shadow so the depth still reads without washing out.
+    ── */
+    --classic-highlight: rgba(255, 255, 255, 0.10);
+    --classic-shadow:    rgba(0,   0,   0,   0.50);
+    --classic-bevel:
+      inset  2px  2px 0 var(--classic-highlight),
+      inset -2px -2px 0 var(--classic-shadow);
+    --classic-bevel-pressed:
+      inset -1px -1px 0 var(--classic-highlight),
+      inset  1px  1px 0 var(--classic-shadow);
   }
 }
 
-/* ─── Component Animations ───────────────────────────────────────────────── */
+/* ─── Components Layer ───────────────────────────────────────────────────── */
+
+@layer components {
+
+  /* ── Classic bevel: raised state (default) ──────────────────────────────
+     Apply to any element that should look physically embossed / raised.
+     Works on buttons, cards, badges, tags, chips, or any surface.
+  ─────────────────────────────────────────────────────────────────────── */
+  .veloria-classic {
+    box-shadow: var(--classic-bevel);
+  }
+
+  /* ── Classic bevel: pressed / active state ──────────────────────────────
+     Inverts the bevel so the element appears to sink on click.
+     Add this class (or the Tailwind `active:` variant) on press.
+  ─────────────────────────────────────────────────────────────────────── */
+  .veloria-classic-pressed {
+    box-shadow: var(--classic-bevel-pressed);
+  }
+
+}
+
+/* ─── Utilities Layer ────────────────────────────────────────────────────── */
 
 @layer utilities {
+
+  /* ── Keyframe animations used by components ─────────────────────────── */
+
   @keyframes veloria-spin {
     to { transform: rotate(360deg); }
   }
 
   @keyframes veloria-ping {
-    75%, 100% {
-      transform: scale(2);
-      opacity: 0;
-    }
+    75%, 100% { transform: scale(2); opacity: 0; }
   }
 
   @keyframes veloria-pulse {
@@ -128,113 +160,92 @@
 
   @keyframes veloria-bounce {
     0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
-    50% { transform: none; animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+    50%       { transform: none;            animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
   }
 
   @keyframes veloria-fade-in {
     from { opacity: 0; }
-    to { opacity: 1; }
+    to   { opacity: 1; }
   }
 
   @keyframes veloria-fade-out {
     from { opacity: 1; }
-    to { opacity: 0; }
+    to   { opacity: 0; }
   }
 
   @keyframes veloria-slide-in-from-top {
-    from { transform: translateY(-100%); }
-    to { transform: translateY(0); }
+    from { transform: translateY(-0.5rem); opacity: 0; }
+    to   { transform: translateY(0);       opacity: 1; }
   }
 
   @keyframes veloria-slide-in-from-bottom {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
+    from { transform: translateY(0.5rem); opacity: 0; }
+    to   { transform: translateY(0);      opacity: 1; }
   }
 
   @keyframes veloria-slide-in-from-left {
-    from { transform: translateX(-100%); }
-    to { transform: translateX(0); }
+    from { transform: translateX(-0.5rem); opacity: 0; }
+    to   { transform: translateX(0);       opacity: 1; }
   }
 
   @keyframes veloria-slide-in-from-right {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
+    from { transform: translateX(0.5rem); opacity: 0; }
+    to   { transform: translateX(0);      opacity: 1; }
   }
 
   @keyframes veloria-zoom-in {
-    from { opacity: 0; transform: scale(0.96); }
-    to { opacity: 1; transform: scale(1); }
+    from { transform: scale(0.95); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
   }
 
   @keyframes veloria-zoom-out {
-    from { opacity: 1; transform: scale(1); }
-    to { opacity: 0; transform: scale(0.96); }
+    from { transform: scale(1);    opacity: 1; }
+    to   { transform: scale(0.95); opacity: 0; }
   }
 
-  .animate-in {
-    animation: veloria-fade-in 150ms ease;
+  /* ── Radix/Tailwind animation helpers (used by overlay components) ───── */
+
+  .animate-in  { animation-duration: 150ms; animation-fill-mode: both; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+  .animate-out { animation-duration: 100ms; animation-fill-mode: both; animation-timing-function: ease-in; }
+
+  .fade-in-0  { animation-name: veloria-fade-in;  }
+  .fade-out-0 { animation-name: veloria-fade-out; }
+  .zoom-in-95 { animation-name: veloria-zoom-in;  }
+  .zoom-out-95 { animation-name: veloria-zoom-out; }
+
+  .slide-in-from-top-2    { animation-name: veloria-slide-in-from-top;    }
+  .slide-in-from-bottom-2 { animation-name: veloria-slide-in-from-bottom; }
+  .slide-in-from-left-2   { animation-name: veloria-slide-in-from-left;   }
+  .slide-in-from-right-2  { animation-name: veloria-slide-in-from-right;  }
+
+  /* ── Select close slide-out helpers ─────────────────────────────────── */
+
+  @keyframes veloria-slide-out-to-top {
+    from { transform: translateY(0);        opacity: 1; }
+    to   { transform: translateY(-0.5rem);  opacity: 0; }
   }
 
-  .fade-in-0 {
-    animation: veloria-fade-in 150ms ease;
+  @keyframes veloria-slide-out-to-bottom {
+    from { transform: translateY(0);       opacity: 1; }
+    to   { transform: translateY(0.5rem);  opacity: 0; }
   }
 
-  .fade-out-0 {
-    animation: veloria-fade-out 150ms ease;
+  .slide-out-to-top-2    { animation-name: veloria-slide-out-to-top;    }
+  .slide-out-to-bottom-2 { animation-name: veloria-slide-out-to-bottom; }
+
+  /* ── Select trigger: rotate chevron icon when dropdown is open ───────── */
+
+  .atlas-select-trigger[data-state="open"] svg {
+    transform: rotate(180deg);
   }
 
-  .zoom-in-95 {
-    animation: veloria-zoom-in 150ms ease;
+  /* ── zoom-in-[0.97] used by SelectContent open animation ─────────────── */
+
+  @keyframes veloria-zoom-in-97 {
+    from { transform: scale(0.97); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
   }
 
-  .zoom-out-95 {
-    animation: veloria-zoom-out 150ms ease;
-  }
+  .zoom-in-\[0\.97\] { animation-name: veloria-zoom-in-97; }
 
-  .slide-in-from-top {
-    animation: veloria-slide-in-from-top 150ms ease;
-  }
-
-  .slide-in-from-bottom {
-    animation: veloria-slide-in-from-bottom 150ms ease;
-  }
-
-  .slide-in-from-left {
-    animation: veloria-slide-in-from-left 200ms ease;
-  }
-
-  .slide-in-from-right {
-    animation: veloria-slide-in-from-right 200ms ease;
-  }
-
-  /* Composable data-state-based animations */
-  [data-state="open"] { animation: veloria-fade-in 150ms ease; }
-  [data-state="closed"] { animation: veloria-fade-out 150ms ease; }
-}
-
-/* ─── Custom Scrollbars ──────────────────────────────────────────────────── */
-
-@layer utilities {
-  .veloria-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border)) transparent;
-  }
-
-  .veloria-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  .veloria-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .veloria-scrollbar::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--border));
-    border-radius: 9999px;
-  }
-
-  .veloria-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: hsl(var(--muted-foreground) / 0.4);
-  }
 }

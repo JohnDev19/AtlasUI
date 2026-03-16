@@ -2,7 +2,7 @@
  * veloria-ui
  *
  * Build anything. Ship faster.
- * 102 production-ready components — accessible, composable, dark-mode ready.
+ * production-ready components — accessible, composable, dark-mode ready.
  *
  * By JohnDev19 — https://github.com/JohnDev19/Veloria-UI
  * Docs: https://ui-veloria.vercel.app/
@@ -109,6 +109,8 @@ export {
   SelectValue,
   SelectTrigger,
   SelectContent,
+  SelectScrollUpButton,
+  SelectScrollDownButton,
   SelectItem,
   SelectLabel,
   SelectSeparator,

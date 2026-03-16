@@ -9,25 +9,46 @@ const cardVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-border shadow-sm",
-        outline: "border-border shadow-none",
+        default:  "border-border shadow-sm",
+        outline:  "border-border shadow-none",
         elevated: "border-transparent shadow-lg",
-        ghost: "border-transparent shadow-none bg-transparent",
-        filled: "border-transparent bg-muted",
+        ghost:    "border-transparent shadow-none bg-transparent",
+        filled:   "border-transparent bg-muted",
+        /**
+         * Classic — beveled edges that mimic physical plastic or rubber.
+         * A subtle highlight sits on the top-left edge while a deeper
+         * shadow falls on the bottom-right, giving the card tactile depth.
+         * Use `interactive` together with `classic` for a satisfying press effect.
+         */
+        classic:  "veloria-classic border border-border/60 bg-card",
       },
       interactive: {
-        true: "cursor-pointer transition-shadow hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm",
+        true: "cursor-pointer transition-all hover:-translate-y-0.5 active:translate-y-0",
       },
     },
+    compoundVariants: [
+      // Classic interactive: invert the bevel on press to feel like a physical click
+      {
+        variant: "classic",
+        interactive: true,
+        className: "hover:veloria-classic active:veloria-classic-pressed active:shadow-none",
+      },
+    ],
     defaultVariants: { variant: "default" },
   }
 );
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof cardVariants> {}
+export interface CardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {}
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant, interactive, ...props }, ref) => (
-    <div ref={ref} className={cn(cardVariants({ variant, interactive, className }))} {...props} />
+    <div
+      ref={ref}
+      className={cn(cardVariants({ variant, interactive, className }))}
+      {...props}
+    />
   )
 );
 Card.displayName = "Card";
@@ -94,21 +115,39 @@ TableBody.displayName = "TableBody";
 
 const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowElement>>(
   ({ className, ...props }, ref) => (
-    <tr ref={ref} className={cn("border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted", className)} {...props} />
+    <tr
+      ref={ref}
+      className={cn(
+        "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+        className
+      )}
+      {...props}
+    />
   )
 );
 TableRow.displayName = "TableRow";
 
 const TableHead = React.forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<HTMLTableCellElement>>(
   ({ className, ...props }, ref) => (
-    <th ref={ref} className={cn("h-10 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0", className)} {...props} />
+    <th
+      ref={ref}
+      className={cn(
+        "h-10 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+        className
+      )}
+      {...props}
+    />
   )
 );
 TableHead.displayName = "TableHead";
 
 const TableCell = React.forwardRef<HTMLTableCellElement, React.TdHTMLAttributes<HTMLTableCellElement>>(
   ({ className, ...props }, ref) => (
-    <td ref={ref} className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)} {...props} />
+    <td
+      ref={ref}
+      className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
+      {...props}
+    />
   )
 );
 TableCell.displayName = "TableCell";
@@ -120,7 +159,7 @@ const TableCaption = React.forwardRef<HTMLTableCaptionElement, React.HTMLAttribu
 );
 TableCaption.displayName = "TableCaption";
 
-// ─── DataTable ────────────────────────────────────────────────────────────
+// ─── DataTable ─────────────────────────────────────────────────────────────
 
 export interface DataTableColumn<T> {
   key: keyof T | string;
@@ -165,29 +204,25 @@ function DataTable<T extends Record<string, unknown>>({
   };
 
   return (
-    <div className={cn("atlas-data-table relative w-full overflow-auto rounded-md", bordered && "border border-border", className)}>
+    <div className={cn("atlas-data-table relative w-full overflow-auto", className)}>
       <table className="w-full caption-bottom text-sm">
-        {caption && <TableCaption>{caption}</TableCaption>}
-        <thead className="border-b bg-muted/50">
+        {caption && <caption className="mt-4 text-sm text-muted-foreground">{caption}</caption>}
+        <thead className="[&_tr]:border-b">
           <tr>
-            {columns.map((col, i) => (
+            {columns.map((col) => (
               <th
-                key={i}
+                key={String(col.key)}
                 style={{ width: col.width }}
                 className={cn(
-                  "h-10 px-4 font-medium text-muted-foreground",
+                  "h-10 px-4 text-left align-middle font-medium text-muted-foreground",
+                  bordered && "border border-border",
                   col.align === "center" && "text-center",
                   col.align === "right" && "text-right",
-                  col.sortable && "cursor-pointer select-none hover:text-foreground",
+                  col.sortable && "cursor-pointer select-none hover:text-foreground"
                 )}
-                onClick={() => col.sortable && handleSort(String(col.key))}
-                aria-sort={
-                  sortKey === col.key
-                    ? sortDir === "asc" ? "ascending" : "descending"
-                    : col.sortable ? "none" : undefined
-                }
+                onClick={col.sortable ? () => handleSort(String(col.key)) : undefined}
               >
-                <span className="flex items-center gap-1">
+                <span className="inline-flex items-center gap-1">
                   {col.header}
                   {col.sortable && sortKey === String(col.key) && (
                     <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,19 +236,22 @@ function DataTable<T extends Record<string, unknown>>({
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody className="[&_tr:last-child]:border-0">
           {loading ? (
-            <tr>
-              <td colSpan={columns.length} className="h-24 text-center">
-                <svg className="mx-auto h-5 w-5 animate-spin text-muted-foreground" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-              </td>
-            </tr>
+            Array.from({ length: 5 }).map((_, i) => (
+              <tr key={i} className="border-b">
+                {columns.map((col) => (
+                  <td key={String(col.key)} className="p-4">
+                    <div className="h-4 animate-pulse rounded bg-muted" />
+                  </td>
+                ))}
+              </tr>
+            ))
           ) : data.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="h-24 text-center text-muted-foreground">{emptyText}</td>
+              <td colSpan={columns.length} className="h-24 text-center text-muted-foreground">
+                {emptyText}
+              </td>
             </tr>
           ) : (
             data.map((row, i) => (
@@ -221,21 +259,23 @@ function DataTable<T extends Record<string, unknown>>({
                 key={i}
                 className={cn(
                   "border-b transition-colors hover:bg-muted/50",
-                  striped && i % 2 !== 0 && "bg-muted/20"
+                  striped && i % 2 === 1 && "bg-muted/30",
+                  bordered && "border border-border"
                 )}
               >
-                {columns.map((col, j) => (
+                {columns.map((col) => (
                   <td
-                    key={j}
+                    key={String(col.key)}
                     className={cn(
                       "p-4 align-middle",
+                      bordered && "border border-border",
                       col.align === "center" && "text-center",
-                      col.align === "right" && "text-right",
+                      col.align === "right" && "text-right"
                     )}
                   >
                     {col.cell
                       ? col.cell(row, i)
-                      : String(row[col.key as keyof T] ?? "")}
+                      : (row[col.key as keyof T] as React.ReactNode)}
                   </td>
                 ))}
               </tr>
@@ -248,24 +288,19 @@ function DataTable<T extends Record<string, unknown>>({
 }
 DataTable.displayName = "DataTable";
 
-// ─── List & ListItem ─────────────────────────────────────────────────────
+// ─── List ──────────────────────────────────────────────────────────────────
 
-export interface ListProps extends Omit<React.HTMLAttributes<HTMLUListElement>, "color"> {
-  variant?: "simple" | "bordered" | "divided";
-  spacing?: "none" | "sm" | "md" | "lg";
+export interface ListProps extends React.HTMLAttributes<HTMLUListElement> {
+  divided?: boolean;
 }
 
 const List = React.forwardRef<HTMLUListElement, ListProps>(
-  ({ className, variant = "simple", spacing = "none", ...props }, ref) => (
+  ({ className, divided, ...props }, ref) => (
     <ul
       ref={ref}
       className={cn(
         "atlas-list w-full",
-        variant === "bordered" && "rounded-md border border-border divide-y divide-border",
-        variant === "divided" && "divide-y divide-border",
-        spacing === "sm" && "space-y-1",
-        spacing === "md" && "space-y-2",
-        spacing === "lg" && "space-y-3",
+        divided && "[&>li]:border-b [&>li:last-child]:border-0",
         className
       )}
       {...props}
@@ -276,34 +311,39 @@ List.displayName = "List";
 
 export interface ListItemProps extends React.HTMLAttributes<HTMLLIElement> {
   icon?: React.ReactNode;
-  extra?: React.ReactNode;
-  active?: boolean;
+  description?: React.ReactNode;
+  action?: React.ReactNode;
 }
 
 const ListItem = React.forwardRef<HTMLLIElement, ListItemProps>(
-  ({ className, icon, extra, active, children, ...props }, ref) => (
+  ({ className, icon, description, action, children, ...props }, ref) => (
     <li
       ref={ref}
-      className={cn(
-        "atlas-list-item flex items-center gap-3 px-4 py-3",
-        active && "bg-accent text-accent-foreground",
-        className
-      )}
+      className={cn("atlas-list-item flex items-center gap-3 px-1 py-3", className)}
       {...props}
     >
-      {icon && <span className="shrink-0 text-muted-foreground [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">{icon}</span>}
-      <span className="flex-1 min-w-0">{children}</span>
-      {extra && <span className="shrink-0">{extra}</span>}
+      {icon && (
+        <span className="shrink-0 text-muted-foreground [&>svg]:h-4 [&>svg]:w-4">
+          {icon}
+        </span>
+      )}
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium">{children}</div>
+        {description && (
+          <div className="text-xs text-muted-foreground mt-0.5">{description}</div>
+        )}
+      </div>
+      {action && <div className="shrink-0">{action}</div>}
     </li>
   )
 );
 ListItem.displayName = "ListItem";
 
-// ─── Statistic ────────────────────────────────────────────────────────────
+// ─── Statistic ─────────────────────────────────────────────────────────────
 
 export interface StatisticProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "prefix"> {
-  label: React.ReactNode;
   value: React.ReactNode;
+  label: string;
   prefix?: React.ReactNode;
   suffix?: React.ReactNode;
   trend?: { value: number; label?: string };
@@ -311,80 +351,84 @@ export interface StatisticProps extends Omit<React.HTMLAttributes<HTMLDivElement
 }
 
 const Statistic = React.forwardRef<HTMLDivElement, StatisticProps>(
-  ({ className, label, value, prefix, suffix, trend, loading, ...props }, ref) => (
+  ({ className, value, label, prefix, suffix, trend, loading, ...props }, ref) => (
     <div ref={ref} className={cn("atlas-statistic", className)} {...props}>
-      <p className="text-sm font-medium text-muted-foreground">{label}</p>
-      <div className="mt-1 flex items-end gap-2">
-        <span className="text-3xl font-bold tracking-tight">
-          {loading ? (
-            <span className="inline-block h-8 w-24 animate-pulse rounded bg-muted" />
-          ) : (
-            <>{prefix}{value}{suffix}</>
-          )}
-        </span>
-        {trend && !loading && (
-          <span className={cn(
-            "mb-1 flex items-center gap-0.5 text-sm font-medium",
-            trend.value > 0 ? "text-success" : trend.value < 0 ? "text-destructive" : "text-muted-foreground"
-          )}>
-            {trend.value !== 0 && (
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d={trend.value > 0 ? "M7 17l9-9M7 7h10v10" : "M7 7l9 9M17 7H7v10"}
-                />
-              </svg>
-            )}
-            {Math.abs(trend.value)}%
-            {trend.label && <span className="font-normal text-muted-foreground ml-1">{trend.label}</span>}
-          </span>
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <div className="mt-1 flex items-baseline gap-1">
+        {prefix && <span className="text-sm text-muted-foreground">{prefix}</span>}
+        {loading ? (
+          <div className="h-8 w-24 animate-pulse rounded bg-muted" />
+        ) : (
+          <span className="text-3xl font-bold tracking-tight">{value}</span>
         )}
+        {suffix && <span className="text-sm text-muted-foreground">{suffix}</span>}
       </div>
+      {trend && !loading && (
+        <p className={cn(
+          "mt-1 flex items-center gap-1 text-xs font-medium",
+          trend.value > 0 ? "text-success" : trend.value < 0 ? "text-destructive" : "text-muted-foreground"
+        )}>
+          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d={trend.value > 0 ? "M7 17l9-9M7 7h10v10" : trend.value < 0 ? "M17 7l-9 9M7 7v10h10" : "M5 12h14"}
+            />
+          </svg>
+          {Math.abs(trend.value)}%
+          {trend.label && <span className="font-normal text-muted-foreground">{trend.label}</span>}
+        </p>
+      )}
     </div>
   )
 );
 Statistic.displayName = "Statistic";
 
-// ─── Timeline ─────────────────────────────────────────────────────────────
+// ─── Timeline ──────────────────────────────────────────────────────────────
 
 export interface TimelineEvent {
+  id: string;
   title: React.ReactNode;
   description?: React.ReactNode;
-  time?: React.ReactNode;
+  date?: React.ReactNode;
   icon?: React.ReactNode;
-  color?: "default" | "primary" | "success" | "warning" | "danger";
+  color?: "default" | "success" | "warning" | "danger" | "info";
 }
 
 export interface TimelineProps extends React.HTMLAttributes<HTMLOListElement> {
   events: TimelineEvent[];
 }
 
+const colorDot: Record<NonNullable<TimelineEvent["color"]>, string> = {
+  default: "bg-primary",
+  success: "bg-success",
+  warning: "bg-warning",
+  danger:  "bg-destructive",
+  info:    "bg-info",
+};
+
 const Timeline = React.forwardRef<HTMLOListElement, TimelineProps>(
   ({ className, events, ...props }, ref) => (
-    <ol ref={ref} className={cn("atlas-timeline relative flex flex-col", className)} {...props}>
+    <ol ref={ref} className={cn("atlas-timeline relative space-y-0", className)} {...props}>
       {events.map((event, i) => (
-        <li key={i} className="relative flex gap-4 pb-8 last:pb-0">
-          <div className="relative flex flex-col items-center">
-            <div className={cn(
-              "z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 shrink-0",
-              "border-background shadow-sm [&>svg]:h-3.5 [&>svg]:w-3.5",
-              event.color === "primary" ? "bg-primary text-primary-foreground" :
-              event.color === "success" ? "bg-success text-success-foreground" :
-              event.color === "warning" ? "bg-warning text-warning-foreground" :
-              event.color === "danger" ? "bg-destructive text-destructive-foreground" :
-              "bg-muted text-muted-foreground"
-            )}>
-              {event.icon ?? <span className="h-2 w-2 rounded-full bg-current" />}
-            </div>
+        <li key={event.id} className="relative flex gap-4 pb-6 last:pb-0">
+          <div className="flex flex-col items-center">
+            <span className={cn("mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ring-4 ring-background", colorDot[event.color ?? "default"])}>
+              {event.icon
+                ? <span className="text-white [&>svg]:h-3 [&>svg]:w-3">{event.icon}</span>
+                : <span className="h-2 w-2 rounded-full bg-white" />
+              }
+            </span>
             {i < events.length - 1 && (
-              <div className="mt-1 w-px flex-1 bg-border" aria-hidden="true" />
+              <span className="mt-1 flex-1 w-px bg-border" aria-hidden="true" />
             )}
           </div>
-          <div className="flex-1 pt-0.5 pb-4 last:pb-0">
+          <div className="flex-1 min-w-0 pb-2">
             <div className="flex items-start justify-between gap-2">
-              <p className="font-medium text-sm">{event.title}</p>
-              {event.time && <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">{event.time}</span>}
+              <p className="text-sm font-medium">{event.title}</p>
+              {event.date && <span className="shrink-0 text-xs text-muted-foreground">{event.date}</span>}
             </div>
-            {event.description && <p className="mt-1 text-sm text-muted-foreground">{event.description}</p>}
+            {event.description && (
+              <p className="mt-1 text-sm text-muted-foreground">{event.description}</p>
+            )}
           </div>
         </li>
       ))}
@@ -393,44 +437,55 @@ const Timeline = React.forwardRef<HTMLOListElement, TimelineProps>(
 );
 Timeline.displayName = "Timeline";
 
-// ─── Calendar ─────────────────────────────────────────────────────────────
+// ─── Calendar ──────────────────────────────────────────────────────────────
 
 export interface CalendarProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
   value?: Date;
   onChange?: (date: Date) => void;
   minDate?: Date;
   maxDate?: Date;
-  highlightedDates?: Date[];
+  disabledDates?: Date[];
 }
 
 const DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const MONTHS = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December",
+];
 
 const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
-  ({ className, value, onChange, minDate, maxDate, highlightedDates = [], ...props }, ref) => {
+  ({ className, value, onChange, minDate, maxDate, disabledDates = [], ...props }, ref) => {
     const today = new Date();
-    const [viewDate, setViewDate] = React.useState(value ?? today);
-    const year = viewDate.getFullYear();
-    const month = viewDate.getMonth();
+    const [view, setView] = React.useState(value ?? today);
 
+    const year = view.getFullYear();
+    const month = view.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    const cells: (Date | null)[] = [
-      ...Array.from({ length: firstDay }, (): null => null),
-      ...Array.from({ length: daysInMonth }, (_, i) => new Date(year, month, i + 1)),
-    ];
+    const isDisabled = (d: Date) => {
+      if (minDate && d < minDate) return true;
+      if (maxDate && d > maxDate) return true;
+      return disabledDates.some(
+        (dd) => dd.toDateString() === d.toDateString()
+      );
+    };
 
-    const isSameDay = (a: Date, b: Date) =>
-      a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    const prev = () => setView(new Date(year, month - 1, 1));
+    const next = () => setView(new Date(year, month + 1, 1));
 
     return (
-      <div ref={ref} className={cn("atlas-calendar w-fit rounded-lg border border-border bg-background p-3 shadow-sm", className)} {...props}>
-        <div className="flex items-center justify-between mb-3">
+      <div
+        ref={ref}
+        className={cn("atlas-calendar inline-block select-none rounded-lg border border-border bg-background p-4 shadow-sm", className)}
+        {...props}
+      >
+        {/* Header */}
+        <div className="mb-3 flex items-center justify-between">
           <button
             type="button"
-            onClick={() => setViewDate(new Date(year, month - 1))}
-            className="h-7 w-7 flex items-center justify-center rounded-md hover:bg-accent transition-colors"
+            onClick={prev}
+            className="rounded p-1 hover:bg-accent transition-colors"
             aria-label="Previous month"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -440,8 +495,8 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
           <span className="text-sm font-semibold">{MONTHS[month]} {year}</span>
           <button
             type="button"
-            onClick={() => setViewDate(new Date(year, month + 1))}
-            className="h-7 w-7 flex items-center justify-center rounded-md hover:bg-accent transition-colors"
+            onClick={next}
+            className="rounded p-1 hover:bg-accent transition-colors"
             aria-label="Next month"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -449,39 +504,41 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
             </svg>
           </button>
         </div>
-        <div className="grid grid-cols-7 gap-px">
+        {/* Day labels */}
+        <div className="mb-1 grid grid-cols-7 gap-1">
           {DAYS.map((d) => (
-            <div key={d} className="h-8 flex items-center justify-center text-xs font-medium text-muted-foreground">{d}</div>
+            <span key={d} className="text-center text-[11px] font-medium text-muted-foreground">
+              {d}
+            </span>
           ))}
-          {cells.map((date, i) => {
-            if (!date) return <div key={`empty-${i}`} />;
-            const isSelected = value ? isSameDay(date, value) : false;
-            const isToday = isSameDay(date, today);
-            const isHighlighted = highlightedDates.some((d) => isSameDay(d, date));
-            const isDisabled =
-              (minDate && date < minDate) || (maxDate && date > maxDate);
+        </div>
+        {/* Cells */}
+        <div className="grid grid-cols-7 gap-1">
+          {Array.from({ length: firstDay }).map((_, i) => (
+            <span key={`e-${i}`} />
+          ))}
+          {Array.from({ length: daysInMonth }).map((_, i) => {
+            const day = i + 1;
+            const date = new Date(year, month, day);
+            const isSelected = value?.toDateString() === date.toDateString();
+            const isToday = today.toDateString() === date.toDateString();
+            const disabled = isDisabled(date);
 
             return (
               <button
-                key={date.toISOString()}
+                key={day}
                 type="button"
-                disabled={isDisabled}
-                onClick={() => onChange?.(date)}
-                aria-label={date.toLocaleDateString()}
-                aria-pressed={isSelected}
+                disabled={disabled}
+                onClick={() => !disabled && onChange?.(date)}
                 className={cn(
-                  "h-8 w-8 text-xs rounded-md flex items-center justify-center transition-colors font-medium relative",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  "disabled:pointer-events-none disabled:opacity-30",
-                  isSelected && "bg-primary text-primary-foreground hover:bg-primary/90",
-                  !isSelected && isToday && "border border-primary text-primary",
-                  !isSelected && !isToday && "hover:bg-accent",
+                  "flex h-8 w-8 items-center justify-center rounded-md text-sm transition-colors",
+                  "disabled:pointer-events-none disabled:opacity-40",
+                  isSelected && "bg-primary text-primary-foreground font-semibold",
+                  !isSelected && isToday && "border border-primary text-primary font-semibold",
+                  !isSelected && !isToday && "hover:bg-accent"
                 )}
               >
-                {date.getDate()}
-                {isHighlighted && !isSelected && (
-                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-primary" />
-                )}
+                {day}
               </button>
             );
           })}
@@ -492,70 +549,73 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
 );
 Calendar.displayName = "Calendar";
 
-// ─── CodeBlock ────────────────────────────────────────────────────────────
+// ─── CodeBlock ─────────────────────────────────────────────────────────────
 
-export interface CodeBlockProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface CodeBlockProps extends React.HTMLAttributes<HTMLPreElement> {
   code: string;
   language?: string;
   showLineNumbers?: boolean;
-  caption?: string;
-  onCopy?: () => void;
+  filename?: string;
 }
 
-const CodeBlock = React.forwardRef<HTMLDivElement, CodeBlockProps>(
-  ({ className, code, language, showLineNumbers, caption, onCopy, ...props }, ref) => {
+const CodeBlock = React.forwardRef<HTMLPreElement, CodeBlockProps>(
+  ({ className, code, language, showLineNumbers, filename, ...props }, ref) => {
     const [copied, setCopied] = React.useState(false);
 
-    const handleCopy = async () => {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      onCopy?.();
-      setTimeout(() => setCopied(false), 2000);
+    const copy = () => {
+      navigator.clipboard.writeText(code).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
     };
 
-    const lines = code.split("\n");
-
     return (
-      <div ref={ref} className={cn("atlas-code-block relative rounded-lg border border-border bg-muted/50 overflow-hidden", className)} {...props}>
-        <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/80">
-          {language && <span className="text-xs font-medium text-muted-foreground">{language}</span>}
-          {caption && <span className="text-xs text-muted-foreground">{caption}</span>}
+      <div className="atlas-code-block relative overflow-hidden rounded-lg border border-border bg-muted/50">
+        {(filename || language) && (
+          <div className="flex items-center justify-between border-b border-border px-4 py-2">
+            <span className="text-xs font-medium text-muted-foreground">
+              {filename ?? language}
+            </span>
+            <button
+              type="button"
+              onClick={copy}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {copied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+        )}
+        {!filename && !language && (
           <button
             type="button"
-            onClick={handleCopy}
-            aria-label={copied ? "Copied!" : "Copy code"}
-            className="ml-auto flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-background transition-colors"
+            onClick={copy}
+            className="absolute right-3 top-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
-            {copied ? (
-              <>
-                <svg className="h-3.5 w-3.5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                </svg>
-                Copied
-              </>
-            ) : (
-              <>
-                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                  />
-                </svg>
-                Copy
-              </>
-            )}
+            {copied ? "Copied!" : "Copy"}
           </button>
-        </div>
-        <pre className="overflow-x-auto p-4 text-sm">
-          <code className={`language-${language}`}>
-            {showLineNumbers
-              ? lines.map((line, i) => (
-                  <span key={i} className="block">
-                    <span className="mr-4 select-none text-muted-foreground/50 text-xs w-5 inline-block text-right">{i + 1}</span>
-                    {line}
+        )}
+        <pre
+          ref={ref}
+          className={cn(
+            "overflow-x-auto p-4 text-sm font-mono leading-relaxed",
+            className
+          )}
+          {...props}
+        >
+          {showLineNumbers ? (
+            <code>
+              {code.split("\n").map((line, i) => (
+                <span key={i} className="flex">
+                  <span className="mr-4 w-6 shrink-0 select-none text-right text-muted-foreground/50">
+                    {i + 1}
                   </span>
-                ))
-              : code}
-          </code>
+                  <span>{line}</span>
+                </span>
+              ))}
+            </code>
+          ) : (
+            <code>{code}</code>
+          )}
         </pre>
       </div>
     );
@@ -563,79 +623,77 @@ const CodeBlock = React.forwardRef<HTMLDivElement, CodeBlockProps>(
 );
 CodeBlock.displayName = "CodeBlock";
 
-// ─── Chart (placeholder - integrates with recharts/chartjs) ───────────────
+// ─── Chart (thin wrapper — consumers bring their own chart lib) ─────────────
 
-export interface ChartProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
+export interface ChartProps extends React.HTMLAttributes<HTMLDivElement> {
   title?: string;
   description?: string;
   loading?: boolean;
-  empty?: boolean;
+  height?: number | string;
 }
 
 const Chart = React.forwardRef<HTMLDivElement, ChartProps>(
-  ({ className, title, description, loading, empty, children, ...props }, ref) => (
+  ({ className, title, description, loading, height = 300, children, ...props }, ref) => (
     <div ref={ref} className={cn("atlas-chart", className)} {...props}>
       {(title || description) && (
-        <div className="mb-4">
-          {title && <h3 className="text-base font-semibold">{title}</h3>}
-          {description && <p className="text-sm text-muted-foreground">{description}</p>}
+        <div className="mb-3">
+          {title && <p className="text-sm font-semibold">{title}</p>}
+          {description && <p className="text-xs text-muted-foreground">{description}</p>}
         </div>
       )}
-      {loading ? (
-        <div className="h-64 w-full animate-pulse rounded-lg bg-muted" />
-      ) : empty ? (
-        <div className="h-64 w-full flex items-center justify-center text-muted-foreground text-sm border border-dashed border-border rounded-lg">
-          No chart data available
-        </div>
-      ) : (
-        children
-      )}
+      <div style={{ height }} className="relative w-full">
+        {loading ? (
+          <div className="flex h-full items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
+          </div>
+        ) : (
+          children
+        )}
+      </div>
     </div>
   )
 );
 Chart.displayName = "Chart";
 
+// ─── StatsCard ─────────────────────────────────────────────────────────────
 
-// ═══════════════════════════════════════════════════════════════
-// New in v0.1.2
-// ═══════════════════════════════════════════════════════════════
-
-
-// ─── StatsCard ────────────────────────────────────────────────────────────
-
-export interface StatsCardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
-  title: React.ReactNode;
+export interface StatsCardProps extends React.HTMLAttributes<HTMLDivElement> {
+  title: string;
   value: React.ReactNode;
+  description?: string;
   icon?: React.ReactNode;
   trend?: { value: number; label?: string };
-  description?: React.ReactNode;
   loading?: boolean;
 }
 
 const StatsCard = React.forwardRef<HTMLDivElement, StatsCardProps>(
-  ({ className, title, value, icon, trend, description, loading, ...props }, ref) => (
+  ({ className, title, value, description, icon, trend, loading, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
-        "atlas-stats-card rounded-xl border border-border bg-card p-6 shadow-sm",
+        "atlas-stats-card rounded-xl border border-border bg-card p-5 shadow-sm",
         className
       )}
       {...props}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-muted-foreground truncate">{title}</p>
-          <p className="mt-1 text-3xl font-bold tracking-tight">
-            {loading ? (
-              <span className="inline-block h-8 w-28 animate-pulse rounded bg-muted" />
-            ) : value}
-          </p>
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          {loading ? (
+            <div className="mt-2 h-8 w-24 animate-pulse rounded bg-muted" />
+          ) : (
+            <p className="mt-1 text-3xl font-bold tracking-tight">{value}</p>
+          )}
           {trend && !loading && (
             <p className={cn(
-              "mt-1 flex items-center gap-1 text-sm font-medium",
-              trend.value > 0 ? "text-success" : trend.value < 0 ? "text-destructive" : "text-muted-foreground"
+              "mt-1 flex items-center gap-1 text-xs font-medium",
+              trend.value > 0
+                ? "text-success"
+                : trend.value < 0
+                  ? "text-destructive"
+                  : "text-muted-foreground"
             )}>
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d={trend.value > 0 ? "M7 17l9-9M7 7h10v10" : trend.value < 0 ? "M17 7l-9 9M7 7v10h10" : "M5 12h14"}
                 />
@@ -649,10 +707,7 @@ const StatsCard = React.forwardRef<HTMLDivElement, StatsCardProps>(
           )}
         </div>
         {icon && (
-          <div className={cn(
-            "flex h-12 w-12 shrink-0 items-center justify-center rounded-lg",
-            "bg-primary/10 text-primary [&>svg]:h-6 [&>svg]:w-6"
-          )}>
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary [&>svg]:h-6 [&>svg]:w-6">
             {icon}
           </div>
         )}
@@ -662,7 +717,7 @@ const StatsCard = React.forwardRef<HTMLDivElement, StatsCardProps>(
 );
 StatsCard.displayName = "StatsCard";
 
-// ─── TreeView ─────────────────────────────────────────────────────────────
+// ─── TreeView ──────────────────────────────────────────────────────────────
 
 export interface TreeNode {
   id: string;
@@ -672,7 +727,8 @@ export interface TreeNode {
   disabled?: boolean;
 }
 
-export interface TreeViewProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onSelect" | "size"> {
+export interface TreeViewProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onSelect" | "size"> {
   nodes: TreeNode[];
   selected?: string;
   onSelect?: (id: string) => void;
@@ -691,7 +747,7 @@ interface TreeItemProps {
 }
 
 const TreeItem = ({ node, depth, selected, onSelect, expanded, onToggle, size }: TreeItemProps) => {
-  const hasChildren = node.children && node.children.length > 0;
+  const hasChildren = Boolean(node.children?.length);
   const isExpanded = expanded.has(node.id);
   const isSelected = selected === node.id;
 
@@ -718,20 +774,22 @@ const TreeItem = ({ node, depth, selected, onSelect, expanded, onToggle, size }:
           {hasChildren ? (
             <svg
               className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")}
-              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-          ) : (
-            <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
+          ) : node.icon ? null : (
+            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
           )}
         </span>
         {node.icon && (
-          <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4 text-muted-foreground" aria-hidden="true">
+          <span className="shrink-0 text-muted-foreground [&>svg]:h-4 [&>svg]:w-4">
             {node.icon}
           </span>
         )}
-        <span className="flex-1 truncate">{node.label}</span>
+        {node.label}
       </button>
       {hasChildren && isExpanded && (
         <ul role="group">
@@ -757,18 +815,16 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeViewProps>(
   ({ className, nodes, selected, onSelect, defaultExpanded = [], size = "md", ...props }, ref) => {
     const [expanded, setExpanded] = React.useState<Set<string>>(new Set(defaultExpanded));
 
-    const toggle = (id: string) => {
+    const toggle = (id: string) =>
       setExpanded((prev) => {
         const next = new Set(prev);
-        if (next.has(id)) next.delete(id);
-        else next.add(id);
+        next.has(id) ? next.delete(id) : next.add(id);
         return next;
       });
-    };
 
     return (
       <div ref={ref} className={cn("atlas-tree-view", className)} {...props}>
-        <ul role="tree" className="space-y-0.5">
+        <ul role="tree">
           {nodes.map((node) => (
             <TreeItem
               key={node.id}
@@ -788,225 +844,162 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeViewProps>(
 );
 TreeView.displayName = "TreeView";
 
-// ─── JsonViewer ───────────────────────────────────────────────────────────
+// ─── JsonViewer ────────────────────────────────────────────────────────────
 
-export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
 
 export interface JsonViewerProps extends React.HTMLAttributes<HTMLDivElement> {
   data: JsonValue;
-  defaultExpanded?: boolean;
   maxDepth?: number;
-  indent?: number;
+  initialDepth?: number;
 }
 
 interface JsonNodeProps {
   value: JsonValue;
-  keyName?: string;
   depth: number;
   maxDepth: number;
-  indent: number;
-  defaultExpanded: boolean;
+  label?: string;
 }
 
-const JsonNode = ({ value, keyName, depth, maxDepth, indent, defaultExpanded }: JsonNodeProps) => {
-  const [open, setOpen] = React.useState(defaultExpanded || depth < 2);
-  const isObject = typeof value === "object" && value !== null && !Array.isArray(value);
+const JsonNode = ({ value, depth, maxDepth, label }: JsonNodeProps) => {
+  const [open, setOpen] = React.useState(depth < maxDepth);
+  const isObject = value !== null && typeof value === "object";
   const isArray = Array.isArray(value);
-  const isCollapsible = isObject || isArray;
+  const entries = isObject ? (isArray ? value : Object.entries(value as Record<string, JsonValue>)) : [];
+  const count = Array.isArray(entries) ? entries.length : 0;
 
-  const renderValue = () => {
-    if (value === null) return <span className="text-muted-foreground">null</span>;
-    if (typeof value === "boolean") return <span className="text-blue-500">{String(value)}</span>;
-    if (typeof value === "number") return <span className="text-amber-500">{value}</span>;
-    if (typeof value === "string") return <span className="text-success">"{value}"</span>;
-    return null;
-  };
-
-  const entries = isArray
-    ? value.map((v, i) => [String(i), v] as [string, JsonValue])
-    : isObject
-    ? Object.entries(value as { [key: string]: JsonValue })
-    : [];
-
-  const bracket = isArray ? ["[", "]"] : ["{", "}"];
-  const shouldTruncate = depth >= maxDepth;
+  if (!isObject) {
+    return (
+      <span>
+        {label && <span className="text-muted-foreground">{label}: </span>}
+        <span className={cn(
+          typeof value === "string" && "text-success",
+          typeof value === "number" && "text-info",
+          typeof value === "boolean" && "text-warning",
+          value === null && "text-muted-foreground italic"
+        )}>
+          {JSON.stringify(value)}
+        </span>
+      </span>
+    );
+  }
 
   return (
-    <span className="block" style={{ paddingLeft: depth > 0 ? `${indent * 12}px` : 0 }}>
-      {keyName !== undefined && (
-        <span className="text-foreground font-medium">"{keyName}": </span>
-      )}
-      {!isCollapsible && renderValue()}
-      {isCollapsible && (
-        <>
-          <button
-            type="button"
-            onClick={() => setOpen(!open)}
-            className="inline-flex items-center gap-0.5 font-mono text-foreground hover:text-primary transition-colors"
-            aria-expanded={open}
-          >
-            <svg className={cn("h-3 w-3 transition-transform", open && "rotate-90")} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-            <span>{bracket[0]}</span>
-            {!open && (
-              <span className="text-muted-foreground text-xs">
-                {isArray ? `${value.length} items` : `${entries.length} keys`}
-              </span>
-            )}
-            {!open && <span>{bracket[1]}</span>}
-          </button>
-          {open && !shouldTruncate && (
-            <span className="block">
-              {entries.map(([k, v]) => (
-                <JsonNode
-                  key={k}
-                  keyName={isObject ? k : undefined}
-                  value={v}
-                  depth={depth + 1}
-                  maxDepth={maxDepth}
-                  indent={indent}
-                  defaultExpanded={defaultExpanded}
-                />
-              ))}
-              <span style={{ paddingLeft: depth > 0 ? `${(depth) * 12}px` : 0 }} className="block font-mono">
-                {bracket[1]}
-              </span>
+    <span>
+      {label && <span className="text-muted-foreground">{label}: </span>}
+      <button
+        type="button"
+        className="font-mono text-foreground hover:underline"
+        onClick={() => setOpen((o) => !o)}
+      >
+        {isArray ? "[" : "{"}
+        {!open && <span className="text-muted-foreground"> {count} {isArray ? "items" : "keys"} </span>}
+        {!open && (isArray ? "]" : "}")}
+      </button>
+      {open && (
+        <span className="block pl-4">
+          {(isArray
+            ? (value as JsonValue[]).map((v, i) => ({ key: String(i), val: v }))
+            : Object.entries(value as Record<string, JsonValue>).map(([k, v]) => ({ key: k, val: v }))
+          ).map(({ key, val }) => (
+            <span key={key} className="block">
+              <JsonNode value={val} depth={depth + 1} maxDepth={maxDepth} label={isArray ? undefined : key} />
+              <span className="text-muted-foreground">,</span>
             </span>
-          )}
-          {open && shouldTruncate && (
-            <span className="text-muted-foreground text-xs ml-1">...</span>
-          )}
-        </>
+          ))}
+          <span>{isArray ? "]" : "}"}</span>
+        </span>
       )}
     </span>
   );
 };
 
 const JsonViewer = React.forwardRef<HTMLDivElement, JsonViewerProps>(
-  ({ className, data, defaultExpanded = true, maxDepth = 10, indent = 2, ...props }, ref) => (
+  ({ className, data, maxDepth = 3, initialDepth, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
-        "atlas-json-viewer rounded-lg border border-border bg-muted/30 p-4 font-mono text-xs overflow-x-auto",
+        "atlas-json-viewer overflow-auto rounded-lg border border-border bg-muted/50 p-4 font-mono text-sm",
         className
       )}
       {...props}
     >
-      <JsonNode
-        value={data}
-        depth={0}
-        maxDepth={maxDepth}
-        indent={indent}
-        defaultExpanded={defaultExpanded}
-      />
+      <JsonNode value={data} depth={0} maxDepth={initialDepth ?? maxDepth} />
     </div>
   )
 );
 JsonViewer.displayName = "JsonViewer";
 
-// ─── Heatmap ──────────────────────────────────────────────────────────────
+// ─── Heatmap ───────────────────────────────────────────────────────────────
 
 export interface HeatmapCell {
   date: string;
   value: number;
 }
 
-export interface HeatmapProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
+export interface HeatmapProps extends React.HTMLAttributes<HTMLDivElement> {
   data: HeatmapCell[];
-  title?: React.ReactNode;
-  colorScale?: [string, string];
-  weeks?: number;
-  showMonthLabels?: boolean;
-  tooltip?: (cell: HeatmapCell) => string;
+  maxValue?: number;
+  color?: string;
+  tooltipFormat?: (cell: HeatmapCell) => string;
 }
 
-const HEATMAP_DAYS = ["", "Mon", "", "Wed", "", "Fri", ""];
+const HEAT_LEVELS = 5;
 
 const Heatmap = React.forwardRef<HTMLDivElement, HeatmapProps>(
-  ({
-    className,
-    data,
-    title,
-    weeks = 52,
-    showMonthLabels = true,
-    tooltip,
-    ...props
-  }, ref) => {
-    const dataMap = React.useMemo(() => {
-      const map = new Map<string, number>();
-      data.forEach((d) => map.set(d.date, d.value));
-      return map;
-    }, [data]);
+  ({ className, data, maxValue, tooltipFormat, ...props }, ref) => {
+    const max = maxValue ?? Math.max(...data.map((d) => d.value), 1);
+    const byDate = Object.fromEntries(data.map((d) => [d.date, d]));
 
-    const maxValue = Math.max(...data.map((d) => d.value), 1);
-
-    const getColor = (value: number) => {
-      if (value === 0) return "bg-muted";
-      const intensity = value / maxValue;
-      if (intensity < 0.25) return "bg-success/25";
-      if (intensity < 0.5)  return "bg-success/50";
-      if (intensity < 0.75) return "bg-success/75";
-      return "bg-success";
-    };
-
+    // Build a 53-week grid
     const today = new Date();
-    const startDate = new Date(today);
-    startDate.setDate(today.getDate() - weeks * 7);
-
-    const grid: (HeatmapCell | null)[][] = Array.from({ length: 7 }, () => []);
-    const current = new Date(startDate);
-    current.setDate(current.getDate() - current.getDay());
-
-    for (let w = 0; w < weeks; w++) {
-      for (let d = 0; d < 7; d++) {
-        const dateStr = current.toISOString().split("T")[0];
-        if (current >= startDate && current <= today) {
-          grid[d].push({ date: dateStr, value: dataMap.get(dateStr) ?? 0 });
-        } else {
-          grid[d].push(null);
-        }
-        current.setDate(current.getDate() + 1);
+    const cells: (HeatmapCell | null)[] = [];
+    for (let w = 52; w >= 0; w--) {
+      for (let d = 6; d >= 0; d--) {
+        const dt = new Date(today);
+        dt.setDate(today.getDate() - w * 7 - d);
+        const key = dt.toISOString().slice(0, 10);
+        cells.push(byDate[key] ?? { date: key, value: 0 });
       }
     }
 
+    const intensity = (v: number) => Math.ceil((v / max) * HEAT_LEVELS);
+
+    const bgClass = (level: number) => {
+      if (level === 0) return "bg-muted";
+      if (level === 1) return "bg-primary/20";
+      if (level === 2) return "bg-primary/40";
+      if (level === 3) return "bg-primary/60";
+      if (level === 4) return "bg-primary/80";
+      return "bg-primary";
+    };
+
     return (
-      <div ref={ref} className={cn("atlas-heatmap", className)} {...props}>
-        {title && <p className="mb-3 text-sm font-medium">{title}</p>}
-        <div className="flex gap-1">
-          <div className="flex flex-col gap-1 mr-1">
-            {HEATMAP_DAYS.map((d, i) => (
-              <div key={i} className="h-3 w-6 flex items-center">
-                <span className="text-[9px] text-muted-foreground">{d}</span>
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-1 overflow-x-auto">
-            {Array.from({ length: weeks }, (_, w) => (
-              <div key={w} className="flex flex-col gap-1">
-                {Array.from({ length: 7 }, (_, d) => {
-                  const cell = grid[d][w];
-                  if (!cell) return <div key={d} className="h-3 w-3 rounded-sm opacity-0" />;
-                  return (
-                    <div
-                      key={d}
-                      title={tooltip ? tooltip(cell) : `${cell.date}: ${cell.value}`}
-                      className={cn("h-3 w-3 rounded-sm transition-opacity hover:opacity-80", getColor(cell.value))}
-                      role="gridcell"
-                      aria-label={`${cell.date}: ${cell.value}`}
-                    />
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="mt-2 flex items-center gap-1 justify-end">
-          <span className="text-[10px] text-muted-foreground mr-1">Less</span>
-          {["bg-muted", "bg-success/25", "bg-success/50", "bg-success/75", "bg-success"].map((c, i) => (
-            <div key={i} className={cn("h-3 w-3 rounded-sm", c)} />
-          ))}
-          <span className="text-[10px] text-muted-foreground ml-1">More</span>
+      <div ref={ref} className={cn("atlas-heatmap overflow-x-auto", className)} {...props}>
+        <div
+          className="inline-grid gap-[3px]"
+          style={{ gridTemplateRows: "repeat(7, minmax(0, 1fr))", gridAutoFlow: "column" }}
+        >
+          {cells.map((cell, i) =>
+            cell ? (
+              <span
+                key={i}
+                title={tooltipFormat ? tooltipFormat(cell) : `${cell.date}: ${cell.value}`}
+                className={cn(
+                  "h-[10px] w-[10px] rounded-sm transition-colors",
+                  bgClass(intensity(cell.value))
+                )}
+              />
+            ) : (
+              <span key={i} className="h-[10px] w-[10px]" />
+            )
+          )}
         </div>
       </div>
     );
@@ -1014,7 +1007,7 @@ const Heatmap = React.forwardRef<HTMLDivElement, HeatmapProps>(
 );
 Heatmap.displayName = "Heatmap";
 
-// ─── KanbanBoard ──────────────────────────────────────────────────────────
+// ─── KanbanBoard ───────────────────────────────────────────────────────────
 
 export interface KanbanCard {
   id: string;
@@ -1028,76 +1021,56 @@ export interface KanbanColumn {
   id: string;
   title: string;
   cards: KanbanCard[];
-  color?: string;
   limit?: number;
+  color?: string;
 }
 
-export interface KanbanBoardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
+export interface KanbanBoardProps extends React.HTMLAttributes<HTMLDivElement> {
   columns: KanbanColumn[];
-  onChange?: (columns: KanbanColumn[]) => void;
+  onCardMove?: (cardId: string, fromColId: string, toColId: string) => void;
   renderCard?: (card: KanbanCard, columnId: string) => React.ReactNode;
 }
 
 const KanbanBoard = React.forwardRef<HTMLDivElement, KanbanBoardProps>(
-  ({ className, columns, onChange, renderCard, ...props }, ref) => {
-    const [dragging, setDragging] = React.useState<{ cardId: string; fromCol: string } | null>(null);
-    const [dragOver, setDragOver] = React.useState<string | null>(null);
+  ({ className, columns, onCardMove, renderCard, ...props }, ref) => {
+    const [dragging, setDragging] = React.useState<{ cardId: string; colId: string } | null>(null);
 
-    const handleDragStart = (cardId: string, colId: string) => {
-      setDragging({ cardId, fromCol: colId });
-    };
+    const handleDragStart = (cardId: string, colId: string) =>
+      setDragging({ cardId, colId });
 
     const handleDrop = (toColId: string) => {
-      if (!dragging || dragging.fromCol === toColId) {
-        setDragging(null);
-        setDragOver(null);
-        return;
+      if (dragging && dragging.colId !== toColId) {
+        onCardMove?.(dragging.cardId, dragging.colId, toColId);
       }
-      const updated = columns.map((col) => {
-        if (col.id === dragging.fromCol) {
-          return { ...col, cards: col.cards.filter((c) => c.id !== dragging.cardId) };
-        }
-        if (col.id === toColId) {
-          const card = columns
-            .find((c) => c.id === dragging.fromCol)
-            ?.cards.find((c) => c.id === dragging.cardId);
-          if (card) return { ...col, cards: [...col.cards, card] };
-        }
-        return col;
-      });
-      onChange?.(updated);
       setDragging(null);
-      setDragOver(null);
     };
 
     return (
       <div
         ref={ref}
-        className={cn("atlas-kanban flex gap-4 overflow-x-auto pb-4", className)}
+        className={cn("atlas-kanban flex gap-4 overflow-x-auto pb-2", className)}
         {...props}
       >
         {columns.map((col) => (
           <div
             key={col.id}
-            onDragOver={(e) => { e.preventDefault(); setDragOver(col.id); }}
+            className="flex w-72 shrink-0 flex-col rounded-xl border border-border bg-muted/40 p-3"
+            onDragOver={(e) => e.preventDefault()}
             onDrop={() => handleDrop(col.id)}
-            onDragLeave={() => setDragOver(null)}
-            className={cn(
-              "flex flex-col gap-2 rounded-xl border border-border bg-muted/50 p-3 w-72 shrink-0 min-h-[200px]",
-              "transition-colors",
-              dragOver === col.id && "border-primary bg-primary/5"
-            )}
           >
-            <div className="flex items-center justify-between px-1 mb-1">
-              <div className="flex items-center gap-2">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="flex items-center gap-2 text-sm font-semibold">
                 {col.color && (
-                  <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: col.color }} />
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{ background: col.color }}
+                  />
                 )}
-                <h3 className="text-sm font-semibold">{col.title}</h3>
-                <span className="text-xs text-muted-foreground bg-background rounded-full px-1.5 py-0.5 border border-border">
-                  {col.cards.length}{col.limit ? `/${col.limit}` : ""}
-                </span>
-              </div>
+                {col.title}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {col.cards.length}{col.limit ? `/${col.limit}` : ""}
+              </span>
             </div>
             <div className="flex flex-col gap-2">
               {col.cards.map((card) => (
@@ -1115,13 +1088,18 @@ const KanbanBoard = React.forwardRef<HTMLDivElement, KanbanBoardProps>(
                     <>
                       <p className="text-sm font-medium leading-snug">{card.title}</p>
                       {card.description && (
-                        <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{card.description}</p>
+                        <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                          {card.description}
+                        </p>
                       )}
                       {(card.tags?.length || card.assignee) && (
                         <div className="mt-2 flex items-center justify-between gap-2">
                           <div className="flex flex-wrap gap-1">
                             {card.tags?.map((tag) => (
-                              <span key={tag} className="rounded bg-secondary px-1.5 py-0.5 text-[10px] font-medium">
+                              <span
+                                key={tag}
+                                className="rounded bg-secondary px-1.5 py-0.5 text-[10px] font-medium"
+                              >
                                 {tag}
                               </span>
                             ))}
@@ -1142,9 +1120,9 @@ const KanbanBoard = React.forwardRef<HTMLDivElement, KanbanBoardProps>(
 );
 KanbanBoard.displayName = "KanbanBoard";
 
+// ─── Exports ───────────────────────────────────────────────────────────────
 
 export {
-
   Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter,
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption,
   DataTable,
@@ -1154,5 +1132,5 @@ export {
   Calendar,
   CodeBlock,
   Chart,
-  StatsCard, TreeView, JsonViewer, Heatmap, KanbanBoard
+  StatsCard, TreeView, JsonViewer, Heatmap, KanbanBoard,
 };
