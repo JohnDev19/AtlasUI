@@ -1,80 +1,65 @@
 import * as React from "react";
 import { cn } from "../../utils/cn";
-import { Input } from "../forms";
 
 // ─── FileUpload ────────────────────────────────────────────────────────────
 
-export interface FileUploadProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
+export interface FileUploadProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onChange"> {
   label?: string;
-  hint?: string;
+  description?: string;
   accept?: string;
-  maxSize?: number;
+  maxSizeMB?: number;
   onFilesChange?: (files: File[]) => void;
-  dragDrop?: boolean;
+  dragActive?: boolean;
 }
 
 const FileUpload = React.forwardRef<HTMLInputElement, FileUploadProps>(
-  ({ className, label, hint, dragDrop = true, onFilesChange, id, ...props }, ref) => {
-    const inputId = id ?? React.useId();
-    const [isDragging, setIsDragging] = React.useState(false);
+  ({ className, label, description, accept, maxSizeMB, onFilesChange, id, ...props }, ref) => {
+    const innerId = id ?? React.useId();
+    const [dragging, setDragging] = React.useState(false);
+    const [files, setFiles] = React.useState<File[]>([]);
 
-    const handleDrop = (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsDragging(false);
-      const files = Array.from(e.dataTransfer.files);
-      onFilesChange?.(files);
+    const handleFiles = (incoming: FileList | null) => {
+      if (!incoming) return;
+      const arr = Array.from(incoming).filter((f) => !maxSizeMB || f.size <= maxSizeMB * 1024 * 1024);
+      setFiles(arr);
+      onFilesChange?.(arr);
     };
 
     return (
-      <div className={cn("atlas-file-upload w-full", className)}>
-        {dragDrop ? (
-          <label
-            htmlFor={inputId}
-            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-            onDragLeave={() => setIsDragging(false)}
-            onDrop={handleDrop}
-            className={cn(
-              "flex flex-col items-center justify-center gap-2 w-full",
-              "border-2 border-dashed rounded-lg p-8 cursor-pointer",
-              "transition-colors text-center",
-              isDragging
-                ? "border-primary bg-primary/5 text-primary"
-                : "border-border hover:border-primary/50 hover:bg-muted/50 text-muted-foreground"
-            )}
-          >
-            <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-              />
-            </svg>
-            <div>
-              <p className="font-medium text-sm">
-                {label ?? "Click to upload or drag and drop"}
-              </p>
-              {hint && <p className="text-xs mt-0.5">{hint}</p>}
-            </div>
-            <input
-              ref={ref}
-              id={inputId}
-              type="file"
-              className="sr-only"
-              onChange={(e) => onFilesChange?.(Array.from(e.target.files ?? []))}
-              {...props}
-            />
-          </label>
-        ) : (
-          <input
-            ref={ref}
-            id={inputId}
-            type="file"
-            className={cn(
-              "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm",
-              "file:mr-3 file:border-0 file:bg-primary file:text-primary-foreground file:rounded file:px-2 file:py-1 file:text-xs file:font-medium",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            )}
-            onChange={(e) => onFilesChange?.(Array.from(e.target.files ?? []))}
-            {...props}
-          />
+      <div className={cn("veloria-file-upload", className)}>
+        <label
+          htmlFor={innerId}
+          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={(e) => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}
+          className={cn(
+            "flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 cursor-pointer transition-colors",
+            dragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/50"
+          )}
+        >
+          <svg className="h-8 w-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <div className="text-center">
+            <p className="text-sm font-medium">{label ?? "Drop files here or click to upload"}</p>
+            {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
+            {maxSizeMB && <p className="mt-1 text-xs text-muted-foreground">Max {maxSizeMB}MB</p>}
+          </div>
+          <input ref={ref} id={innerId} type="file" accept={accept} className="sr-only" onChange={(e) => handleFiles(e.target.files)} {...props} />
+        </label>
+        {files.length > 0 && (
+          <ul className="mt-3 flex flex-col gap-2">
+            {files.map((f, i) => (
+              <li key={i} className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
+                <svg className="h-4 w-4 shrink-0 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+                <span className="flex-1 truncate">{f.name}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">{(f.size / 1024).toFixed(1)}KB</span>
+                <button type="button" onClick={() => { const n = files.filter((_, j) => j !== i); setFiles(n); onFilesChange?.(n); }} className="shrink-0 rounded p-0.5 hover:bg-muted transition-colors" aria-label="Remove file">
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     );
@@ -82,74 +67,70 @@ const FileUpload = React.forwardRef<HTMLInputElement, FileUploadProps>(
 );
 FileUpload.displayName = "FileUpload";
 
-// ─── OTPInput ─────────────────────────────────────────────────────────────
+// ─── OTPInput ──────────────────────────────────────────────────────────────
 
 export interface OTPInputProps {
   length?: number;
   value?: string;
   onChange?: (value: string) => void;
-  invalid?: boolean;
+  hasError?: boolean;
   className?: string;
   inputClassName?: string;
+  autoFocus?: boolean;
 }
 
-const OTPInput = React.forwardRef<HTMLDivElement, OTPInputProps>(
-  ({ length = 6, value = "", onChange, invalid, className, inputClassName }, ref) => {
-    const inputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
+const OTPInput: React.FC<OTPInputProps> = ({ length = 6, value = "", onChange, hasError, className, inputClassName, autoFocus }) => {
+  const refs = React.useRef<(HTMLInputElement | null)[]>([]);
+  const digits = Array.from({ length }, (_, i) => value[i] ?? "");
 
-    const handleChange = (index: number, char: string) => {
-      const chars = value.split("");
-      chars[index] = char;
-      const next = chars.join("").slice(0, length);
-      onChange?.(next);
-      if (char && index < length - 1) {
-        inputRefs.current[index + 1]?.focus();
-      }
-    };
+  const update = (idx: number, char: string) => {
+    const arr = [...digits];
+    arr[idx] = char;
+    const next = arr.join("");
+    onChange?.(next);
+    if (char && idx < length - 1) refs.current[idx + 1]?.focus();
+  };
 
-    const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Backspace" && !value[index] && index > 0) {
-        inputRefs.current[index - 1]?.focus();
-      }
-    };
+  return (
+    <div className={cn("veloria-otp-input flex items-center gap-2", className)}>
+      {digits.map((d, i) => (
+        <input
+          key={i}
+          ref={(el) => { refs.current[i] = el; }}
+          type="text"
+          inputMode="numeric"
+          pattern="\d*"
+          maxLength={1}
+          value={d}
+          autoFocus={autoFocus && i === 0}
+          aria-label={`OTP digit ${i + 1}`}
+          onChange={(e) => { const v = e.target.value.slice(-1); if (/^\d?$/.test(v)) update(i, v); }}
+          onKeyDown={(e) => {
+            if (e.key === "Backspace" && !d && i > 0) { refs.current[i - 1]?.focus(); }
+            if (e.key === "ArrowLeft" && i > 0) refs.current[i - 1]?.focus();
+            if (e.key === "ArrowRight" && i < length - 1) refs.current[i + 1]?.focus();
+          }}
+          onPaste={(e) => {
+            e.preventDefault();
+            const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, length);
+            onChange?.(pasted.padEnd(length, "").slice(0, length));
+            refs.current[Math.min(pasted.length, length - 1)]?.focus();
+          }}
+          className={cn(
+            "h-11 w-11 rounded-md border text-center text-lg font-semibold tabular-nums",
+            "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+            "bg-background transition-colors",
+            hasError ? "border-destructive text-destructive" : "border-input",
+            d && "border-primary",
+            inputClassName
+          )}
+        />
+      ))}
+    </div>
+  );
+};
 
-    const handlePaste = (e: React.ClipboardEvent) => {
-      e.preventDefault();
-      const pasted = e.clipboardData.getData("text").slice(0, length);
-      onChange?.(pasted);
-      inputRefs.current[Math.min(pasted.length, length - 1)]?.focus();
-    };
-
-    return (
-      <div ref={ref} className={cn("atlas-otp-input flex gap-2", className)} role="group" aria-label="OTP Input">
-        {Array.from({ length }).map((_, i) => (
-          <input
-            key={i}
-            ref={(el) => { inputRefs.current[i] = el; }}
-            type="text"
-            inputMode="numeric"
-            maxLength={1}
-            value={value[i] ?? ""}
-            onChange={(e) => handleChange(i, e.target.value.replace(/[^0-9]/g, ""))}
-            onKeyDown={(e) => handleKeyDown(i, e)}
-            onPaste={handlePaste}
-            aria-label={`Digit ${i + 1}`}
-            className={cn(
-              "h-10 w-10 text-center text-base font-semibold rounded-md border",
-              "transition-shadow focus:outline-none focus:ring-2 focus:ring-ring",
-              invalid ? "border-destructive" : "border-input",
-              "bg-background",
-              inputClassName
-            )}
-          />
-        ))}
-      </div>
-    );
-  }
-);
-OTPInput.displayName = "OTPInput";
-
-// ─── ColorPicker ──────────────────────────────────────────────────────────
+// ─── ColorPicker ───────────────────────────────────────────────────────────
 
 export interface ColorPickerProps {
   value?: string;
@@ -158,110 +139,79 @@ export interface ColorPickerProps {
   className?: string;
 }
 
-const DEFAULT_SWATCHES = [
-  "#ef4444","#f97316","#eab308","#22c55e",
-  "#3b82f6","#8b5cf6","#ec4899","#64748b",
+const defaultSwatches = [
+  "#ef4444","#f97316","#f59e0b","#84cc16","#22c55e","#14b8a6",
+  "#3b82f6","#8b5cf6","#ec4899","#64748b","#000000","#ffffff",
 ];
 
-const ColorPicker = ({ value = "#3b82f6", onChange, swatches = DEFAULT_SWATCHES, className }: ColorPickerProps) => (
-  <div className={cn("atlas-color-picker flex flex-col gap-3", className)}>
-    <div className="flex items-center gap-3">
-      <div
-        className="h-9 w-9 rounded-md border border-border shadow-sm shrink-0"
-        style={{ backgroundColor: value }}
-        aria-hidden="true"
-      />
-      <input
-        type="color"
-        value={value}
-        onChange={(e) => onChange?.(e.target.value)}
-        className="sr-only"
-        id="atlas-color-input"
-        aria-label="Custom color"
-      />
-      <label htmlFor="atlas-color-input" className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
-        Pick color
-      </label>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange?.(e.target.value)}
-        className="flex-1 h-9 rounded-md border border-input bg-background px-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
-        aria-label="Hex color value"
-      />
-    </div>
-    {swatches.length > 0 && (
-      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Color swatches">
-        {swatches.map((swatch) => (
+const ColorPicker: React.FC<ColorPickerProps> = ({ value = "#3b82f6", onChange, swatches = defaultSwatches, className }) => {
+  const [hex, setHex] = React.useState(value);
+  const update = (c: string) => { setHex(c); onChange?.(c); };
+
+  return (
+    <div className={cn("veloria-color-picker flex flex-col gap-3", className)}>
+      <div className="flex flex-wrap gap-2">
+        {swatches.map((s) => (
           <button
-            key={swatch}
+            key={s}
             type="button"
-            onClick={() => onChange?.(swatch)}
-            aria-label={`Select color ${swatch}`}
-            aria-pressed={value === swatch}
-            className={cn(
-              "h-6 w-6 rounded border-2 transition-transform hover:scale-110",
-              value === swatch ? "border-foreground" : "border-transparent"
-            )}
-            style={{ backgroundColor: swatch }}
+            onClick={() => update(s)}
+            className={cn("h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", hex === s ? "border-foreground" : "border-transparent")}
+            style={{ backgroundColor: s }}
+            aria-label={s}
           />
         ))}
       </div>
-    )}
-  </div>
-);
-ColorPicker.displayName = "ColorPicker";
+      <div className="flex items-center gap-2">
+        <div className="h-8 w-8 shrink-0 rounded-md border border-border" style={{ backgroundColor: hex }} />
+        <input
+          type="text"
+          value={hex}
+          onChange={(e) => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) update(e.target.value); }}
+          className="flex h-8 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          placeholder="#000000"
+          maxLength={7}
+        />
+        <input type="color" value={hex} onChange={(e) => update(e.target.value)} className="h-8 w-10 cursor-pointer rounded-md border border-input bg-background p-0.5" aria-label="Color picker" />
+      </div>
+    </div>
+  );
+};
 
-// ─── SearchInput ──────────────────────────────────────────────────────────
+// ─── SearchInput ───────────────────────────────────────────────────────────
 
-export interface SearchInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "size"> {
-  onClear?: () => void;
+export interface SearchInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
   loading?: boolean;
-  size?: "sm" | "md" | "lg";
+  onClear?: () => void;
+  inputSize?: "sm" | "md" | "lg";
 }
 
 const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
-  ({ className, onClear, loading, value, size = "md", ...props }, ref) => (
-    <div className={cn("atlas-search-input relative flex items-center w-full", className)}>
-      <span className="absolute left-3 text-muted-foreground pointer-events-none">
-        {loading ? (
-          <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-        ) : (
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        )}
+  ({ className, loading, onClear, value, inputSize = "md", ...props }, ref) => (
+    <div className={cn("veloria-search-input relative flex items-center", className)}>
+      <span className="absolute left-3 text-muted-foreground pointer-events-none" aria-hidden="true">
+        {loading
+          ? <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+          : <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        }
       </span>
       <input
         ref={ref}
         type="search"
         value={value}
         className={cn(
-          "flex w-full rounded-md border border-input bg-background text-sm",
-          "ring-offset-background placeholder:text-muted-foreground",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          "disabled:cursor-not-allowed disabled:opacity-50",
-          "pl-9",
-          value && onClear ? "pr-8" : "pr-3",
-          size === "sm" && "h-8 text-xs",
-          size === "md" && "h-9",
-          size === "lg" && "h-10",
+          "flex w-full rounded-md border border-input bg-background pl-9 pr-9 text-sm ring-offset-background",
+          "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          "disabled:cursor-not-allowed disabled:opacity-50 [&::-webkit-search-cancel-button]:hidden",
+          inputSize === "sm" && "h-8",
+          inputSize === "md" && "h-9",
+          inputSize === "lg" && "h-10",
         )}
         {...props}
       />
-      {value && onClear && (
-        <button
-          type="button"
-          onClick={onClear}
-          aria-label="Clear search"
-          className="absolute right-2.5 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-          </svg>
+      {onClear && value && (
+        <button type="button" onClick={onClear} className="absolute right-3 text-muted-foreground hover:text-foreground transition-colors" aria-label="Clear search">
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
       )}
     </div>
@@ -269,51 +219,39 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
 );
 SearchInput.displayName = "SearchInput";
 
-// ─── PasswordInput ────────────────────────────────────────────────────────
+// ─── PasswordInput ─────────────────────────────────────────────────────────
 
-export interface PasswordInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "size"> {
-  invalid?: boolean;
-  size?: "sm" | "md" | "lg";
+export interface PasswordInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
+  hasError?: boolean;
 }
 
 const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
-  ({ className, invalid, size = "md", ...props }, ref) => {
+  ({ className, hasError, ...props }, ref) => {
     const [show, setShow] = React.useState(false);
-
     return (
-      <div className={cn("atlas-password-input relative flex items-center w-full", className)}>
+      <div className="veloria-password-input relative flex items-center">
         <input
           ref={ref}
           type={show ? "text" : "password"}
           className={cn(
-            "flex w-full rounded-md border border-input bg-background text-sm pr-10",
-            "ring-offset-background placeholder:text-muted-foreground",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "flex h-9 w-full rounded-md border border-input bg-background px-3 pr-9 text-sm ring-offset-background",
+            "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
             "disabled:cursor-not-allowed disabled:opacity-50",
-            size === "sm" && "h-8 px-2.5 text-xs",
-            size === "md" && "h-9 px-3",
-            size === "lg" && "h-10 px-4",
-            invalid && "border-destructive focus-visible:ring-destructive",
+            hasError && "border-destructive focus-visible:ring-destructive",
+            className
           )}
-          aria-invalid={invalid}
           {...props}
         />
         <button
           type="button"
           onClick={() => setShow(!show)}
-          aria-label={show ? "Hide password" : "Show password"}
           className="absolute right-3 text-muted-foreground hover:text-foreground transition-colors"
+          aria-label={show ? "Hide password" : "Show password"}
         >
-          {show ? (
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-            </svg>
-          ) : (
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-          )}
+          {show
+            ? <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+            : <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+          }
         </button>
       </div>
     );
@@ -321,73 +259,9 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
 );
 PasswordInput.displayName = "PasswordInput";
 
-// ─── FormField ────────────────────────────────────────────────────────────
+// ─── Combobox ──────────────────────────────────────────────────────────────
 
-export interface FormFieldProps extends React.HTMLAttributes<HTMLDivElement> {
-  required?: boolean;
-}
-
-const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("atlas-form-field grid gap-1.5 w-full", className)} {...props} />
-  )
-);
-FormField.displayName = "FormField";
-
-// ─── FormLabel ────────────────────────────────────────────────────────────
-
-export interface FormLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
-  required?: boolean;
-  optional?: boolean;
-}
-
-const FormLabel = React.forwardRef<HTMLLabelElement, FormLabelProps>(
-  ({ className, required, optional, children, ...props }, ref) => (
-    <label
-      ref={ref}
-      className={cn("atlas-form-label text-sm font-medium leading-none", className)}
-      {...props}
-    >
-      {children}
-      {required && <span className="ml-0.5 text-destructive" aria-hidden="true">*</span>}
-      {optional && <span className="ml-1 text-xs font-normal text-muted-foreground">(optional)</span>}
-    </label>
-  )
-);
-FormLabel.displayName = "FormLabel";
-
-// ─── FormError ────────────────────────────────────────────────────────────
-
-export interface FormErrorProps extends React.HTMLAttributes<HTMLParagraphElement> {}
-
-const FormError = React.forwardRef<HTMLParagraphElement, FormErrorProps>(
-  ({ className, children, ...props }, ref) => {
-    if (!children) return null;
-    return (
-      <p
-        ref={ref}
-        role="alert"
-        aria-live="polite"
-        className={cn("atlas-form-error flex items-center gap-1.5 text-xs text-destructive", className)}
-        {...props}
-      >
-        <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        {children}
-      </p>
-    );
-  }
-);
-FormError.displayName = "FormError";
-
-// ─── Combobox ─────────────────────────────────────────────────────────────
-
-export interface ComboboxOption {
-  value: string;
-  label: string;
-  disabled?: boolean;
-}
+export interface ComboboxOption { value: string; label: string; }
 
 export interface ComboboxProps {
   options: ComboboxOption[];
@@ -400,451 +274,298 @@ export interface ComboboxProps {
   disabled?: boolean;
 }
 
-const Combobox = ({ options, value, onChange, placeholder = "Select option...", searchPlaceholder = "Search...", emptyText = "No results found.", className, disabled }: ComboboxProps) => {
+const Combobox: React.FC<ComboboxProps> = ({ options, value, onChange, placeholder = "Select…", searchPlaceholder = "Search…", emptyText = "No results.", className, disabled }) => {
   const [open, setOpen] = React.useState(false);
-  const [search, setSearch] = React.useState("");
-
-  const filtered = options.filter((o) =>
-    o.label.toLowerCase().includes(search.toLowerCase())
-  );
+  const [query, setQuery] = React.useState("");
+  const ref = React.useRef<HTMLDivElement>(null);
+  const filtered = options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()));
   const selected = options.find((o) => o.value === value);
 
+  React.useEffect(() => {
+    const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
+  }, []);
+
   return (
-    <div className={cn("atlas-combobox relative w-full", className)}>
+    <div ref={ref} className={cn("veloria-combobox relative", className)}>
       <button
         type="button"
-        role="combobox"
-        aria-expanded={open}
-        aria-haspopup="listbox"
         disabled={disabled}
         onClick={() => setOpen(!open)}
         className={cn(
           "flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm",
-          "focus:outline-none focus:ring-2 focus:ring-ring",
-          "disabled:cursor-not-allowed disabled:opacity-50"
+          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+          "disabled:cursor-not-allowed disabled:opacity-50",
+          !selected && "text-muted-foreground"
         )}
       >
-        <span className={selected ? "text-foreground" : "text-muted-foreground"}>
-          {selected?.label ?? placeholder}
-        </span>
-        <svg className="h-4 w-4 opacity-50 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-        </svg>
+        {selected?.label ?? placeholder}
+        <svg className="h-4 w-4 opacity-50 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
       </button>
       {open && (
-        <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-md border border-border bg-popover shadow-md">
-          <div className="p-1 border-b border-border">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={searchPlaceholder}
-              className="w-full px-2 py-1.5 text-sm bg-transparent outline-none placeholder:text-muted-foreground"
-              autoFocus
-            />
+        <div className="absolute z-50 mt-1 w-full rounded-md border border-border bg-popover shadow-lg overflow-hidden">
+          <div className="border-b border-border p-2">
+            <input autoFocus type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={searchPlaceholder} className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
           </div>
-          <div role="listbox" className="max-h-60 overflow-y-auto p-1">
+          <ul className="max-h-56 overflow-auto p-1" role="listbox">
             {filtered.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">{emptyText}</p>
-            ) : (
-              filtered.map((option) => (
-                <button
-                  key={option.value}
-                  role="option"
-                  aria-selected={option.value === value}
-                  disabled={option.disabled}
-                  onClick={() => { onChange?.(option.value); setOpen(false); setSearch(""); }}
-                  className={cn(
-                    "relative flex w-full cursor-default items-center rounded-sm px-2 py-1.5 pl-8 text-sm",
-                    "hover:bg-accent hover:text-accent-foreground outline-none",
-                    "disabled:pointer-events-none disabled:opacity-50",
-                    option.value === value && "bg-accent"
-                  )}
-                >
-                  {option.value === value && (
-                    <svg className="absolute left-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                  {option.label}
-                </button>
-              ))
-            )}
-          </div>
+              <li className="py-4 text-center text-sm text-muted-foreground">{emptyText}</li>
+            ) : filtered.map((opt) => (
+              <li
+                key={opt.value}
+                role="option"
+                aria-selected={opt.value === value}
+                onClick={() => { onChange?.(opt.value); setOpen(false); setQuery(""); }}
+                className={cn(
+                  "flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm",
+                  "hover:bg-accent hover:text-accent-foreground",
+                  opt.value === value && "bg-accent text-accent-foreground font-medium"
+                )}
+              >
+                {opt.value === value && <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>}
+                {opt.label}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
   );
 };
-Combobox.displayName = "Combobox";
 
-// ─── MultiSelect ──────────────────────────────────────────────────────────
+// ─── MultiSelect ───────────────────────────────────────────────────────────
 
 export interface MultiSelectProps {
   options: ComboboxOption[];
   value?: string[];
   onChange?: (value: string[]) => void;
   placeholder?: string;
-  maxDisplay?: number;
+  max?: number;
   className?: string;
+  disabled?: boolean;
 }
 
-const MultiSelect = ({ options, value = [], onChange, placeholder = "Select...", maxDisplay = 3, className }: MultiSelectProps) => {
+const MultiSelect: React.FC<MultiSelectProps> = ({ options, value = [], onChange, placeholder = "Select…", max, className, disabled }) => {
   const [open, setOpen] = React.useState(false);
+  const [query, setQuery] = React.useState("");
+  const ref = React.useRef<HTMLDivElement>(null);
+  const filtered = options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()));
 
-  const toggle = (optValue: string) => {
-    onChange?.(value.includes(optValue) ? value.filter((v) => v !== optValue) : [...value, optValue]);
+  React.useEffect(() => {
+    const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
+  }, []);
+
+  const toggle = (val: string) => {
+    if (value.includes(val)) { onChange?.(value.filter((v) => v !== val)); }
+    else if (!max || value.length < max) { onChange?.([...value, val]); }
   };
 
-  const selectedLabels = value
-    .slice(0, maxDisplay)
-    .map((v) => options.find((o) => o.value === v)?.label)
-    .filter(Boolean);
+  const selected = options.filter((o) => value.includes(o.value));
 
   return (
-    <div className={cn("atlas-multi-select relative w-full", className)}>
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="flex min-h-[2.25rem] w-full flex-wrap items-center gap-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-      >
-        {value.length === 0 ? (
-          <span className="text-muted-foreground">{placeholder}</span>
-        ) : (
-          <>
-            {selectedLabels.map((label, i) => (
-              <span key={i} className="inline-flex items-center gap-0.5 rounded bg-secondary px-1.5 py-0.5 text-xs font-medium">
-                {label}
-                <svg className="h-3 w-3 cursor-pointer" onClick={(e) => { e.stopPropagation(); const v = options.find((o) => o.label === label)?.value; if (v) toggle(v); }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </span>
-            ))}
-            {value.length > maxDisplay && (
-              <span className="text-xs text-muted-foreground">+{value.length - maxDisplay} more</span>
-            )}
-          </>
+    <div ref={ref} className={cn("veloria-multi-select relative", className)}>
+      <div
+        onClick={() => !disabled && setOpen(!open)}
+        className={cn(
+          "flex min-h-[2.25rem] w-full flex-wrap items-center gap-1 rounded-md border border-input bg-background px-3 py-1.5 cursor-pointer",
+          "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
+          disabled && "cursor-not-allowed opacity-50"
         )}
-      </button>
+      >
+        {selected.length === 0 && <span className="text-sm text-muted-foreground">{placeholder}</span>}
+        {selected.map((opt) => (
+          <span key={opt.value} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+            {opt.label}
+            <button type="button" onClick={(e) => { e.stopPropagation(); toggle(opt.value); }} className="hover:text-primary/70" aria-label={`Remove ${opt.label}`}>
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </span>
+        ))}
+        <svg className="ml-auto h-4 w-4 opacity-50 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+      </div>
       {open && (
-        <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-md border border-border bg-popover shadow-md">
-          <div role="listbox" aria-multiselectable="true" className="max-h-60 overflow-y-auto p-1">
-            {options.map((option) => (
-              <button
-                key={option.value}
-                role="option"
-                aria-selected={value.includes(option.value)}
-                onClick={() => toggle(option.value)}
-                className="relative flex w-full cursor-default items-center rounded-sm px-2 py-1.5 pl-8 text-sm hover:bg-accent"
-              >
-                {value.includes(option.value) && (
-                  <svg className="absolute left-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-                {option.label}
-              </button>
-            ))}
+        <div className="absolute z-50 mt-1 w-full rounded-md border border-border bg-popover shadow-lg overflow-hidden">
+          <div className="border-b border-border p-2">
+            <input autoFocus type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search…" className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
           </div>
+          <ul className="max-h-56 overflow-auto p-1" role="listbox" aria-multiselectable="true">
+            {filtered.map((opt) => {
+              const checked = value.includes(opt.value);
+              const atMax = !!max && value.length >= max && !checked;
+              return (
+                <li
+                  key={opt.value}
+                  role="option"
+                  aria-selected={checked}
+                  onClick={() => !atMax && toggle(opt.value)}
+                  className={cn(
+                    "flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm",
+                    !atMax && "hover:bg-accent hover:text-accent-foreground",
+                    atMax && "opacity-40 cursor-not-allowed"
+                  )}
+                >
+                  <div className={cn("h-4 w-4 rounded-sm border shrink-0 flex items-center justify-center", checked ? "bg-primary border-primary text-primary-foreground" : "border-input")}>
+                    {checked && <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                  </div>
+                  {opt.label}
+                </li>
+              );
+            })}
+          </ul>
+          {max && <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">{value.length}/{max} selected</p>}
         </div>
       )}
     </div>
   );
 };
-MultiSelect.displayName = "MultiSelect";
 
+// ─── PhoneInput ────────────────────────────────────────────────────────────
 
-// ═══════════════════════════════════════════════════════════════
-// New in v0.1.2
-// ═══════════════════════════════════════════════════════════════
-
-
-// ─── PhoneInput ───────────────────────────────────────────────────────────
-
-const COUNTRY_CODES = [
-  { code: "US", dial: "+1",  flag: "US" },
-  { code: "GB", dial: "+44", flag: "GB" },
-  { code: "AU", dial: "+61", flag: "AU" },
-  { code: "CA", dial: "+1",  flag: "CA" },
-  { code: "DE", dial: "+49", flag: "DE" },
-  { code: "FR", dial: "+33", flag: "FR" },
-  { code: "IN", dial: "+91", flag: "IN" },
-  { code: "JP", dial: "+81", flag: "JP" },
-  { code: "CN", dial: "+86", flag: "CN" },
-  { code: "BR", dial: "+55", flag: "BR" },
-  { code: "MX", dial: "+52", flag: "MX" },
-  { code: "PH", dial: "+63", flag: "PH" },
-  { code: "SG", dial: "+65", flag: "SG" },
-  { code: "ZA", dial: "+27", flag: "ZA" },
-  { code: "NG", dial: "+234", flag: "NG" },
-];
-
-export interface PhoneInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value" | "size"> {
+export interface PhoneInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onChange"> {
   value?: string;
   onChange?: (value: string) => void;
+  hasError?: boolean;
   defaultCountry?: string;
-  invalid?: boolean;
-  size?: "sm" | "md" | "lg";
 }
 
+const countryCodes = [
+  { code: "+1",  flag: "🇺🇸", name: "US" },
+  { code: "+44", flag: "🇬🇧", name: "UK" },
+  { code: "+63", flag: "🇵🇭", name: "PH" },
+  { code: "+81", flag: "🇯🇵", name: "JP" },
+  { code: "+86", flag: "🇨🇳", name: "CN" },
+  { code: "+49", flag: "🇩🇪", name: "DE" },
+  { code: "+33", flag: "🇫🇷", name: "FR" },
+  { code: "+91", flag: "🇮🇳", name: "IN" },
+  { code: "+55", flag: "🇧🇷", name: "BR" },
+  { code: "+61", flag: "🇦🇺", name: "AU" },
+];
+
 const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
-  ({ className, value = "", onChange, defaultCountry = "US", invalid, size = "md", disabled, ...props }, ref) => {
-    const [country, setCountry] = React.useState(
-      COUNTRY_CODES.find((c) => c.code === defaultCountry) ?? COUNTRY_CODES[0]
-    );
-    const [open, setOpen] = React.useState(false);
-    const containerRef = React.useRef<HTMLDivElement>(null);
-
-    React.useEffect(() => {
-      const handler = (e: MouseEvent) => {
-        if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-          setOpen(false);
-        }
-      };
-      document.addEventListener("mousedown", handler);
-      return () => document.removeEventListener("mousedown", handler);
-    }, []);
-
+  ({ className, value = "", onChange, hasError, defaultCountry = "+1", ...props }, ref) => {
+    const [country, setCountry] = React.useState(defaultCountry);
+    const selected = countryCodes.find((c) => c.code === country) ?? countryCodes[0];
     return (
-      <div ref={containerRef} className={cn("atlas-phone-input relative flex w-full", className)}>
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => setOpen(!open)}
+      <div className={cn("veloria-phone-input flex", className)}>
+        <select
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
           className={cn(
-            "flex shrink-0 items-center gap-1.5 rounded-l-md border border-r-0 border-input bg-background px-3",
-            "hover:bg-accent transition-colors focus:outline-none focus:ring-2 focus:ring-ring",
-            "disabled:cursor-not-allowed disabled:opacity-50",
-            size === "sm" && "h-8 text-xs",
-            size === "md" && "h-9 text-sm",
-            size === "lg" && "h-10 text-sm",
-            invalid && "border-destructive"
+            "h-9 rounded-l-md border border-r-0 border-input bg-background pl-2 pr-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring",
+            hasError && "border-destructive"
           )}
-          aria-haspopup="listbox"
-          aria-expanded={open}
-          aria-label="Select country code"
+          aria-label="Country code"
         >
-          <span className="text-base leading-none">{country.dial}</span>
-          <svg className="h-3 w-3 opacity-50 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-
+          {countryCodes.map((c) => (
+            <option key={c.code} value={c.code}>{c.flag} {c.code}</option>
+          ))}
+        </select>
         <input
           ref={ref}
           type="tel"
           value={value}
-          disabled={disabled}
           onChange={(e) => onChange?.(e.target.value)}
-          aria-invalid={invalid}
           className={cn(
-            "flex w-full rounded-r-md border border-input bg-background px-3 text-sm",
-            "placeholder:text-muted-foreground",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            "flex h-9 w-full rounded-r-md border border-input bg-background px-3 text-sm ring-offset-background",
+            "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             "disabled:cursor-not-allowed disabled:opacity-50",
-            size === "sm" && "h-8 text-xs",
-            size === "md" && "h-9",
-            size === "lg" && "h-10",
-            invalid && "border-destructive focus-visible:ring-destructive"
+            hasError && "border-destructive focus-visible:ring-destructive"
           )}
+          placeholder={`${selected.code} xxx-xxxx`}
           {...props}
         />
-
-        {open && (
-          <div
-            role="listbox"
-            aria-label="Country codes"
-            className="absolute top-full left-0 z-50 mt-1 w-48 rounded-md border border-border bg-popover shadow-md overflow-y-auto max-h-56"
-          >
-            {COUNTRY_CODES.map((c) => (
-              <button
-                key={c.code}
-                type="button"
-                role="option"
-                aria-selected={c.code === country.code}
-                onClick={() => { setCountry(c); setOpen(false); }}
-                className={cn(
-                  "flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-accent transition-colors",
-                  c.code === country.code && "bg-accent"
-                )}
-              >
-                <span className="font-mono text-xs text-muted-foreground w-10 shrink-0">{c.dial}</span>
-                <span>{c.code}</span>
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     );
   }
 );
 PhoneInput.displayName = "PhoneInput";
 
-// ─── TagInput ─────────────────────────────────────────────────────────────
+// ─── TagInput ──────────────────────────────────────────────────────────────
 
-export interface TagInputProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "size"> {
+export interface TagInputProps {
   value?: string[];
   onChange?: (tags: string[]) => void;
   placeholder?: string;
-  maxTags?: number;
-  invalid?: boolean;
-  disabled?: boolean;
+  max?: number;
   allowDuplicates?: boolean;
-  size?: "sm" | "md" | "lg";
+  className?: string;
+  disabled?: boolean;
 }
 
-const TagInput = React.forwardRef<HTMLDivElement, TagInputProps>(
-  ({
-    className,
-    value = [],
-    onChange,
-    placeholder = "Add tag...",
-    maxTags,
-    invalid,
-    disabled,
-    allowDuplicates = false,
-    size = "md",
-    ...props
-  }, ref) => {
-    const [input, setInput] = React.useState("");
-    const inputRef = React.useRef<HTMLInputElement>(null);
+const TagInput: React.FC<TagInputProps> = ({ value = [], onChange, placeholder = "Add tag…", max, allowDuplicates = false, className, disabled }) => {
+  const [input, setInput] = React.useState("");
 
-    const addTag = (tag: string) => {
-      const trimmed = tag.trim();
-      if (!trimmed) return;
-      if (!allowDuplicates && value.includes(trimmed)) return;
-      if (maxTags && value.length >= maxTags) return;
-      onChange?.([...value, trimmed]);
-      setInput("");
-    };
+  const add = () => {
+    const tag = input.trim();
+    if (!tag) return;
+    if (!allowDuplicates && value.includes(tag)) return;
+    if (max && value.length >= max) return;
+    onChange?.([...value, tag]);
+    setInput("");
+  };
 
-    const removeTag = (index: number) => {
-      onChange?.(value.filter((_, i) => i !== index));
-    };
+  return (
+    <div className={cn("veloria-tag-input flex flex-wrap gap-1.5 rounded-md border border-input bg-background px-3 py-2 focus-within:ring-2 focus-within:ring-ring", className)}>
+      {value.map((tag, i) => (
+        <span key={i} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+          {tag}
+          {!disabled && (
+            <button type="button" onClick={() => onChange?.(value.filter((_, j) => j !== i))} aria-label={`Remove ${tag}`}>
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          )}
+        </span>
+      ))}
+      <input
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); } if (e.key === "Backspace" && !input && value.length) onChange?.(value.slice(0, -1)); }}
+        placeholder={(!max || value.length < max) ? placeholder : `Max ${max} tags`}
+        disabled={disabled || (!!max && value.length >= max)}
+        className="flex-1 min-w-[120px] bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
+      />
+    </div>
+  );
+};
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter" || e.key === ",") {
-        e.preventDefault();
-        addTag(input);
-      }
-      if (e.key === "Backspace" && !input && value.length > 0) {
-        removeTag(value.length - 1);
-      }
-    };
+// ─── CurrencyInput ─────────────────────────────────────────────────────────
 
-    return (
-      <div
-        ref={ref}
-        role="group"
-        aria-label="Tag input"
-        onClick={() => inputRef.current?.focus()}
-        className={cn(
-          "atlas-tag-input flex flex-wrap gap-1.5 w-full rounded-md border border-input bg-background px-3 py-2",
-          "cursor-text transition-shadow",
-          "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
-          size === "sm" && "min-h-[2rem] text-xs",
-          size === "md" && "min-h-[2.25rem] text-sm",
-          size === "lg" && "min-h-[2.5rem] text-sm",
-          invalid && "border-destructive focus-within:ring-destructive",
-          disabled && "opacity-50 cursor-not-allowed",
-          className
-        )}
-        {...props}
-      >
-        {value.map((tag, i) => (
-          <span
-            key={i}
-            className="inline-flex items-center gap-1 rounded bg-secondary px-1.5 py-0.5 text-xs font-medium"
-          >
-            {tag}
-            {!disabled && (
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); removeTag(i); }}
-                aria-label={`Remove ${tag}`}
-                className="rounded-full hover:bg-muted-foreground/20 p-0.5 transition-colors"
-              >
-                <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
-          </span>
-        ))}
-        <input
-          ref={inputRef}
-          type="text"
-          value={input}
-          disabled={disabled}
-          placeholder={value.length === 0 ? placeholder : undefined}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onBlur={() => { if (input) addTag(input); }}
-          className="flex-1 min-w-[80px] bg-transparent outline-none placeholder:text-muted-foreground text-sm disabled:cursor-not-allowed"
-          aria-label="Type and press Enter to add tag"
-        />
-      </div>
-    );
-  }
-);
-TagInput.displayName = "TagInput";
-
-// ─── CurrencyInput ────────────────────────────────────────────────────────
-
-export interface CurrencyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value" | "type" | "size"> {
-  value?: number | string;
-  onChange?: (value: number | undefined) => void;
+export interface CurrencyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onChange" | "value"> {
+  value?: number;
+  onChange?: (value: number) => void;
   currency?: string;
   locale?: string;
-  invalid?: boolean;
-  size?: "sm" | "md" | "lg";
+  hasError?: boolean;
 }
 
 const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
-  ({ className, value, onChange, currency = "USD", locale = "en-US", invalid, size = "md", disabled, ...props }, ref) => {
-    const [display, setDisplay] = React.useState(
-      value !== undefined && value !== "" ? String(value) : ""
-    );
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const raw = e.target.value.replace(/[^0-9.]/g, "");
-      setDisplay(raw);
-      const num = parseFloat(raw);
-      onChange?.(isNaN(num) ? undefined : num);
-    };
-
-    const symbol = new Intl.NumberFormat(locale, { style: "currency", currency })
-      .formatToParts(0)
-      .find((p) => p.type === "currency")?.value ?? "$";
+  ({ className, value, onChange, currency = "USD", locale = "en-US", hasError, ...props }, ref) => {
+    const [raw, setRaw] = React.useState(value?.toString() ?? "");
+    const symbol = new Intl.NumberFormat(locale, { style: "currency", currency }).formatToParts(0).find((p) => p.type === "currency")?.value ?? "$";
 
     return (
-      <div className={cn("atlas-currency-input relative flex items-center w-full", className)}>
-        <span className={cn(
-          "absolute left-3 text-muted-foreground select-none pointer-events-none",
-          size === "sm" && "text-xs",
-          size === "md" && "text-sm",
-          size === "lg" && "text-sm",
-        )}>
-          {symbol}
-        </span>
+      <div className="veloria-currency-input relative flex items-center">
+        <span className="absolute left-3 text-sm text-muted-foreground pointer-events-none">{symbol}</span>
         <input
           ref={ref}
           type="text"
           inputMode="decimal"
-          value={display}
-          disabled={disabled}
-          onChange={handleChange}
-          aria-invalid={invalid}
+          value={raw}
+          onChange={(e) => {
+            const v = e.target.value.replace(/[^0-9.]/g, "");
+            setRaw(v);
+            const num = parseFloat(v);
+            if (!isNaN(num)) onChange?.(num);
+          }}
           className={cn(
-            "flex w-full rounded-md border border-input bg-background text-sm",
-            "placeholder:text-muted-foreground",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            "flex h-9 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm ring-offset-background",
+            "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             "disabled:cursor-not-allowed disabled:opacity-50",
-            "pl-8 pr-3",
-            size === "sm" && "h-8 text-xs",
-            size === "md" && "h-9",
-            size === "lg" && "h-10",
-            invalid && "border-destructive focus-visible:ring-destructive",
+            hasError && "border-destructive focus-visible:ring-destructive",
+            className
           )}
           {...props}
         />
@@ -854,122 +575,66 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
 );
 CurrencyInput.displayName = "CurrencyInput";
 
-// ─── RatingInput ──────────────────────────────────────────────────────────
+// ─── RatingInput ───────────────────────────────────────────────────────────
 
-export interface RatingInputProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "size"> {
+export interface RatingInputProps {
   value?: number;
-  onChange?: (value: number) => void;
+  onChange?: (rating: number) => void;
   max?: number;
-  size?: "sm" | "md" | "lg";
-  disabled?: boolean;
   readOnly?: boolean;
-  allowHalf?: boolean;
+  size?: "sm" | "md" | "lg";
+  className?: string;
+  allowClear?: boolean;
 }
 
-const ratingIconSizes = { sm: "h-4 w-4", md: "h-6 w-6", lg: "h-8 w-8" };
+const RatingInput: React.FC<RatingInputProps> = ({ value = 0, onChange, max = 5, readOnly, size = "md", className, allowClear = true }) => {
+  const [hover, setHover] = React.useState(0);
+  const starSize = { sm: "h-4 w-4", md: "h-6 w-6", lg: "h-8 w-8" }[size];
 
-const StarIcon = ({ filled, half, className }: { filled: boolean; half?: boolean; className?: string }) => (
-  <svg
-    className={cn(className, "transition-colors")}
-    fill={filled ? "currentColor" : "none"}
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-  >
-    {half ? (
-      <>
-        <defs>
-          <linearGradient id="half-fill">
-            <stop offset="50%" stopColor="currentColor" />
-            <stop offset="50%" stopColor="transparent" />
-          </linearGradient>
-        </defs>
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={1.5}
-          fill="url(#half-fill)"
-          d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-        />
-      </>
-    ) : (
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-      />
-    )}
-  </svg>
-);
-
-const RatingInput = React.forwardRef<HTMLDivElement, RatingInputProps>(
-  ({ className, value = 0, onChange, max = 5, size = "md", disabled, readOnly, ...props }, ref) => {
-    const [hovered, setHovered] = React.useState<number | null>(null);
-    const display = hovered ?? value;
-
-    return (
-      <div
-        ref={ref}
-        role="radiogroup"
-        aria-label="Rating"
-        className={cn("atlas-rating-input flex items-center gap-0.5", className)}
-        onMouseLeave={() => setHovered(null)}
-        {...props}
-      >
-        {Array.from({ length: max }, (_, i) => {
-          const starValue = i + 1;
-          const filled = display >= starValue;
-
-          return (
-            <button
-              key={i}
-              type="button"
-              role="radio"
-              aria-checked={value === starValue}
-              aria-label={`Rate ${starValue} out of ${max}`}
-              disabled={disabled || readOnly}
-              onClick={() => onChange?.(starValue)}
-              onMouseEnter={() => !readOnly && setHovered(starValue)}
-              className={cn(
-                "text-yellow-400 transition-transform",
-                !disabled && !readOnly && "hover:scale-110 cursor-pointer",
-                (disabled || readOnly) && "cursor-default",
-                !filled && "text-muted"
-              )}
-            >
-              <StarIcon filled={filled} className={ratingIconSizes[size]} />
-            </button>
-          );
-        })}
-        {value > 0 && !readOnly && !disabled && (
-          <button
-            type="button"
-            onClick={() => onChange?.(0)}
-            className="ml-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Clear rating"
+  return (
+    <div className={cn("veloria-rating-input flex items-center gap-0.5", readOnly && "pointer-events-none", className)} role="radiogroup" aria-label="Rating">
+      {Array.from({ length: max }, (_, i) => i + 1).map((star) => (
+        <button
+          key={star}
+          type="button"
+          role="radio"
+          aria-checked={star === value}
+          aria-label={`${star} star${star !== 1 ? "s" : ""}`}
+          onClick={() => { if (readOnly) return; if (allowClear && star === value) onChange?.(0); else onChange?.(star); }}
+          onMouseEnter={() => !readOnly && setHover(star)}
+          onMouseLeave={() => setHover(0)}
+          className="transition-transform hover:scale-110 focus-visible:outline-none"
+        >
+          <svg
+            className={cn(starSize, "transition-colors")}
+            fill={(hover || value) >= star ? "currentColor" : "none"}
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            Clear
-          </button>
-        )}
-      </div>
-    );
-  }
-);
-RatingInput.displayName = "RatingInput";
-
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+              className={(hover || value) >= star ? "text-yellow-400" : "text-muted-foreground/40"}
+            />
+          </svg>
+        </button>
+      ))}
+      {!readOnly && value > 0 && allowClear && (
+        <button type="button" onClick={() => onChange?.(0)} className="ml-2 text-xs text-muted-foreground hover:text-foreground transition-colors" aria-label="Clear rating">Clear</button>
+      )}
+    </div>
+  );
+};
 
 export {
+  FileUpload, OTPInput, ColorPicker, SearchInput, PasswordInput,
+  Combobox, MultiSelect, PhoneInput, TagInput, CurrencyInput, RatingInput,
+};
 
-  FileUpload,
-  OTPInput,
-  ColorPicker,
-  SearchInput,
-  PasswordInput,
-  Combobox,
-  MultiSelect,
-  FormField,
-  FormLabel,
-  FormError,
-  PhoneInput, TagInput, CurrencyInput, RatingInput
+export type {
+  FileUploadProps, OTPInputProps, ColorPickerProps, SearchInputProps,
+  PasswordInputProps, ComboboxOption, ComboboxProps, MultiSelectProps,
+  PhoneInputProps, TagInputProps, CurrencyInputProps, RatingInputProps,
 };

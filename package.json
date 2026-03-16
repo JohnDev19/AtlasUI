@@ -1,13 +1,12 @@
 {
   "name": "veloria-ui",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": false,
-  "description": "Veloria UI — Build anything. Ship faster. 102 accessible, composable React components with Tailwind CSS and dark mode.",
+  "description": "Veloria UI \u2014 Build anything. Ship faster. Accessible, composable React components with Tailwind CSS and dark mode.",
   "keywords": [
     "react",
     "ui",
     "components",
-    "veloria-ui",
     "veloria-ui",
     "design-system",
     "accessible",
@@ -38,16 +37,21 @@
   ],
   "exports": {
     ".": {
-      "types":   "./dist/index.d.ts",
-      "import":  "./dist/index.mjs",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
-    "./styles": "./dist/styles/atlas.css",
+    "./styles": "./dist/styles/veloria.css",
     "./tailwind": "./dist/tailwind.js",
     "./provider": {
-      "types":   "./dist/provider.d.ts",
-      "import":  "./dist/provider.mjs",
+      "types": "./dist/provider.d.ts",
+      "import": "./dist/provider.mjs",
       "require": "./dist/provider.js"
+    },
+    "./api": {
+      "types": "./dist/api/index.d.ts",
+      "import": "./dist/api/index.mjs",
+      "require": "./dist/api/index.js"
     },
     "./cli": "./dist/cli/index.js"
   },
@@ -55,8 +59,7 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "bin": {
-    "veloria-ui": "./dist/cli/index.js",
-    "atlas":   "./dist/cli/index.js"
+    "veloria-ui": "./dist/cli/index.js"
   },
   "files": [
     "dist",
@@ -66,72 +69,53 @@
     "LICENSE"
   ],
   "scripts": {
-    "build":          "tsup",
-    "dev":            "tsup --watch",
-    "lint":           "eslint src --ext .ts,.tsx",
-    "typecheck":      "tsc --noEmit",
-    "clean":          "rm -rf dist",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
-    "react":       "^18.0.0",
-    "react-dom":   "^18.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
     "tailwindcss": ">=3.0.0"
   },
   "peerDependenciesMeta": {
-    "tailwindcss": { "optional": true }
+    "tailwindcss": {
+      "optional": true
+    }
   },
   "dependencies": {
-    "@radix-ui/react-accessible-icon": "^1.0.3",
-    "@radix-ui/react-alert-dialog":    "^1.0.5",
-    "@radix-ui/react-aspect-ratio":    "^1.0.3",
-    "@radix-ui/react-avatar":          "^1.0.4",
-    "@radix-ui/react-checkbox":        "^1.0.4",
-    "@radix-ui/react-collapsible":     "^1.0.3",
-    "@radix-ui/react-context-menu":    "^2.1.5",
-    "@radix-ui/react-dialog":          "^1.0.5",
-    "@radix-ui/react-dropdown-menu":   "^2.0.6",
-    "@radix-ui/react-hover-card":      "^1.0.7",
-    "@radix-ui/react-label":           "^2.0.2",
-    "@radix-ui/react-navigation-menu": "^1.1.4",
-    "@radix-ui/react-popover":         "^1.0.7",
-    "@radix-ui/react-portal":          "^1.0.4",
-    "@radix-ui/react-progress":        "^1.0.3",
-    "@radix-ui/react-radio-group":     "^1.1.3",
-    "@radix-ui/react-scroll-area":     "^1.0.5",
-    "@radix-ui/react-select":          "^2.0.0",
-    "@radix-ui/react-separator":       "^1.0.3",
-    "@radix-ui/react-slider":          "^1.1.2",
-    "@radix-ui/react-slot":            "^1.0.2",
-    "@radix-ui/react-switch":          "^1.0.3",
-    "@radix-ui/react-tabs":            "^1.0.4",
-    "@radix-ui/react-toast":           "^1.1.5",
-    "@radix-ui/react-toggle":          "^1.0.3",
-    "@radix-ui/react-tooltip":         "^1.0.7",
-    "chalk":                   "^5.3.0",
-    "class-variance-authority":"^0.7.0",
-    "clsx":                    "^2.1.0",
-    "cmdk":                    "^0.2.0",
-    "commander":               "^11.1.0",
-    "execa":                   "^8.0.1",
-    "fs-extra":                "^11.2.0",
-    "lucide-react":            "^0.309.0",
-    "ora":                     "^7.0.1",
-    "prompts":                 "^2.4.2",
-    "tailwind-merge":          "^2.2.0"
+    "@radix-ui/react-avatar": "^1.1.0",
+    "@radix-ui/react-checkbox": "^1.1.0",
+    "@radix-ui/react-context-menu": "^2.2.0",
+    "@radix-ui/react-dialog": "^1.1.0",
+    "@radix-ui/react-dropdown-menu": "^2.1.0",
+    "@radix-ui/react-hover-card": "^1.1.0",
+    "@radix-ui/react-popover": "^1.1.0",
+    "@radix-ui/react-radio-group": "^1.2.0",
+    "@radix-ui/react-scroll-area": "^1.1.0",
+    "@radix-ui/react-select": "^2.1.0",
+    "@radix-ui/react-separator": "^1.1.0",
+    "@radix-ui/react-slider": "^1.2.0",
+    "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-switch": "^1.1.0",
+    "@radix-ui/react-tabs": "^1.1.0",
+    "@radix-ui/react-toast": "^1.2.0",
+    "@radix-ui/react-toggle": "^1.1.0",
+    "@radix-ui/react-tooltip": "^1.1.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.0",
+    "cmdk": "^0.2.1",
+    "lucide-react": "^0.383.0",
+    "tailwind-merge": "^2.3.0"
   },
   "devDependencies": {
-    "@types/fs-extra":  "^11.0.4",
-    "@types/node":      "^20.11.5",
-    "@types/prompts":   "^2.4.9",
-    "@types/react":     "^18.2.48",
-    "@types/react-dom": "^18.2.18",
-    "prettier":         "^3.2.4",
-    "tailwindcss":      "^3.4.1",
-    "tsup":             "^8.0.1",
-    "typescript":       "^5.3.3"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "typescript": "^5.4.0",
+    "tsup": "^8.0.0",
+    "eslint": "^8.0.0"
   }
 }

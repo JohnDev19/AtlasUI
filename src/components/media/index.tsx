@@ -5,99 +5,42 @@ import { cn } from "../../utils/cn";
 
 export interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   fallback?: React.ReactNode;
-  aspectRatio?: "square" | "video" | "portrait" | "landscape" | string;
-  fit?: "cover" | "contain" | "fill" | "none" | "scale-down";
-  rounded?: "none" | "sm" | "md" | "lg" | "xl" | "full";
-  loading?: "lazy" | "eager";
+  aspectRatio?: "auto" | "square" | "video" | "portrait" | string;
+  objectFit?: "contain" | "cover" | "fill" | "none" | "scale-down";
+  rounded?: boolean | "sm" | "md" | "lg" | "xl" | "full";
   caption?: string;
 }
 
-const roundedMap = {
-  none: "rounded-none",
-  sm: "rounded-sm",
-  md: "rounded-md",
-  lg: "rounded-lg",
-  xl: "rounded-xl",
-  full: "rounded-full",
-};
-
-const aspectMap = {
-  square: "aspect-square",
-  video: "aspect-video",
-  portrait: "aspect-[3/4]",
-  landscape: "aspect-[4/3]",
-};
+const aspectMap = { auto: "", square: "aspect-square", video: "aspect-video", portrait: "aspect-[3/4]" };
 
 const Image = React.forwardRef<HTMLImageElement, ImageProps>(
-  (
-    {
-      className,
-      fallback,
-      aspectRatio,
-      fit = "cover",
-      rounded = "none",
-      alt = "",
-      loading = "lazy",
-      caption,
-      onError,
-      style,
-      ...props
-    },
-    ref
-  ) => {
-    const [errored, setErrored] = React.useState(false);
+  ({ className, fallback, aspectRatio = "auto", objectFit = "cover", rounded, caption, src, alt = "", style, ...props }, ref) => {
+    const [error, setError] = React.useState(false);
+    const [loaded, setLoaded] = React.useState(false);
 
-    const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-      setErrored(true);
-      onError?.(e);
-    };
+    const roundedClass = rounded === true ? "rounded-lg" : rounded === "sm" ? "rounded-sm" : rounded === "md" ? "rounded-md" : rounded === "lg" ? "rounded-lg" : rounded === "xl" ? "rounded-xl" : rounded === "full" ? "rounded-full" : "";
+    const aspectClass = aspectRatio in aspectMap ? aspectMap[aspectRatio as keyof typeof aspectMap] : "";
 
-    const aspectClass =
-      aspectRatio && aspectRatio in aspectMap
-        ? aspectMap[aspectRatio as keyof typeof aspectMap]
-        : undefined;
-
-    const img = errored && fallback ? (
-      <div
-        className={cn(
-          "atlas-image-fallback flex items-center justify-center bg-muted text-muted-foreground",
-          roundedMap[rounded],
-          aspectClass,
-          className
-        )}
-      >
-        {fallback}
-      </div>
-    ) : (
-      <img
-        ref={ref}
-        alt={alt}
-        loading={loading}
-        onError={handleError}
-        className={cn(
-          "atlas-image block",
-          `object-${fit}`,
-          roundedMap[rounded],
-          aspectClass && "w-full h-full",
-          className
-        )}
-        style={style}
-        {...props}
-      />
-    );
-
-    if (caption) {
-      return (
-        <figure className={cn("inline-block", aspectClass)}>
-          {img}
-          <figcaption className="mt-2 text-xs text-muted-foreground text-center">
-            {caption}
-          </figcaption>
-        </figure>
-      );
+    if (error && fallback) {
+      return <div className={cn(aspectClass, roundedClass, "flex items-center justify-center bg-muted", className)}>{fallback}</div>;
     }
 
-    return img;
+    return (
+      <figure className={cn("veloria-image", aspectClass, className)}>
+        {!loaded && !error && <div className={cn("animate-pulse bg-muted", aspectClass, roundedClass, "absolute inset-0")} />}
+        <img
+          ref={ref}
+          src={src}
+          alt={alt}
+          onLoad={() => setLoaded(true)}
+          onError={() => setError(true)}
+          className={cn("w-full h-full", `object-${objectFit}`, roundedClass, !loaded && "opacity-0", loaded && "opacity-100 transition-opacity duration-300")}
+          style={style}
+          {...props}
+        />
+        {caption && <figcaption className="mt-2 text-center text-sm text-muted-foreground">{caption}</figcaption>}
+      </figure>
+    );
   }
 );
 Image.displayName = "Image";
@@ -107,164 +50,105 @@ Image.displayName = "Image";
 export interface VideoPlayerProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
   src: string;
   poster?: string;
-  aspectRatio?: "square" | "video" | "portrait" | "landscape";
-  rounded?: "none" | "sm" | "md" | "lg" | "xl";
-  caption?: string;
-  tracks?: {
-    src: string;
-    kind: "subtitles" | "captions" | "descriptions" | "chapters" | "metadata";
-    srcLang: string;
-    label: string;
-    default?: boolean;
-  }[];
+  captions?: { src: string; label: string; srclang: string }[];
+  aspectRatio?: "video" | "square" | string;
+  rounded?: boolean;
 }
 
 const VideoPlayer = React.forwardRef<HTMLVideoElement, VideoPlayerProps>(
-  ({ className, src, poster, aspectRatio = "video", rounded = "lg", caption, tracks = [], controls = true, ...props }, ref) => {
-    const aspectClass = aspectMap[aspectRatio] ?? "aspect-video";
-
-    return (
-      <figure className={cn("atlas-video-player w-full", className)}>
-        <div className={cn(aspectClass, "overflow-hidden", roundedMap[rounded], "bg-black")}>
-          <video
-            ref={ref}
-            src={src}
-            poster={poster}
-            controls={controls}
-            className="w-full h-full object-contain"
-            {...props}
-          >
-            {tracks.map((track, i) => (
-              <track
-                key={i}
-                src={track.src}
-                kind={track.kind}
-                srcLang={track.srcLang}
-                label={track.label}
-                default={track.default}
-              />
-            ))}
-            Your browser does not support the video tag.
-          </video>
-        </div>
-        {caption && (
-          <figcaption className="mt-2 text-xs text-muted-foreground text-center">
-            {caption}
-          </figcaption>
-        )}
-      </figure>
-    );
-  }
+  ({ className, src, poster, captions, aspectRatio = "video", rounded = true, controls = true, ...props }, ref) => (
+    <div className={cn("veloria-video-player relative overflow-hidden bg-black", aspectRatio === "video" ? "aspect-video" : aspectRatio === "square" ? "aspect-square" : "", rounded && "rounded-xl", className)}>
+      <video
+        ref={ref}
+        src={src}
+        poster={poster}
+        controls={controls}
+        className="h-full w-full"
+        {...props}
+      >
+        {captions?.map((c) => (
+          <track key={c.srclang} kind="subtitles" src={c.src} label={c.label} srcLang={c.srclang} />
+        ))}
+        Your browser does not support video playback.
+      </video>
+    </div>
+  )
 );
 VideoPlayer.displayName = "VideoPlayer";
 
 // ─── AudioPlayer ───────────────────────────────────────────────────────────
 
-export interface AudioPlayerProps extends Omit<React.AudioHTMLAttributes<HTMLAudioElement>, "title"> {
+export interface AudioPlayerProps extends React.HTMLAttributes<HTMLDivElement> {
   src: string;
   title?: string;
   artist?: string;
   coverArt?: string;
-  showWaveform?: boolean;
+  autoPlay?: boolean;
 }
 
-const AudioPlayer = React.forwardRef<HTMLAudioElement, AudioPlayerProps>(
-  ({ className, src, title, artist, coverArt, controls = true, ...props }, ref) => {
-    const [isPlaying, setIsPlaying] = React.useState(false);
-    const [currentTime, setCurrentTime] = React.useState(0);
-    const [duration, setDuration] = React.useState(0);
+const AudioPlayer = React.forwardRef<HTMLDivElement, AudioPlayerProps>(
+  ({ className, src, title, artist, coverArt, autoPlay, ...props }, ref) => {
     const audioRef = React.useRef<HTMLAudioElement>(null);
+    const [playing, setPlaying] = React.useState(false);
+    const [progress, setProgress] = React.useState(0);
+    const [duration, setDuration] = React.useState(0);
+    const [currentTime, setCurrentTime] = React.useState(0);
 
-    const combinedRef = (node: HTMLAudioElement | null) => {
-      (audioRef as React.MutableRefObject<HTMLAudioElement | null>).current = node;
-      if (typeof ref === "function") ref(node);
-      else if (ref) (ref as React.MutableRefObject<HTMLAudioElement | null>).current = node;
-    };
+    const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
-    const togglePlay = () => {
-      const audio = audioRef.current;
-      if (!audio) return;
-      if (isPlaying) {
-        audio.pause();
-      } else {
-        audio.play();
-      }
-      setIsPlaying(!isPlaying);
-    };
-
-    const formatTime = (secs: number) => {
-      const m = Math.floor(secs / 60);
-      const s = Math.floor(secs % 60);
-      return `${m}:${s.toString().padStart(2, "0")}`;
+    const toggle = () => {
+      if (!audioRef.current) return;
+      if (playing) audioRef.current.pause();
+      else audioRef.current.play();
+      setPlaying(!playing);
     };
 
     return (
-      <div className={cn("atlas-audio-player flex items-center gap-4 rounded-xl border border-border bg-card p-4 w-full", className)}>
+      <div ref={ref} className={cn("veloria-audio-player flex items-center gap-4 rounded-xl border border-border bg-card p-4", className)} {...props}>
         <audio
-          ref={combinedRef}
+          ref={audioRef}
           src={src}
-          onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
-          onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-          onEnded={() => setIsPlaying(false)}
-          {...props}
+          autoPlay={autoPlay}
+          onTimeUpdate={() => { if (!audioRef.current) return; setCurrentTime(audioRef.current.currentTime); setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100 || 0); }}
+          onLoadedMetadata={() => audioRef.current && setDuration(audioRef.current.duration)}
+          onEnded={() => setPlaying(false)}
         />
-        {coverArt && (
-          <div className="h-12 w-12 shrink-0 rounded-lg overflow-hidden bg-muted">
-            <img src={coverArt} alt={title ?? "Album art"} className="h-full w-full object-cover" />
-          </div>
-        )}
-        <button
-          type="button"
-          onClick={togglePlay}
-          aria-label={isPlaying ? "Pause" : "Play"}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-        >
-          {isPlaying ? (
-            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M6 4h4v16H6zM14 4h4v16h-4z" />
-            </svg>
-          ) : (
-            <svg className="h-4 w-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          )}
-        </button>
+        {coverArt && <img src={coverArt} alt={title ?? "Cover"} className="h-12 w-12 shrink-0 rounded-lg object-cover" />}
         <div className="flex-1 min-w-0">
-          {(title || artist) && (
-            <div className="mb-1.5">
-              {title && <p className="text-sm font-medium truncate">{title}</p>}
-              {artist && <p className="text-xs text-muted-foreground truncate">{artist}</p>}
-            </div>
-          )}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground tabular-nums w-8 shrink-0">
-              {formatTime(currentTime)}
-            </span>
+          {title && <p className="text-sm font-semibold truncate">{title}</p>}
+          {artist && <p className="text-xs text-muted-foreground truncate">{artist}</p>}
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-[10px] tabular-nums text-muted-foreground w-8">{fmt(currentTime)}</span>
             <input
               type="range"
               min={0}
-              max={duration || 100}
-              value={currentTime}
+              max={100}
+              value={progress}
               onChange={(e) => {
-                const t = Number(e.target.value);
-                setCurrentTime(t);
-                if (audioRef.current) audioRef.current.currentTime = t;
+                if (!audioRef.current || !duration) return;
+                const t = (Number(e.target.value) / 100) * duration;
+                audioRef.current.currentTime = t;
+                setProgress(Number(e.target.value));
               }}
-              className="flex-1 h-1.5 rounded-full bg-secondary accent-primary cursor-pointer"
+              className="flex-1 h-1 accent-primary cursor-pointer"
               aria-label="Seek"
             />
-            <span className="text-xs text-muted-foreground tabular-nums w-8 shrink-0 text-right">
-              {formatTime(duration)}
-            </span>
+            <span className="text-[10px] tabular-nums text-muted-foreground w-8 text-right">{fmt(duration)}</span>
           </div>
         </div>
+        <button type="button" onClick={toggle} className="shrink-0 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={playing ? "Pause" : "Play"}>
+          {playing
+            ? <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" /></svg>
+            : <svg className="h-4 w-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+          }
+        </button>
       </div>
     );
   }
 );
 AudioPlayer.displayName = "AudioPlayer";
 
-// ─── Carousel ─────────────────────────────────────────────────────────────
+// ─── Carousel ──────────────────────────────────────────────────────────────
 
 export interface CarouselProps extends React.HTMLAttributes<HTMLDivElement> {
   items: React.ReactNode[];
@@ -273,95 +157,49 @@ export interface CarouselProps extends React.HTMLAttributes<HTMLDivElement> {
   showDots?: boolean;
   showArrows?: boolean;
   loop?: boolean;
-  slidesPerView?: number;
+  slidesPerView?: 1 | 2 | 3;
 }
 
 const Carousel = React.forwardRef<HTMLDivElement, CarouselProps>(
-  ({
-    className,
-    items,
-    autoPlay = false,
-    autoPlayInterval = 4000,
-    showDots = true,
-    showArrows = true,
-    loop = true,
-    slidesPerView = 1,
-    ...props
-  }, ref) => {
+  ({ className, items, autoPlay = false, autoPlayInterval = 4000, showDots = true, showArrows = true, loop = true, slidesPerView = 1, ...props }, ref) => {
     const [current, setCurrent] = React.useState(0);
     const total = items.length;
 
-    const prev = () => setCurrent((c) => (c === 0 ? (loop ? total - 1 : 0) : c - 1));
-    const next = React.useCallback(() => setCurrent((c) => (c === total - 1 ? (loop ? 0 : c) : c + 1)), [total, loop]);
+    const prev = () => setCurrent((c) => loop ? (c - 1 + total) % total : Math.max(0, c - 1));
+    const next = () => setCurrent((c) => loop ? (c + 1) % total : Math.min(total - 1, c + 1));
 
     React.useEffect(() => {
       if (!autoPlay) return;
-      const id = setInterval(next, autoPlayInterval);
-      return () => clearInterval(id);
-    }, [autoPlay, autoPlayInterval, next]);
+      const t = setInterval(next, autoPlayInterval);
+      return () => clearInterval(t);
+    }, [autoPlay, autoPlayInterval, current]);
 
     return (
-      <div ref={ref} className={cn("atlas-carousel relative w-full overflow-hidden", className)} {...props}>
+      <div ref={ref} className={cn("veloria-carousel relative overflow-hidden rounded-xl", className)} {...props}>
         <div
-          className="flex transition-transform duration-400 ease-in-out"
-          style={{ transform: `translateX(-${current * (100 / slidesPerView)}%)` }}
-          aria-live="polite"
+          className="flex transition-transform duration-500 ease-out"
+          style={{ transform: `translateX(-${(current * 100) / slidesPerView}%)` }}
         >
           {items.map((item, i) => (
-            <div
-              key={i}
-              className="w-full shrink-0"
-              style={{ width: `${100 / slidesPerView}%` }}
-              aria-roledescription="slide"
-              aria-label={`Slide ${i + 1} of ${total}`}
-            >
+            <div key={i} className="shrink-0" style={{ width: `${100 / slidesPerView}%` }}>
               {item}
             </div>
           ))}
         </div>
-
-        {showArrows && (
+        {showArrows && total > 1 && (
           <>
-            <button
-              type="button"
-              onClick={prev}
-              disabled={!loop && current === 0}
-              aria-label="Previous slide"
-              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-background/80 border border-border shadow-sm hover:bg-background transition-colors disabled:opacity-40"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
+            <button type="button" onClick={prev} disabled={!loop && current === 0} className="absolute left-2 top-1/2 -translate-y-1/2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/80 backdrop-blur border border-border shadow hover:bg-background transition-colors disabled:opacity-30" aria-label="Previous">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </button>
-            <button
-              type="button"
-              onClick={next}
-              disabled={!loop && current === total - 1}
-              aria-label="Next slide"
-              className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-background/80 border border-border shadow-sm hover:bg-background transition-colors disabled:opacity-40"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+            <button type="button" onClick={next} disabled={!loop && current === total - 1} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/80 backdrop-blur border border-border shadow hover:bg-background transition-colors disabled:opacity-30" aria-label="Next">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </button>
           </>
         )}
-
-        {showDots && (
-          <div role="tablist" aria-label="Slide navigation" className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-            {items.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                role="tab"
-                aria-selected={i === current}
-                aria-label={`Go to slide ${i + 1}`}
-                onClick={() => setCurrent(i)}
-                className={cn(
-                  "h-1.5 rounded-full transition-all duration-200",
-                  i === current ? "w-4 bg-primary" : "w-1.5 bg-primary/40 hover:bg-primary/70"
-                )}
-              />
+        {showDots && total > 1 && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5" role="tablist" aria-label="Carousel navigation">
+            {Array.from({ length: total }).map((_, i) => (
+              <button key={i} role="tab" aria-selected={i === current} type="button" onClick={() => setCurrent(i)} className={cn("h-1.5 rounded-full transition-all", i === current ? "w-4 bg-white" : "w-1.5 bg-white/50")} aria-label={`Go to slide ${i + 1}`} />
             ))}
           </div>
         )}
@@ -371,67 +209,53 @@ const Carousel = React.forwardRef<HTMLDivElement, CarouselProps>(
 );
 Carousel.displayName = "Carousel";
 
-// ─── Gallery ──────────────────────────────────────────────────────────────
+// ─── Gallery ───────────────────────────────────────────────────────────────
 
-export interface GalleryImage {
-  src: string;
-  alt?: string;
-  caption?: string;
-  width?: number;
-  height?: number;
-}
-
+export interface GalleryItem { src: string; alt?: string; caption?: string; }
 export interface GalleryProps extends React.HTMLAttributes<HTMLDivElement> {
-  images: GalleryImage[];
+  items: GalleryItem[];
   columns?: 2 | 3 | 4 | 5;
-  gap?: number;
-  onImageClick?: (image: GalleryImage, index: number) => void;
-  rounded?: "none" | "sm" | "md" | "lg";
+  gap?: 1 | 2 | 3 | 4;
+  onItemClick?: (item: GalleryItem, index: number) => void;
 }
 
 const Gallery = React.forwardRef<HTMLDivElement, GalleryProps>(
-  ({ className, images, columns = 3, gap = 2, onImageClick, rounded = "md", ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn("atlas-gallery", className)}
-      style={{
-        display: "grid",
-        gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        gap: `${gap * 4}px`,
-      }}
-      role="list"
-      aria-label="Image gallery"
-      {...props}
-    >
-      {images.map((image, i) => (
-        <div
-          key={i}
-          role="listitem"
-          className={cn(
-            "overflow-hidden",
-            roundedMap[rounded],
-            onImageClick && "cursor-pointer group",
-          )}
-          onClick={() => onImageClick?.(image, i)}
-          onKeyDown={(e) => e.key === "Enter" && onImageClick?.(image, i)}
-          tabIndex={onImageClick ? 0 : undefined}
-          aria-label={image.alt ?? `Image ${i + 1}`}
-        >
-          <img
-            src={image.src}
-            alt={image.alt ?? ""}
-            loading="lazy"
-            className={cn(
-              "w-full h-full object-cover aspect-square",
-              "transition-transform duration-300",
-              onImageClick && "group-hover:scale-105"
+  ({ className, items, columns = 3, gap = 3, onItemClick, ...props }, ref) => {
+    const colClasses = { 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4", 5: "grid-cols-5" };
+    const gapClasses = { 1: "gap-1", 2: "gap-2", 3: "gap-3", 4: "gap-4" };
+    return (
+      <div
+        ref={ref}
+        className={cn("veloria-gallery grid", colClasses[columns], gapClasses[gap], className)}
+        {...props}
+      >
+        {items.map((item, i) => (
+          <div
+            key={i}
+            className={cn("group relative overflow-hidden rounded-lg bg-muted aspect-square cursor-pointer", onItemClick && "cursor-pointer")}
+            onClick={() => onItemClick?.(item, i)}
+            role={onItemClick ? "button" : undefined}
+            tabIndex={onItemClick ? 0 : undefined}
+            onKeyDown={(e) => { if (onItemClick && (e.key === "Enter" || e.key === " ")) onItemClick(item, i); }}
+          >
+            <img
+              src={item.src}
+              alt={item.alt ?? `Gallery image ${i + 1}`}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+            />
+            {item.caption && (
+              <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                <p className="p-3 text-sm text-white">{item.caption}</p>
+              </div>
             )}
-          />
-        </div>
-      ))}
-    </div>
-  )
+          </div>
+        ))}
+      </div>
+    );
+  }
 );
 Gallery.displayName = "Gallery";
 
 export { Image, VideoPlayer, AudioPlayer, Carousel, Gallery };
+export type { ImageProps, VideoPlayerProps, AudioPlayerProps, CarouselProps, GalleryItem, GalleryProps };

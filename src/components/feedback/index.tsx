@@ -1,120 +1,106 @@
 import * as React from "react";
 import * as ToastPrimitive from "@radix-ui/react-toast";
-import * as ProgressPrimitive from "@radix-ui/react-progress";
-import { cva, type VariantProps } from "class-variance-authority";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { cn } from "../../utils/cn";
 
 // ─── Alert ─────────────────────────────────────────────────────────────────
 
-const alertVariants = cva(
-  "atlas-alert relative w-full rounded-lg border p-4 [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg+div]:pl-7",
-  {
-    variants: {
-      variant: {
-        default: "bg-background text-foreground",
-        info: "border-info/30 bg-info/10 text-info-foreground [&>svg]:text-info",
-        success: "border-success/30 bg-success/10 text-success-foreground [&>svg]:text-success",
-        warning: "border-warning/30 bg-warning/10 text-warning-foreground [&>svg]:text-warning",
-        danger: "border-destructive/30 bg-destructive/10 text-destructive [&>svg]:text-destructive",
-      },
-    },
-    defaultVariants: { variant: "default" },
-  }
-);
+const alertVariants = {
+  default:  "bg-background border-border text-foreground",
+  info:     "bg-info/10 border-info/30 text-info dark:text-blue-300",
+  success:  "bg-success/10 border-success/30 text-success dark:text-green-300",
+  warning:  "bg-warning/10 border-warning/30 text-warning dark:text-yellow-300",
+  danger:   "bg-destructive/10 border-destructive/30 text-destructive dark:text-red-300",
+};
 
-export interface AlertProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof alertVariants> {
+const alertIcons = {
+  default: null,
+  info:    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />,
+  success: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />,
+  warning: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />,
+  danger:  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />,
+};
+
+export interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: keyof typeof alertVariants;
+  title?: React.ReactNode;
+  dismissible?: boolean;
+  onDismiss?: () => void;
   icon?: React.ReactNode;
-  closable?: boolean;
-  onClose?: () => void;
 }
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
-  ({ className, variant, icon, closable, onClose, children, ...props }, ref) => (
-    <div ref={ref} role="alert" className={cn(alertVariants({ variant }), className)} {...props}>
-      {icon}
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1">{children}</div>
-        {closable && (
+  ({ className, variant = "default", title, dismissible, onDismiss, icon, children, ...props }, ref) => {
+    const [dismissed, setDismissed] = React.useState(false);
+    if (dismissed) return null;
+    return (
+      <div
+        ref={ref}
+        role="alert"
+        className={cn("veloria-alert relative rounded-lg border p-4 flex gap-3", alertVariants[variant], className)}
+        {...props}
+      >
+        {(icon !== undefined ? icon : alertIcons[variant]) && (
+          <svg className="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            {icon !== undefined ? icon : alertIcons[variant]}
+          </svg>
+        )}
+        <div className="flex-1 min-w-0">
+          {title && <h5 className="mb-1 font-semibold text-sm">{title}</h5>}
+          {children && <div className="text-sm opacity-90">{children}</div>}
+        </div>
+        {dismissible && (
           <button
             type="button"
-            onClick={onClose}
-            className="shrink-0 rounded-md p-0.5 text-current/50 hover:text-current transition-colors"
+            onClick={() => { setDismissed(true); onDismiss?.(); }}
+            className="shrink-0 rounded p-0.5 opacity-60 hover:opacity-100 transition-opacity"
             aria-label="Dismiss alert"
           >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         )}
       </div>
-    </div>
-  )
+    );
+  }
 );
 Alert.displayName = "Alert";
 
-const AlertTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => (
-    <h5 ref={ref} className={cn("mb-1 font-semibold leading-tight tracking-tight", className)} {...props} />
-  )
-);
-AlertTitle.displayName = "AlertTitle";
-
-const AlertDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) => (
-    <p ref={ref} className={cn("text-sm leading-relaxed", className)} {...props} />
-  )
-);
-AlertDescription.displayName = "AlertDescription";
-
-// ─── Toast ─────────────────────────────────────────────────────────────────
+// ─── Toast (Radix) ─────────────────────────────────────────────────────────
 
 const ToastProvider = ToastPrimitive.Provider;
-
 const ToastViewport = React.forwardRef<
   React.ElementRef<typeof ToastPrimitive.Viewport>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitive.Viewport>
 >(({ className, ...props }, ref) => (
   <ToastPrimitive.Viewport
     ref={ref}
+    className={cn("fixed bottom-4 right-4 z-[100] flex flex-col gap-2 w-[360px] max-w-[100vw]", className)}
+    {...props}
+  />
+));
+ToastViewport.displayName = "ToastViewport";
+
+const Toast = React.forwardRef<
+  React.ElementRef<typeof ToastPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof ToastPrimitive.Root> & { variant?: "default" | "success" | "warning" | "danger" }
+>(({ className, variant = "default", ...props }, ref) => (
+  <ToastPrimitive.Root
+    ref={ref}
     className={cn(
-      "atlas-toast-viewport fixed bottom-4 right-4 z-[100] flex flex-col gap-2 w-full max-w-sm p-4",
+      "veloria-toast group pointer-events-auto relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl border p-4 shadow-lg transition-all",
+      "data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)]",
+      "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-80 data-[state=open]:slide-in-from-bottom-full",
+      variant === "success" && "border-success/30 bg-success/10 text-success",
+      variant === "warning" && "border-warning/30 bg-warning/10 text-warning",
+      variant === "danger"  && "border-destructive/30 bg-destructive/10 text-destructive",
+      variant === "default" && "border-border bg-background text-foreground",
       className
     )}
     {...props}
   />
 ));
-ToastViewport.displayName = ToastPrimitive.Viewport.displayName;
-
-const toastVariants = cva(
-  [
-    "group pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden",
-    "rounded-lg border p-4 shadow-lg transition-all",
-    "data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)]",
-    "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none",
-    "data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-full data-[state=open]:fade-in",
-    "data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:slide-out-to-right-full",
-  ],
-  {
-    variants: {
-      variant: {
-        default: "bg-background border-border",
-        success: "bg-success/10 border-success/20 text-success",
-        warning: "bg-warning/10 border-warning/20 text-warning",
-        danger: "bg-destructive/10 border-destructive/20 text-destructive",
-        info: "bg-info/10 border-info/20 text-info",
-      },
-    },
-    defaultVariants: { variant: "default" },
-  }
-);
-
-const Toast = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitive.Root> & VariantProps<typeof toastVariants>
->(({ className, variant, ...props }, ref) => (
-  <ToastPrimitive.Root ref={ref} className={cn(toastVariants({ variant }), className)} {...props} />
-));
-Toast.displayName = ToastPrimitive.Root.displayName;
+Toast.displayName = "Toast";
 
 const ToastTitle = React.forwardRef<
   React.ElementRef<typeof ToastPrimitive.Title>,
@@ -122,7 +108,7 @@ const ToastTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitive.Title ref={ref} className={cn("text-sm font-semibold", className)} {...props} />
 ));
-ToastTitle.displayName = ToastPrimitive.Title.displayName;
+ToastTitle.displayName = "ToastTitle";
 
 const ToastDescription = React.forwardRef<
   React.ElementRef<typeof ToastPrimitive.Description>,
@@ -130,215 +116,166 @@ const ToastDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitive.Description ref={ref} className={cn("text-sm opacity-80", className)} {...props} />
 ));
-ToastDescription.displayName = ToastPrimitive.Description.displayName;
-
-const ToastClose = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitive.Close>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitive.Close>
->(({ className, ...props }, ref) => (
-  <ToastPrimitive.Close
-    ref={ref}
-    toast-close=""
-    className={cn(
-      "ml-auto shrink-0 rounded-md p-0.5 opacity-50 hover:opacity-100 transition-opacity",
-      className
-    )}
-    aria-label="Close"
-    {...props}
-  >
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-    </svg>
-  </ToastPrimitive.Close>
-));
-ToastClose.displayName = ToastPrimitive.Close.displayName;
+ToastDescription.displayName = "ToastDescription";
 
 const ToastAction = React.forwardRef<
   React.ElementRef<typeof ToastPrimitive.Action>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitive.Action>
 >(({ className, ...props }, ref) => (
-  <ToastPrimitive.Action
-    ref={ref}
-    className={cn(
-      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium",
-      "transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring",
-      "disabled:pointer-events-none disabled:opacity-50",
-      className
-    )}
-    {...props}
-  />
+  <ToastPrimitive.Action ref={ref} className={cn("inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-transparent bg-foreground/10 px-3 text-sm font-medium transition-colors hover:bg-foreground/20 focus:outline-none focus:ring-2 focus:ring-ring", className)} {...props} />
 ));
-ToastAction.displayName = ToastPrimitive.Action.displayName;
+ToastAction.displayName = "ToastAction";
 
-// ─── Snackbar ─────────────────────────────────────────────────────────────
+const ToastClose = React.forwardRef<
+  React.ElementRef<typeof ToastPrimitive.Close>,
+  React.ComponentPropsWithoutRef<typeof ToastPrimitive.Close>
+>(({ className, ...props }, ref) => (
+  <ToastPrimitive.Close ref={ref} className={cn("absolute right-2 top-2 rounded-md p-1 opacity-0 transition-opacity hover:opacity-100 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring", className)} aria-label="Close" {...props}>
+    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+  </ToastPrimitive.Close>
+));
+ToastClose.displayName = "ToastClose";
 
-export interface SnackbarProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "color"> {
+// ─── Snackbar ──────────────────────────────────────────────────────────────
+
+export interface SnackbarProps extends React.HTMLAttributes<HTMLDivElement> {
   open?: boolean;
   message: React.ReactNode;
   action?: React.ReactNode;
-  variant?: "default" | "success" | "warning" | "danger";
-  position?: "bottom-center" | "bottom-left" | "bottom-right" | "top-center";
+  position?: "bottom-left" | "bottom-center" | "bottom-right" | "top-center";
+  autoHideDuration?: number;
+  onClose?: () => void;
 }
 
-const Snackbar = React.forwardRef<HTMLDivElement, SnackbarProps>(
-  ({ className, open, message, action, variant = "default", position = "bottom-center", ...props }, ref) => {
-    if (!open) return null;
+const positionClasses = {
+  "bottom-left":   "bottom-4 left-4",
+  "bottom-center": "bottom-4 left-1/2 -translate-x-1/2",
+  "bottom-right":  "bottom-4 right-4",
+  "top-center":    "top-4 left-1/2 -translate-x-1/2",
+};
 
-    return (
-      <div
-        ref={ref}
-        role="status"
-        aria-live="polite"
-        className={cn(
-          "atlas-snackbar fixed z-50 flex items-center gap-4 rounded-lg px-4 py-3 shadow-lg",
-          "min-w-[280px] max-w-[480px]",
-          position === "bottom-center" && "bottom-4 left-1/2 -translate-x-1/2",
-          position === "bottom-left" && "bottom-4 left-4",
-          position === "bottom-right" && "bottom-4 right-4",
-          position === "top-center" && "top-4 left-1/2 -translate-x-1/2",
-          variant === "default" && "bg-foreground text-background",
-          variant === "success" && "bg-success text-success-foreground",
-          variant === "warning" && "bg-warning text-warning-foreground",
-          variant === "danger" && "bg-destructive text-destructive-foreground",
-          className
-        )}
-        {...props}
-      >
-        <p className="flex-1 text-sm font-medium">{message}</p>
-        {action && <div className="shrink-0">{action}</div>}
-      </div>
-    );
-  }
-);
-Snackbar.displayName = "Snackbar";
+const Snackbar: React.FC<SnackbarProps> = ({ open = true, message, action, position = "bottom-center", autoHideDuration, onClose, className }) => {
+  React.useEffect(() => {
+    if (open && autoHideDuration) {
+      const t = setTimeout(() => onClose?.(), autoHideDuration);
+      return () => clearTimeout(t);
+    }
+  }, [open, autoHideDuration, onClose]);
 
-// ─── Progress ─────────────────────────────────────────────────────────────
-
-export interface ProgressProps extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> {
-  label?: string;
-  showValue?: boolean;
-  size?: "sm" | "md" | "lg";
-  color?: "default" | "success" | "warning" | "danger";
-}
-
-const Progress = React.forwardRef<React.ElementRef<typeof ProgressPrimitive.Root>, ProgressProps>(
-  ({ className, value, label, showValue, size = "md", color = "default", ...props }, ref) => (
-    <div className="atlas-progress w-full">
-      {(label || showValue) && (
-        <div className="flex justify-between items-center mb-1.5">
-          {label && <span className="text-sm font-medium">{label}</span>}
-          {showValue && <span className="text-sm text-muted-foreground">{value ?? 0}%</span>}
-        </div>
-      )}
-      <ProgressPrimitive.Root
-        ref={ref}
-        className={cn(
-          "relative overflow-hidden rounded-full bg-secondary",
-          size === "sm" && "h-1.5",
-          size === "md" && "h-2.5",
-          size === "lg" && "h-4",
-          className
-        )}
-        {...props}
-      >
-        <ProgressPrimitive.Indicator
-          className={cn(
-            "h-full w-full flex-1 transition-all duration-500 ease-in-out",
-            color === "default" && "bg-primary",
-            color === "success" && "bg-success",
-            color === "warning" && "bg-warning",
-            color === "danger" && "bg-destructive",
-          )}
-          style={{ transform: `translateX(-${100 - (value ?? 0)}%)` }}
-        />
-      </ProgressPrimitive.Root>
-    </div>
-  )
-);
-Progress.displayName = "Progress";
-
-// ─── CircularProgress ─────────────────────────────────────────────────────
-
-export interface CircularProgressProps extends React.SVGAttributes<SVGElement> {
-  value?: number;
-  size?: number;
-  thickness?: number;
-  showValue?: boolean;
-  label?: string;
-  color?: "default" | "success" | "warning" | "danger";
-  indeterminate?: boolean;
-}
-
-const CircularProgress = ({
-  value = 0,
-  size = 48,
-  thickness = 4,
-  showValue,
-  label,
-  color = "default",
-  indeterminate,
-  className,
-  ...props
-}: CircularProgressProps) => {
-  const radius = (size - thickness) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (value / 100) * circumference;
-
-  const colorMap = {
-    default: "stroke-primary",
-    success: "stroke-success",
-    warning: "stroke-warning",
-    danger: "stroke-destructive",
-  };
-
+  if (!open) return null;
   return (
-    <div className={cn("atlas-circular-progress relative inline-flex items-center justify-center", className)}>
-      <svg
-        width={size}
-        height={size}
-        viewBox={`0 0 ${size} ${size}`}
-        fill="none"
-        className={indeterminate ? "animate-spin" : ""}
-        role="progressbar"
-        aria-valuenow={indeterminate ? undefined : value}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label={label}
-        {...props}
-      >
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          strokeWidth={thickness}
-          className="stroke-secondary"
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          strokeWidth={thickness}
-          strokeDasharray={circumference}
-          strokeDashoffset={indeterminate ? circumference * 0.75 : offset}
-          strokeLinecap="round"
-          className={cn("transition-all duration-500", colorMap[color])}
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-        />
-      </svg>
-      {showValue && !indeterminate && (
-        <span className="absolute text-xs font-semibold">{value}%</span>
+    <div
+      role="status"
+      aria-live="polite"
+      className={cn(
+        "veloria-snackbar fixed z-50 flex items-center gap-3 rounded-lg bg-foreground px-4 py-3 text-sm text-background shadow-xl",
+        "animate-in slide-in-from-bottom-2 duration-200",
+        positionClasses[position],
+        className
+      )}
+    >
+      <span className="flex-1">{message}</span>
+      {action && <span className="shrink-0 font-semibold text-primary-foreground/80 hover:text-primary-foreground">{action}</span>}
+      {onClose && (
+        <button type="button" onClick={onClose} className="shrink-0 opacity-70 hover:opacity-100 transition-opacity" aria-label="Close">
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
       )}
     </div>
   );
 };
+
+// ─── Progress ──────────────────────────────────────────────────────────────
+
+export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
+  value?: number;
+  max?: number;
+  variant?: "default" | "success" | "warning" | "danger";
+  size?: "sm" | "md" | "lg";
+  showValue?: boolean;
+  animated?: boolean;
+  label?: string;
+}
+
+const progressColors = { default: "bg-primary", success: "bg-green-500", warning: "bg-yellow-500", danger: "bg-destructive" };
+
+const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
+  ({ className, value = 0, max = 100, variant = "default", size = "md", showValue, animated, label, ...props }, ref) => {
+    const pct = Math.min(Math.max((value / max) * 100, 0), 100);
+    return (
+      <div ref={ref} className={cn("veloria-progress", className)} {...props}>
+        {(label || showValue) && (
+          <div className="mb-1.5 flex items-center justify-between text-sm">
+            {label && <span className="font-medium">{label}</span>}
+            {showValue && <span className="text-muted-foreground tabular-nums">{Math.round(pct)}%</span>}
+          </div>
+        )}
+        <div
+          role="progressbar"
+          aria-valuenow={value}
+          aria-valuemin={0}
+          aria-valuemax={max}
+          className={cn("overflow-hidden rounded-full bg-secondary", size === "sm" && "h-1.5", size === "md" && "h-2.5", size === "lg" && "h-4")}
+        >
+          <div
+            className={cn("h-full rounded-full transition-all duration-500 ease-out", progressColors[variant], animated && "animate-pulse")}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      </div>
+    );
+  }
+);
+Progress.displayName = "Progress";
+
+// ─── CircularProgress ──────────────────────────────────────────────────────
+
+export interface CircularProgressProps extends React.SVGAttributes<SVGElement> {
+  value?: number;
+  max?: number;
+  size?: number;
+  strokeWidth?: number;
+  variant?: "default" | "success" | "warning" | "danger";
+  indeterminate?: boolean;
+  showValue?: boolean;
+}
+
+const circularColors = { default: "text-primary", success: "text-green-500", warning: "text-yellow-500", danger: "text-destructive" };
+
+const CircularProgress = React.forwardRef<SVGSVGElement, CircularProgressProps>(
+  ({ className, value = 0, max = 100, size = 48, strokeWidth = 4, variant = "default", indeterminate, showValue, ...props }, ref) => {
+    const r = (size - strokeWidth) / 2;
+    const circumference = 2 * Math.PI * r;
+    const pct = Math.min(Math.max((value / max) * 100, 0), 100);
+    const offset = circumference - (pct / 100) * circumference;
+
+    return (
+      <div className="veloria-circular-progress relative inline-flex items-center justify-center">
+        <svg ref={ref} width={size} height={size} viewBox={`0 0 ${size} ${size}`} className={cn(indeterminate && "animate-spin", circularColors[variant], className)} {...props}>
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth={strokeWidth} className="opacity-20" />
+          <circle
+            cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={indeterminate ? circumference * 0.75 : offset}
+            strokeLinecap="round"
+            style={{ transform: "rotate(-90deg)", transformOrigin: "center", transition: "stroke-dashoffset 0.4s ease" }}
+          />
+        </svg>
+        {showValue && !indeterminate && (
+          <span className="absolute text-xs font-semibold tabular-nums">{Math.round(pct)}%</span>
+        )}
+      </div>
+    );
+  }
+);
 CircularProgress.displayName = "CircularProgress";
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────
+// ─── Skeleton ──────────────────────────────────────────────────────────────
 
-export interface SkeletonProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "color"> {
+export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "text" | "rect" | "circle";
-  width?: string | number;
-  height?: string | number;
+  width?: number | string;
+  height?: number | string;
   lines?: number;
 }
 
@@ -346,29 +283,18 @@ const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
   ({ className, variant = "rect", width, height, lines = 1, style, ...props }, ref) => {
     if (variant === "text" && lines > 1) {
       return (
-        <div className={cn("atlas-skeleton space-y-2", className)} ref={ref} {...props}>
+        <div className={cn("veloria-skeleton flex flex-col gap-2", className)}>
           {Array.from({ length: lines }).map((_, i) => (
-            <div
-              key={i}
-              className="h-4 animate-pulse rounded bg-muted"
-              style={{ width: i === lines - 1 ? "75%" : "100%" }}
-            />
+            <div key={i} className={cn("animate-pulse rounded bg-muted", i === lines - 1 && "w-3/4")} style={{ height: height ?? 16 }} />
           ))}
         </div>
       );
     }
-
     return (
       <div
         ref={ref}
-        className={cn(
-          "atlas-skeleton animate-pulse bg-muted",
-          variant === "circle" ? "rounded-full" : "rounded-md",
-          variant === "text" && "h-4",
-          className
-        )}
-        style={{ width, height, ...style }}
-        aria-hidden="true"
+        className={cn("veloria-skeleton animate-pulse bg-muted", variant === "circle" && "rounded-full", variant !== "circle" && "rounded-md", className)}
+        style={{ width: width ?? (variant === "text" ? "100%" : undefined), height: height ?? (variant === "text" ? 16 : variant === "circle" ? 40 : 80), ...style }}
         {...props}
       />
     );
@@ -376,163 +302,123 @@ const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
 );
 Skeleton.displayName = "Skeleton";
 
-// ─── LoadingSpinner ───────────────────────────────────────────────────────
+// ─── LoadingSpinner ────────────────────────────────────────────────────────
 
 export interface LoadingSpinnerProps extends React.SVGAttributes<SVGElement> {
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   label?: string;
 }
 
-const spinnerSizes = { xs: 12, sm: 16, md: 24, lg: 32, xl: 48 };
+const spinnerSizes = { xs: "h-3 w-3", sm: "h-4 w-4", md: "h-6 w-6", lg: "h-8 w-8", xl: "h-12 w-12" };
 
-const LoadingSpinner = ({ size = "md", label = "Loading", className, ...props }: LoadingSpinnerProps) => (
-  <svg
-    width={spinnerSizes[size]}
-    height={spinnerSizes[size]}
-    viewBox="0 0 24 24"
-    fill="none"
-    className={cn("atlas-loading-spinner animate-spin text-primary", className)}
-    role="status"
-    aria-label={label}
-    {...props}
-  >
-    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-  </svg>
+const LoadingSpinner = React.forwardRef<SVGSVGElement, LoadingSpinnerProps>(
+  ({ className, size = "md", label = "Loading…", ...props }, ref) => (
+    <svg
+      ref={ref}
+      className={cn("veloria-loading-spinner animate-spin text-primary", spinnerSizes[size], className)}
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      role="status"
+      aria-label={label}
+      {...props}
+    >
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+    </svg>
+  )
 );
 LoadingSpinner.displayName = "LoadingSpinner";
 
-// ─── EmptyState ───────────────────────────────────────────────────────────
+// ─── EmptyState ────────────────────────────────────────────────────────────
 
-export interface EmptyStateProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
+export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
   icon?: React.ReactNode;
-  title: string;
+  title?: string;
   description?: string;
   action?: React.ReactNode;
 }
 
 const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
   ({ className, icon, title, description, action, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(
-        "atlas-empty-state flex flex-col items-center justify-center gap-3 text-center py-16 px-6",
-        className
+    <div ref={ref} className={cn("veloria-empty-state flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border p-12 text-center", className)} {...props}>
+      {icon && <div className="text-muted-foreground">{icon}</div>}
+      {!icon && (
+        <svg className="h-12 w-12 text-muted-foreground/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
       )}
-      {...props}
-    >
-      {icon && (
-        <div className="rounded-full bg-muted p-4 text-muted-foreground [&>svg]:h-8 [&>svg]:w-8">
-          {icon}
-        </div>
-      )}
-      <div className="max-w-xs">
-        <h3 className="text-base font-semibold">{title}</h3>
-        {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
-      </div>
+      {title && <h3 className="text-base font-semibold">{title}</h3>}
+      {description && <p className="max-w-sm text-sm text-muted-foreground">{description}</p>}
       {action && <div className="mt-2">{action}</div>}
     </div>
   )
 );
 EmptyState.displayName = "EmptyState";
 
-// ─── StatusIndicator ──────────────────────────────────────────────────────
+// ─── StatusIndicator ───────────────────────────────────────────────────────
 
-export interface StatusIndicatorProps extends Omit<React.HTMLAttributes<HTMLSpanElement>, "color" | "size"> {
-  status: "online" | "offline" | "busy" | "away" | "idle";
+export interface StatusIndicatorProps extends React.HTMLAttributes<HTMLSpanElement> {
+  status?: "online" | "offline" | "busy" | "away";
   label?: string;
-  pulse?: boolean;
   size?: "sm" | "md" | "lg";
+  pulse?: boolean;
 }
 
-const statusColors = {
-  online: "bg-success",
-  offline: "bg-muted-foreground",
-  busy: "bg-destructive",
-  away: "bg-warning",
-  idle: "bg-warning/60",
-};
+const statusColorMap = { online: "bg-green-500", offline: "bg-gray-400", busy: "bg-red-500", away: "bg-yellow-500" };
 
 const StatusIndicator = React.forwardRef<HTMLSpanElement, StatusIndicatorProps>(
-  ({ className, status, label, pulse, size = "md", ...props }, ref) => (
-    <span
-      ref={ref}
-      className={cn("atlas-status-indicator inline-flex items-center gap-1.5", className)}
-      {...props}
-    >
-      <span className="relative inline-flex">
-        <span className={cn(
-          "rounded-full",
-          statusColors[status],
-          size === "sm" && "h-1.5 w-1.5",
-          size === "md" && "h-2.5 w-2.5",
-          size === "lg" && "h-3.5 w-3.5",
-        )} />
-        {pulse && status === "online" && (
-          <span className={cn(
-            "absolute inline-flex rounded-full animate-ping opacity-75",
-            statusColors[status],
-            size === "sm" && "h-1.5 w-1.5",
-            size === "md" && "h-2.5 w-2.5",
-            size === "lg" && "h-3.5 w-3.5",
-          )} />
-        )}
+  ({ className, status = "online", label, size = "md", pulse = true, ...props }, ref) => {
+    const dotSize = { sm: "h-2 w-2", md: "h-2.5 w-2.5", lg: "h-3.5 w-3.5" }[size];
+    return (
+      <span ref={ref} className={cn("veloria-status-indicator inline-flex items-center gap-1.5", className)} {...props}>
+        <span className="relative inline-flex">
+          {pulse && status === "online" && (
+            <span className={cn("absolute inline-flex h-full w-full animate-ping rounded-full opacity-75", statusColorMap[status])} />
+          )}
+          <span className={cn("relative inline-flex rounded-full", dotSize, statusColorMap[status])} />
+        </span>
+        {label && <span className="text-sm capitalize">{label ?? status}</span>}
       </span>
-      {label && <span className="text-sm capitalize">{label ?? status}</span>}
-    </span>
-  )
+    );
+  }
 );
 StatusIndicator.displayName = "StatusIndicator";
 
-// ─── Notification ─────────────────────────────────────────────────────────
+// ─── Notification ──────────────────────────────────────────────────────────
 
-export interface NotificationProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
+export interface NotificationProps extends React.HTMLAttributes<HTMLDivElement> {
   title: React.ReactNode;
   description?: React.ReactNode;
-  avatar?: React.ReactNode;
-  icon?: React.ReactNode;
   time?: React.ReactNode;
+  avatar?: React.ReactNode;
   unread?: boolean;
-  onClose?: () => void;
+  onDismiss?: () => void;
 }
 
 const Notification = React.forwardRef<HTMLDivElement, NotificationProps>(
-  ({ className, title, description, avatar, icon, time, unread, onClose, ...props }, ref) => (
+  ({ className, title, description, time, avatar, unread, onDismiss, ...props }, ref) => (
     <div
       ref={ref}
-      role="listitem"
       className={cn(
-        "atlas-notification flex gap-3 p-4 transition-colors",
-        unread && "bg-primary/5",
+        "veloria-notification relative flex items-start gap-3 rounded-lg border border-border bg-background p-4 shadow-sm",
+        unread && "border-primary/30 bg-primary/5",
         className
       )}
       {...props}
     >
-      <div className="shrink-0">
-        {avatar ?? (
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground [&>svg]:h-4 [&>svg]:w-4">
-            {icon}
-          </div>
-        )}
-      </div>
+      {avatar && <div className="shrink-0">{avatar}</div>}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <p className={cn("text-sm font-medium leading-snug", unread && "font-semibold")}>{title}</p>
-          {unread && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" aria-label="Unread" />}
+          <p className={cn("text-sm font-medium", unread && "text-primary")}>{title}</p>
+          {time && <span className="shrink-0 text-xs text-muted-foreground">{time}</span>}
         </div>
-        {description && <p className="mt-0.5 text-sm text-muted-foreground line-clamp-2">{description}</p>}
-        {time && <p className="mt-1 text-xs text-muted-foreground">{time}</p>}
+        {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
       </div>
-      {onClose && (
-        <button
-          type="button"
-          onClick={onClose}
-          className="shrink-0 self-start rounded p-0.5 text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Dismiss notification"
-        >
-          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
+      {unread && <span className="absolute top-4 right-4 h-2 w-2 rounded-full bg-primary" aria-label="Unread" />}
+      {onDismiss && (
+        <button type="button" onClick={onDismiss} className="absolute top-2 right-2 p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" aria-label="Dismiss">
+          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
       )}
     </div>
@@ -540,96 +426,48 @@ const Notification = React.forwardRef<HTMLDivElement, NotificationProps>(
 );
 Notification.displayName = "Notification";
 
+// ─── BannerAlert ───────────────────────────────────────────────────────────
 
-// ═══════════════════════════════════════════════════════════════
-// New in v0.1.2
-// ═══════════════════════════════════════════════════════════════
-
-
-// ─── BannerAlert ──────────────────────────────────────────────────────────
-
-export interface BannerAlertProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
-  title?: React.ReactNode;
-  description?: React.ReactNode;
+export interface BannerAlertProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "info" | "success" | "warning" | "danger";
+  message: React.ReactNode;
+  action?: React.ReactNode;
   dismissible?: boolean;
   onDismiss?: () => void;
-  action?: React.ReactNode;
-  icon?: React.ReactNode;
 }
 
-const bannerVariants = {
-  info:    "bg-info/10 border-info/30 text-info-foreground [&_.atlas-banner-icon]:text-info",
-  success: "bg-success/10 border-success/30 text-success-foreground [&_.atlas-banner-icon]:text-success",
-  warning: "bg-warning/10 border-warning/30 text-warning-foreground [&_.atlas-banner-icon]:text-warning",
-  danger:  "bg-destructive/10 border-destructive/30 text-destructive [&_.atlas-banner-icon]:text-destructive",
-};
-
-const defaultBannerIcons: Record<string, React.ReactNode> = {
-  info: (
-    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  ),
-  success: (
-    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  ),
-  warning: (
-    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-    </svg>
-  ),
-  danger: (
-    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  ),
+const bannerColors = {
+  info:    "bg-info text-white",
+  success: "bg-success text-white",
+  warning: "bg-warning text-white",
+  danger:  "bg-destructive text-white",
 };
 
 const BannerAlert = React.forwardRef<HTMLDivElement, BannerAlertProps>(
-  ({ className, title, description, variant = "info", dismissible, onDismiss, action, icon, ...props }, ref) => (
-    <div
-      ref={ref}
-      role="alert"
-      className={cn(
-        "atlas-banner-alert w-full border-y px-4 py-3",
-        bannerVariants[variant],
-        className
-      )}
-      {...props}
-    >
-      <div className="flex items-start gap-3 max-w-screen-xl mx-auto">
-        <span className="atlas-banner-icon shrink-0 mt-0.5">
-          {icon ?? defaultBannerIcons[variant]}
-        </span>
-        <div className="flex-1 min-w-0">
-          {title && <p className="font-semibold text-sm">{title}</p>}
-          {description && <p className="text-sm mt-0.5 opacity-90">{description}</p>}
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {action}
-          {dismissible && (
-            <button
-              type="button"
-              onClick={onDismiss}
-              aria-label="Dismiss"
-              className="rounded-md p-1 opacity-60 hover:opacity-100 transition-opacity focus:outline-none focus:ring-2 focus:ring-current"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
-        </div>
+  ({ className, variant = "info", message, action, dismissible, onDismiss, ...props }, ref) => {
+    const [dismissed, setDismissed] = React.useState(false);
+    if (dismissed) return null;
+    return (
+      <div
+        ref={ref}
+        role="banner"
+        className={cn("veloria-banner-alert flex items-center justify-center gap-4 px-4 py-2.5 text-sm font-medium", bannerColors[variant], className)}
+        {...props}
+      >
+        <span className="flex-1 text-center">{message}</span>
+        {action && <span className="shrink-0 underline underline-offset-2 cursor-pointer">{action}</span>}
+        {dismissible && (
+          <button type="button" onClick={() => { setDismissed(true); onDismiss?.(); }} className="shrink-0 ml-auto opacity-80 hover:opacity-100 transition-opacity" aria-label="Dismiss">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        )}
       </div>
-    </div>
-  )
+    );
+  }
 );
 BannerAlert.displayName = "BannerAlert";
 
-// ─── ConfirmDialog ────────────────────────────────────────────────────────
+// ─── ConfirmDialog ─────────────────────────────────────────────────────────
 
 export interface ConfirmDialogProps {
   open?: boolean;
@@ -644,170 +482,69 @@ export interface ConfirmDialogProps {
   loading?: boolean;
 }
 
-const ConfirmDialog = ({
-  open,
-  onOpenChange,
-  title = "Are you sure?",
-  description = "This action cannot be undone.",
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
-  variant = "default",
-  onConfirm,
-  onCancel,
-  loading,
-}: ConfirmDialogProps) => {
+const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
+  open, onOpenChange, title = "Are you sure?", description, confirmLabel = "Confirm", cancelLabel = "Cancel",
+  variant = "default", onConfirm, onCancel, loading,
+}) => {
   const [pending, setPending] = React.useState(false);
-
-  if (!open) return null;
-
   const handleConfirm = async () => {
     setPending(true);
-    try {
-      await onConfirm?.();
-      onOpenChange?.(false);
-    } finally {
-      setPending(false);
-    }
+    try { await onConfirm?.(); } finally { setPending(false); onOpenChange?.(false); }
   };
-
-  const handleCancel = () => {
-    onCancel?.();
-    onOpenChange?.(false);
-  };
-
-  const isBusy = pending || loading;
-
   return (
-    <div className="atlas-confirm-dialog fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="fixed inset-0 bg-black/50 animate-in fade-in-0"
-        onClick={handleCancel}
-        aria-hidden="true"
-      />
-      <div
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="confirm-title"
-        aria-describedby="confirm-description"
-        className={cn(
-          "relative z-10 w-full max-w-sm rounded-xl border border-border bg-background p-6 shadow-xl",
-          "animate-in fade-in-0 zoom-in-95"
-        )}
-      >
-        <div className="flex items-start gap-4">
-          <div className={cn(
-            "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
-            variant === "danger" ? "bg-destructive/10" : "bg-primary/10"
-          )}>
-            {variant === "danger" ? (
-              <svg className="h-5 w-5 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            ) : (
-              <svg className="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            )}
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content className="veloria-confirm-dialog fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-background p-6 shadow-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+          <DialogPrimitive.Title className="text-lg font-semibold">{title}</DialogPrimitive.Title>
+          {description && <DialogPrimitive.Description className="mt-2 text-sm text-muted-foreground">{description}</DialogPrimitive.Description>}
+          <div className="mt-6 flex justify-end gap-3">
+            <button type="button" onClick={() => { onCancel?.(); onOpenChange?.(false); }} className="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{cancelLabel}</button>
+            <button
+              type="button"
+              disabled={pending || loading}
+              onClick={handleConfirm}
+              className={cn("inline-flex h-9 items-center justify-center rounded-md px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50", variant === "danger" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : "bg-primary text-primary-foreground hover:bg-primary/90")}
+            >
+              {(pending || loading) && <svg className="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>}
+              {confirmLabel}
+            </button>
           </div>
-          <div>
-            <h2 id="confirm-title" className="text-base font-semibold">{title}</h2>
-            <p id="confirm-description" className="mt-1 text-sm text-muted-foreground">{description}</p>
-          </div>
-        </div>
-        <div className="mt-6 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={handleCancel}
-            disabled={isBusy}
-            className="inline-flex h-9 items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50"
-          >
-            {cancelLabel}
-          </button>
-          <button
-            type="button"
-            onClick={handleConfirm}
-            disabled={isBusy}
-            className={cn(
-              "inline-flex h-9 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium transition-colors disabled:opacity-50",
-              variant === "danger"
-                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                : "bg-primary text-primary-foreground hover:bg-primary/90"
-            )}
-          >
-            {isBusy && (
-              <svg className="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-            )}
-            {confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 };
-ConfirmDialog.displayName = "ConfirmDialog";
 
-// ─── FloatingActionButton ─────────────────────────────────────────────────
+// ─── FloatingActionButton ──────────────────────────────────────────────────
 
-export interface FABAction {
-  icon: React.ReactNode;
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-}
-
-export interface FloatingActionButtonProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onClick" | "size"> {
+export interface FABAction { id: string; label: string; icon: React.ReactNode; onClick: () => void; }
+export interface FloatingActionButtonProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
   icon?: React.ReactNode;
-  label?: string;
   actions?: FABAction[];
   position?: "bottom-right" | "bottom-left" | "bottom-center";
-  size?: "sm" | "md" | "lg";
+  tooltip?: string;
   onClick?: () => void;
 }
 
-const positionMap = {
-  "bottom-right":  "fixed bottom-6 right-6 z-40",
-  "bottom-left":   "fixed bottom-6 left-6 z-40",
-  "bottom-center": "fixed bottom-6 left-1/2 -translate-x-1/2 z-40",
-};
-
-const fabSizes = {
-  sm: "h-12 w-12 [&>svg]:h-5 [&>svg]:w-5",
-  md: "h-14 w-14 [&>svg]:h-6 [&>svg]:w-6",
-  lg: "h-16 w-16 [&>svg]:h-7 [&>svg]:w-7",
-};
+const fabPositions = { "bottom-right": "bottom-6 right-6", "bottom-left": "bottom-6 left-6", "bottom-center": "bottom-6 left-1/2 -translate-x-1/2" };
 
 const FloatingActionButton = React.forwardRef<HTMLDivElement, FloatingActionButtonProps>(
-  ({ className, icon, label = "Open actions", actions = [], position = "bottom-right", size = "md", onClick, ...props }, ref) => {
+  ({ className, icon, actions, position = "bottom-right", tooltip, onClick, ...props }, ref) => {
     const [open, setOpen] = React.useState(false);
-    const hasActions = actions.length > 0;
+    const hasActions = actions && actions.length > 0;
 
     return (
-      <div
-        ref={ref}
-        className={cn(positionMap[position], "flex flex-col-reverse items-center gap-3", className)}
-        {...props}
-      >
+      <div ref={ref} className={cn("veloria-fab fixed z-40 flex flex-col-reverse items-center gap-3", fabPositions[position], className)} {...props}>
         {hasActions && open && (
           <div className="flex flex-col-reverse gap-2">
-            {actions.map((action, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <span className="rounded-md bg-foreground/90 px-2 py-1 text-xs text-background font-medium shadow whitespace-nowrap">
-                  {action.label}
-                </span>
+            {actions.map((action) => (
+              <div key={action.id} className="flex items-center gap-2 group">
+                <span className="rounded-md bg-background/90 px-2 py-1 text-xs font-medium text-foreground shadow backdrop-blur opacity-0 group-hover:opacity-100 transition-opacity">{action.label}</span>
                 <button
                   type="button"
-                  disabled={action.disabled}
                   onClick={() => { action.onClick(); setOpen(false); }}
-                  aria-label={action.label}
-                  className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-full bg-background border border-border",
-                    "shadow-md text-foreground hover:bg-accent transition-all",
-                    "[&>svg]:h-4 [&>svg]:w-4",
-                    "disabled:opacity-50 disabled:pointer-events-none"
-                  )}
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-background border border-border shadow-lg hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {action.icon}
                 </button>
@@ -817,26 +554,14 @@ const FloatingActionButton = React.forwardRef<HTMLDivElement, FloatingActionButt
         )}
         <button
           type="button"
-          aria-label={label}
-          aria-expanded={hasActions ? open : undefined}
           onClick={hasActions ? () => setOpen(!open) : onClick}
-          className={cn(
-            "flex items-center justify-center rounded-full",
-            "bg-primary text-primary-foreground shadow-lg",
-            "hover:bg-primary/90 active:scale-95 transition-all",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-            fabSizes[size]
-          )}
+          aria-label={tooltip ?? "Action"}
+          aria-expanded={hasActions ? open : undefined}
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          {icon ?? (
-            <svg
-              className={cn("transition-transform duration-200", hasActions && open && "rotate-45")}
-              fill="none" stroke="currentColor" viewBox="0 0 24 24"
-              style={{ width: "1.5rem", height: "1.5rem" }}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          )}
+          <div className={cn("transition-transform duration-200", hasActions && open && "rotate-45")}>
+            {icon ?? <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>}
+          </div>
         </button>
       </div>
     );
@@ -844,7 +569,7 @@ const FloatingActionButton = React.forwardRef<HTMLDivElement, FloatingActionButt
 );
 FloatingActionButton.displayName = "FloatingActionButton";
 
-// ─── RichTooltip ──────────────────────────────────────────────────────────
+// ─── RichTooltip ───────────────────────────────────────────────────────────
 
 export interface RichTooltipProps {
   children: React.ReactNode;
@@ -852,179 +577,74 @@ export interface RichTooltipProps {
   description?: React.ReactNode;
   action?: React.ReactNode;
   side?: "top" | "right" | "bottom" | "left";
-  open?: boolean;
-  defaultOpen?: boolean;
   delayDuration?: number;
 }
 
-const RichTooltip = ({
-  children,
-  title,
-  description,
-  action,
-  side = "top",
-  open: controlledOpen,
-  defaultOpen = false,
-  delayDuration = 400,
-}: RichTooltipProps) => {
-  const [internalOpen, setInternalOpen] = React.useState(defaultOpen);
-  const isOpen = controlledOpen ?? internalOpen;
-  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const show = () => {
-    timeoutRef.current = setTimeout(() => setInternalOpen(true), delayDuration);
-  };
-  const hide = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setInternalOpen(false);
-  };
-
-  const positionClasses: Record<string, string> = {
-    top:    "bottom-full left-1/2 -translate-x-1/2 mb-2",
-    bottom: "top-full left-1/2 -translate-x-1/2 mt-2",
-    left:   "right-full top-1/2 -translate-y-1/2 mr-2",
-    right:  "left-full top-1/2 -translate-y-1/2 ml-2",
-  };
-
-  return (
-    <div
-      className="atlas-rich-tooltip relative inline-flex"
-      onMouseEnter={show}
-      onMouseLeave={hide}
-      onFocus={show}
-      onBlur={hide}
-    >
-      {children}
-      {isOpen && (
-        <div
-          role="tooltip"
+const RichTooltip: React.FC<RichTooltipProps> = ({ children, title, description, action, side = "top", delayDuration = 300 }) => (
+  <TooltipPrimitive.Provider>
+    <TooltipPrimitive.Root delayDuration={delayDuration}>
+      <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
+      <TooltipPrimitive.Portal>
+        <TooltipPrimitive.Content
+          side={side}
+          sideOffset={6}
           className={cn(
-            "absolute z-50 w-64 rounded-lg border border-border bg-popover p-3 shadow-lg",
-            "animate-in fade-in-0 zoom-in-95",
-            positionClasses[side]
+            "veloria-rich-tooltip z-50 overflow-hidden rounded-xl border border-border bg-popover p-4 shadow-lg max-w-xs",
+            "animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
           )}
         >
-          {title && <p className="text-sm font-semibold mb-1">{title}</p>}
-          {description && <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>}
-          {action && <div className="mt-2 pt-2 border-t border-border">{action}</div>}
-        </div>
-      )}
-    </div>
-  );
-};
-RichTooltip.displayName = "RichTooltip";
+          {title && <p className="text-sm font-semibold">{title}</p>}
+          {description && <p className={cn("text-xs text-muted-foreground", title && "mt-1")}>{description}</p>}
+          {action && <div className="mt-3">{action}</div>}
+        </TooltipPrimitive.Content>
+      </TooltipPrimitive.Portal>
+    </TooltipPrimitive.Root>
+  </TooltipPrimitive.Provider>
+);
 
-// ─── Tour ─────────────────────────────────────────────────────────────────
+// ─── Tour ──────────────────────────────────────────────────────────────────
 
-export interface TourStep {
-  target?: string;
-  title: string;
-  description: React.ReactNode;
-  placement?: "top" | "bottom" | "left" | "right";
-}
-
+export interface TourStep { title: string; description: string; target?: string; }
 export interface TourProps {
   steps: TourStep[];
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   onComplete?: () => void;
-  currentStep?: number;
-  onStepChange?: (step: number) => void;
 }
 
-const Tour = ({
-  steps,
-  open,
-  onOpenChange,
-  onComplete,
-  currentStep: controlledStep,
-  onStepChange,
-}: TourProps) => {
-  const [internalStep, setInternalStep] = React.useState(0);
-  const step = controlledStep ?? internalStep;
-  const current = steps[step];
-
-  if (!open || !current) return null;
-
-  const goNext = () => {
-    if (step < steps.length - 1) {
-      const next = step + 1;
-      onStepChange?.(next);
-      setInternalStep(next);
-    } else {
-      onComplete?.();
-      onOpenChange?.(false);
-    }
-  };
-
-  const goPrev = () => {
-    if (step > 0) {
-      const prev = step - 1;
-      onStepChange?.(prev);
-      setInternalStep(prev);
-    }
-  };
+const Tour: React.FC<TourProps> = ({ steps, open = true, onOpenChange, onComplete }) => {
+  const [current, setCurrent] = React.useState(0);
+  if (!open || steps.length === 0) return null;
+  const step = steps[current];
+  const isLast = current === steps.length - 1;
 
   return (
-    <div className="atlas-tour fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="fixed inset-0 bg-black/40 animate-in fade-in-0"
-        onClick={() => onOpenChange?.(false)}
-        aria-hidden="true"
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={`Tour step ${step + 1} of ${steps.length}: ${current.title}`}
-        className="relative z-10 w-full max-w-sm rounded-xl border border-border bg-background p-5 shadow-xl animate-in fade-in-0 zoom-in-95"
-      >
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-medium text-muted-foreground">
-            Step {step + 1} of {steps.length}
-          </span>
-          <button
-            type="button"
-            onClick={() => onOpenChange?.(false)}
-            aria-label="Close tour"
-            className="rounded p-0.5 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+    <div className="veloria-tour fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" onClick={() => onOpenChange?.(false)} />
+      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-background p-6 shadow-2xl">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <h3 className="text-lg font-semibold">{step.title}</h3>
+          <button type="button" onClick={() => onOpenChange?.(false)} className="rounded p-1 text-muted-foreground hover:text-foreground transition-colors" aria-label="Close tour">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
-
-        <h3 className="text-base font-semibold mb-1">{current.title}</h3>
-        <div className="text-sm text-muted-foreground">{current.description}</div>
-
-        <div className="mt-5 flex items-center justify-between gap-3">
-          <div className="flex gap-1">
+        <p className="text-sm text-muted-foreground">{step.description}</p>
+        <div className="mt-6 flex items-center justify-between">
+          <div className="flex gap-1.5">
             {steps.map((_, i) => (
-              <span
-                key={i}
-                className={cn(
-                  "h-1.5 rounded-full transition-all",
-                  i === step ? "w-4 bg-primary" : "w-1.5 bg-muted"
-                )}
-              />
+              <div key={i} className={cn("h-1.5 rounded-full transition-all", i === current ? "w-4 bg-primary" : "w-1.5 bg-muted-foreground/30")} />
             ))}
           </div>
           <div className="flex gap-2">
-            {step > 0 && (
-              <button
-                type="button"
-                onClick={goPrev}
-                className="h-8 px-3 rounded-md border border-border text-sm hover:bg-accent transition-colors"
-              >
-                Back
-              </button>
+            {current > 0 && (
+              <button type="button" onClick={() => setCurrent(current - 1)} className="inline-flex h-8 items-center justify-center rounded-md border border-input px-3 text-sm hover:bg-accent transition-colors">Back</button>
             )}
             <button
               type="button"
-              onClick={goNext}
-              className="h-8 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+              onClick={() => { if (isLast) { onComplete?.(); onOpenChange?.(false); } else setCurrent(current + 1); }}
+              className="inline-flex h-8 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
             >
-              {step === steps.length - 1 ? "Done" : "Next"}
+              {isLast ? "Done" : "Next"}
             </button>
           </div>
         </div>
@@ -1032,13 +652,10 @@ const Tour = ({
     </div>
   );
 };
-Tour.displayName = "Tour";
-
 
 export {
-
-  Alert, AlertTitle, AlertDescription,
-  ToastProvider, ToastViewport, Toast, ToastTitle, ToastDescription, ToastClose, ToastAction,
+  Alert,
+  ToastProvider, ToastViewport, Toast, ToastTitle, ToastDescription, ToastAction, ToastClose,
   Snackbar,
   Progress,
   CircularProgress,
@@ -1047,5 +664,28 @@ export {
   EmptyState,
   StatusIndicator,
   Notification,
-  BannerAlert, ConfirmDialog, FloatingActionButton, RichTooltip, Tour
+  BannerAlert,
+  ConfirmDialog,
+  FloatingActionButton,
+  RichTooltip,
+  Tour,
+};
+
+export type {
+  AlertProps,
+  SnackbarProps,
+  ProgressProps,
+  CircularProgressProps,
+  SkeletonProps,
+  LoadingSpinnerProps,
+  EmptyStateProps,
+  StatusIndicatorProps,
+  NotificationProps,
+  BannerAlertProps,
+  ConfirmDialogProps,
+  FABAction,
+  FloatingActionButtonProps,
+  RichTooltipProps,
+  TourStep,
+  TourProps,
 };

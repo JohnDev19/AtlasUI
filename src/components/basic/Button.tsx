@@ -2,10 +2,11 @@ import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../utils/cn";
+import { classicButtonBase } from "../../variants/classic";
 
 const buttonVariants = cva(
   [
-    "atlas-button",
+    "veloria-button",
     "inline-flex items-center justify-center gap-2",
     "whitespace-nowrap rounded-md font-medium",
     "ring-offset-background transition-all duration-150",
@@ -28,22 +29,31 @@ const buttonVariants = cva(
           "bg-destructive text-destructive-foreground shadow hover:bg-destructive/90",
         success:
           "bg-success text-success-foreground shadow hover:bg-success/90",
+        /**
+         * classic — premium editorial feel.
+         * Warm parchment base · inset highlight · engraved depth.
+         * Not literal 3D — refined tactile quality.
+         */
+        classic: cn(classicButtonBase),
       },
       size: {
-        xs: "h-6 px-2 text-xs rounded",
-        sm: "h-8 px-3 text-sm",
-        md: "h-9 px-4 text-sm",
-        lg: "h-10 px-6 text-base",
-        xl: "h-12 px-8 text-base",
+        xs:   "h-6 px-2 text-xs rounded",
+        sm:   "h-8 px-3 text-sm",
+        md:   "h-9 px-4 text-sm",
+        lg:   "h-10 px-6 text-base",
+        xl:   "h-12 px-8 text-base",
         icon: "h-9 w-9",
       },
-      fullWidth: {
-        true: "w-full",
-      },
-      loading: {
-        true: "cursor-wait",
-      },
+      fullWidth: { true: "w-full" },
+      loading:   { true: "cursor-wait" },
     },
+    compoundVariants: [
+      // Classic size overrides — slightly more generous padding for the premium feel
+      { variant: "classic", size: "sm", class: "px-4 tracking-wide" },
+      { variant: "classic", size: "md", class: "px-5 tracking-wide" },
+      { variant: "classic", size: "lg", class: "px-7 tracking-widest text-sm" },
+      { variant: "classic", size: "xl", class: "px-9 tracking-widest" },
+    ],
     defaultVariants: {
       variant: "solid",
       size: "md",
@@ -54,13 +64,9 @@ const buttonVariants = cva(
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
-  /** Render as child element (Radix Slot pattern) */
   asChild?: boolean;
-  /** Show loading spinner */
   loading?: boolean;
-  /** Left icon slot */
   leftIcon?: React.ReactNode;
-  /** Right icon slot */
   rightIcon?: React.ReactNode;
 }
 
@@ -82,7 +88,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const Comp = asChild ? Slot : "button";
-
     return (
       <Comp
         ref={ref}
@@ -99,32 +104,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             viewBox="0 0 24 24"
             aria-hidden="true"
           >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-            />
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
         )}
-        {!loading && leftIcon && (
-          <span className="shrink-0" aria-hidden="true">
-            {leftIcon}
-          </span>
-        )}
+        {!loading && leftIcon && <span className="shrink-0" aria-hidden="true">{leftIcon}</span>}
         {children}
-        {rightIcon && !loading && (
-          <span className="shrink-0" aria-hidden="true">
-            {rightIcon}
-          </span>
-        )}
+        {rightIcon && !loading && <span className="shrink-0" aria-hidden="true">{rightIcon}</span>}
       </Comp>
     );
   }
