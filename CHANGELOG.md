@@ -1,13 +1,97 @@
 # Changelog
 
-All notable changes to Veloria UI are documented here.  
+All notable changes to Veloria UI are documented here.
 Project by [JohnDev19](https://github.com/JohnDev19) · [GitHub](https://github.com/JohnDev19/Veloria-UI) · [ui-veloria.vercel.app](https://ui-veloria.vercel.app/)
 
 This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
-## [0.1.3] — 2026-03-16 (Edited)
+## [0.1.4] — 2026-03-16
+
+### New Components (10)
+
+**Charts**
+- `SparklineChart` — zero-dependency SVG inline trend line with optional area fill, animated draw-on, and end-point dot. Designed to slot directly into `StatsCard` or any compact metric surface. No external chart library needed.
+- `RadialProgressChart` — multi-segment animated SVG donut ring. Each arc is independently sized via `stroke-dasharray`, eased in on mount, with a customizable center label slot and an optional colour legend below.
+- `GaugeChart` — half-circle SVG gauge with a `requestAnimationFrame`-driven animated needle, configurable colour zones (green → amber → red by default), per-zone stroke arcs, and rendered min/max/value labels. Fully controlled via `value`, `min`, `max`, and `zones` props.
+
+**Modern & Unique**
+- `AuroraCard` — dark-surface card with three aurora gradient blobs that track mouse position via `onMouseMove` offset math. Each blob moves at a different speed and direction, creating a parallax aurora effect. The content renders inside a relative `z-10` panel on top. Zero external dependencies — pure CSS transforms + inline style.
+- `TypewriterText` — cycles through a `strings[]` array, typing each character-by-character then erasing, with configurable `speed`, `deleteSpeed`, `pause`, `cursor`, and `loop` props. Cursor blinks independently of the typing loop via a separate `setInterval`. Accessible with `aria-live="polite"`.
+
+**Data Display**
+- `FileCard` — file attachment surface with auto-derived type badge (colour-coded per extension), formatted file size, optional upload/download progress bar that turns green on completion, and download/remove action buttons. Two layout variants: `compact` (inline pill) and `full` (card with icon block).
+- `PricingCard` — structured pricing tier with plan name, price + billing period, optional description, feature list with check/cross icons and optional notes, a CTA button that highlights when `popular` is set, and a "Most popular" ribbon badge. Supports `classic` bevel variant.
+
+**Forms**
+- `NumberInput` — stepper input flanked by − and + buttons. Clamps to `min`/`max`, steps by configurable `step` amount, increments on `ArrowUp`/`ArrowDown` keyboard events, and adjusts on mouse scroll when focused. Hides native browser spinners. Supports controlled and uncontrolled modes. Sizes `xs`–`lg`.
+- `AvatarUpload` — avatar circle with a camera overlay that appears on hover, a hidden `<input type="file">` triggered on click or keyboard, instant `FileReader` base64 preview, max-size validation with an error message, and a "Remove photo" link. Sizes `sm`–`xl`. Fully accessible with `role="button"` and `aria-label`.
+
+**Feedback**
+- `StepProgress` — animated segmented progress bar. Each segment fills left-to-right with a staggered CSS `scaleX` transition (40ms per-segment delay). Props: `steps`, `current`, `color`, `animated`, `showLabel`, `size`. Renders a `role="progressbar"` with correct ARIA attributes.
+
+**Utility**
+- `TypewriterText` — see Modern & Unique above (also exported from `utility`).
+
+### Architecture
+
+All 10 new components are **standalone files** — each lives in its own `.tsx` file alongside the relevant `index.tsx`. This means `index.tsx` re-exports them without duplicating implementation, tree-shaking works per-component, and diffs stay minimal when individual components change.
+
+- `src/components/data-display/SparklineChart.tsx`
+- `src/components/data-display/RadialProgressChart.tsx`
+- `src/components/data-display/GaugeChart.tsx`
+- `src/components/data-display/AuroraCard.tsx`
+- `src/components/data-display/FileCard.tsx`
+- `src/components/data-display/PricingCard.tsx`
+- `src/components/forms/NumberInput.tsx`
+- `src/components/forms/AvatarUpload.tsx`
+- `src/components/feedback/StepProgress.tsx`
+- `src/components/utility/TypewriterText.tsx`
+
+### CLI Registry
+
+All 10 new components are registered in `src/cli/registry.ts` and are available via:
+
+```bash
+npx veloria-ui add sparkline-chart
+npx veloria-ui add radial-progress-chart
+npx veloria-ui add gauge-chart
+npx veloria-ui add aurora-card
+npx veloria-ui add pricing-card
+npx veloria-ui add file-card
+npx veloria-ui add number-input
+npx veloria-ui add avatar-upload
+npx veloria-ui add step-progress
+npx veloria-ui add typewriter-text
+```
+
+---
+
+## [0.1.3] — 2026-03-16
+
+### Classic Variant
+
+Added `classic` variant across **Button**, **IconButton**, **Badge**, **Tag**, **Chip**, and **Card** components. The classic style uses beveled inset box-shadows to mimic the tactile feel of physical plastic or rubber:
+- Top-left inset highlight (`rgba(255,255,255,0.72)` light mode, `rgba(255,255,255,0.10)` dark)
+- Bottom-right inset shadow (`rgba(0,0,0,0.14)` light mode, `rgba(0,0,0,0.50)` dark)
+- Active/pressed state inverts the bevel to simulate a physical click-down
+
+New CSS utilities added to `veloria.css`:
+- `.veloria-classic` — applies the raised bevel shadow
+- `.veloria-classic-pressed` — applies the pressed/inverted bevel shadow
+- CSS custom properties `--classic-highlight`, `--classic-shadow`, `--classic-bevel`, `--classic-bevel-pressed` — all responsive to dark mode
+
+### Select Dropdown Redesign
+
+Replaced the system-native OS picker with a fully custom animated dropdown:
+- Layered `box-shadow` (soft ambient + key shadow, separate dark mode values)
+- Open animation: `fade-in-0` + `zoom-in-[0.97]` + directional slide from trigger
+- Close animation: `fade-out-0` + `zoom-out-95` + reverse slide
+- `SelectScrollUpButton` / `SelectScrollDownButton` — appear when list overflows, replacing the OS scrollbar
+- Chevron icon rotates 180° when dropdown is open (CSS rule on `.atlas-select-trigger[data-state="open"] svg`)
+- `SelectLabel` styled as uppercase tracking-widened group headers
+- Max height capped to `min(available-height, 18rem)` to prevent off-screen overflow
 
 ### Branding & Naming
 
@@ -21,15 +105,16 @@ This project follows [Semantic Versioning](https://semver.org).
 - Renamed localStorage theme key from `atlas-theme` to `veloria-theme`
 - Removed legacy `atlas` bin alias from `package.json`
 - Updated all homepage and docs URLs to `https://ui-veloria.vercel.app/`
-- Removed hardcoded component count from descriptions and CLI copy
 
 ### Bug Fixes
 
 - Fixed `TypeError: Cannot read properties of null (reading 'matches')` — `window.matchMedia` now uses optional chaining (`?.`) in `useTheme` and an explicit null guard in `useMediaQuery`, preventing crashes in jsdom and certain SSR environments
+- Fixed `TS2430` on `StatisticProps` — added `Omit<..., "prefix">` to resolve conflict with `HTMLAttributes.prefix`
+- Fixed `TS2430` on `CalendarProps` — added `Omit<..., "onChange">` to resolve conflict with `HTMLAttributes.onChange`
 
 ---
 
-## [0.1.2] — 2026-03-15 (UPDATED)
+## [0.1.2] — 2026-03-15
 
 ### New Components (20)
 
@@ -68,7 +153,7 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
-## [0.1.1] — 2026-03-13 (UPDATED)
+## [0.1.1] — 2026-03-13
 
 ### Build fixes
 
@@ -86,143 +171,3 @@ This project follows [Semantic Versioning](https://semver.org).
 ### Initial Release
 
 First public release of Veloria UI. A full CLI, hooks, a Tailwind plugin, and a complete CSS token system with light + dark mode.
-
----
-
-#### veloria-ui
-
-**Basic (10)**
-- `Button` — solid, outline, ghost, soft, link, danger variants · sizes xs–xl · loading state · left/right icon slots
-- `IconButton` — square or circular icon-only button with all button variants
-- `Link` — anchor with external link indicator and underline control
-- `Badge` — compact label with 5 color variants and optional dot
-- `Avatar` — image with fallback initials, online/offline status ring, 6 sizes
-- `AvatarGroup` — stacked avatar row with overflow count
-- `Divider` — horizontal/vertical with optional center label
-- `Tag` — closable colored tag with icon slot
-- `Chip` — toggleable with avatar/icon support and remove button
-- `Tooltip` — Radix-powered, all four sides, configurable delay
-
-**Layout (10)**
-- `Container` — responsive max-width wrapper with padding control
-- `Stack` — flex column/row with gap, align, justify, and divider support
-- `Grid` — CSS Grid with column/row/gap config
-- `Flex` — inline flex with full directional control
-- `Section` — semantic `<section>` with vertical padding presets
-- `Spacer` — invisible spacer
-- `AspectRatio` — Radix aspect-ratio wrapper
-- `Center` — flex centering helper
-- `ScrollArea` — custom scrollbar via Radix ScrollArea
-- `Masonry` — CSS multi-column masonry grid
-
-**Navigation (10)**
-- `Navbar` — sticky + glass-blur top bar
-- `Sidebar` — collapsible with width transition
-- `Menu` / `MenuItem` — vertical nav with active/disabled states
-- `DropdownMenu` — full Radix Dropdown with all sub-primitives
-- `Breadcrumb` — accessible trail with custom separator
-- `Pagination` — page numbers, ellipsis, prev/next
-- `Tabs` — line, pills, enclosed variants · Radix powered
-- `Stepper` — horizontal/vertical multi-step progress indicator
-- `CommandDialog` — ⌘K command palette via cmdk
-
-**Forms (10)**
-- `Input` — left/right icon slots, sizes, error state
-- `TextArea` — resize control, error state
-- `Select` — full Radix Select with all sub-primitives
-- `Checkbox` — with label, description, error state
-- `RadioGroup` — per-option labels and descriptions
-- `Switch` — three sizes, label, description
-- `Slider` — range slider
-- `RangeSlider` — dual-thumb slider
-- `DatePicker` — calendar popover with keyboard navigation
-- `TimePicker` — hour/minute/second with AM/PM toggle
-
-**Advanced Forms (10)**
-- `FileUpload` — drag-and-drop with preview, size limit, MIME type filter
-- `OTPInput` — SMS-style one-time-password input
-- `ColorPicker` — HEX/RGB/HSL input with swatch palette
-- `SearchInput` — debounced search with clear button
-- `PasswordInput` — toggle visibility with strength meter
-- `Combobox` — searchable dropdown with keyboard navigation
-- `MultiSelect` — tag-style multi-value select
-- `FormField` — label + input + error wrapper
-- `FormLabel` — accessible label
-- `FormError` — error message slot
-
-**Data Display (10)**
-- `Card` / `CardHeader` / `CardContent` / `CardFooter`
-- `Table` — sortable columns, sticky header
-- `DataTable` — full-featured table with pagination and row selection
-- `List` / `ListItem`
-- `Statistic` — large number with label and trend
-- `Timeline` — vertical event list
-- `Calendar` — month grid with event dots
-- `Chart` — wrapper around Recharts with theme tokens
-- `CodeBlock` — syntax-highlighted code with copy button
-
-**Feedback (10)**
-- `Alert` — inline alert with 5 variants and icon slot
-- `Toast` — Radix Toast with 5 variants · programmatic via `useToast`
-- `Snackbar` — bottom-anchored status message
-- `Progress` — linear with animated fill
-- `CircularProgress` — SVG ring with percentage label
-- `Skeleton` — text, rect, circle variants
-- `LoadingSpinner` — 4 sizes · 3 variants
-- `EmptyState` — icon + title + description + action slot
-- `StatusIndicator` — colored dot with pulse animation
-- `Notification` — card-style notification with timestamp
-
-**Overlay (10)**
-- `Modal` — centered dialog with close button
-- `Dialog` — full Radix Dialog with all sub-primitives
-- `Drawer` — side-sheet with 4 sides
-- `Sheet` — lightweight Drawer alias
-- `Popover` — Radix Popover
-- `HoverCard` — hover-triggered card
-- `ContextMenu` — right-click menu via Radix
-- `CommandDialog` — ⌘K palette
-- `Lightbox` — full-screen image viewer with zoom
-- `ImageViewer` — in-place image pan and zoom
-
-**Media (5)**
-- `Image` — next/image wrapper with blur placeholder and fallback
-- `VideoPlayer` — custom controls, poster, autoplay, loop, track support
-- `AudioPlayer` — custom UI with seek bar, cover art
-- `Carousel` — autoplay, dots, arrows, loop, slidesPerView
-- `Gallery` — responsive image grid with click handler
-
-**Utility (5)**
-- `ThemeSwitcher` — icon / toggle / select variants
-- `CopyButton` — icon or labelled button with success feedback
-- `KeyboardShortcut` — styled `<kbd>` shortcut display
-- `ResizablePanel` — drag-to-resize with min/max constraints
-- `DragDropArea` — accessible file drop zone
-
-#### Hooks
-- `useDisclosure` — open/close state management
-- `useMediaQuery` — window media query subscription
-- `useBreakpoint` — Tailwind breakpoint helper
-- `useClipboard` — clipboard copy with timeout feedback
-- `useLocalStorage` — persistent state
-- `useTheme` — theme switching (persists to localStorage)
-- `useDebounce` — debounced value
-- `useOnClickOutside` — outside click detection
-- `useKeydown` — keyboard shortcut listener with modifier support
-- `useMounted` — SSR-safe mount check
-- `useToast` — programmatic toast notifications
-
-#### Infrastructure
-- Tailwind CSS plugin + preset (`veloriaPlugin`, `veloriaPreset`)
-- Full CSS design token system — light and dark themes
-- `VeloriaProvider` for Next.js App Router
-- TypeScript strict throughout — full named type exports
-- Tree-shakeable ESM + CJS dual build via tsup
-- Turbo monorepo setup
-
-#### veloria-ui CLI
-- `init` — project setup wizard (detects Next.js, writes veloria.config.json)
-- `add` — copies components + installs npm deps, resolves Veloria UI peer deps
-- `list` — browse all components filtered by category
-- `diff` — compare local copy to latest (registry fetch, coming soon)
-- Auto-detects npm / pnpm / yarn / bun

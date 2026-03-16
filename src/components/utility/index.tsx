@@ -5,7 +5,8 @@ import { cn } from "../../utils/cn";
 
 export type Theme = "light" | "dark" | "system";
 
-export interface ThemeSwitcherProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "color" | "onChange"> {
+export interface ThemeSwitcherProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "color" | "onChange"> {
   value?: Theme;
   onChange?: (theme: Theme) => void;
   variant?: "icon" | "toggle" | "select";
@@ -16,17 +17,23 @@ const ThemeSwitcher = React.forwardRef<HTMLDivElement, ThemeSwitcherProps>(
     const icons: Record<Theme, React.ReactNode> = {
       light: (
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"
+          />
         </svg>
       ),
       dark: (
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+          />
         </svg>
       ),
       system: (
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+          />
         </svg>
       ),
     };
@@ -51,7 +58,13 @@ const ThemeSwitcher = React.forwardRef<HTMLDivElement, ThemeSwitcherProps>(
 
     if (variant === "toggle") {
       return (
-        <div ref={ref} className={cn("atlas-theme-switcher inline-flex rounded-md border border-border overflow-hidden", className)} {...props} role="group" aria-label="Theme selection">
+        <div
+          ref={ref}
+          className={cn("atlas-theme-switcher inline-flex rounded-md border border-border overflow-hidden", className)}
+          role="group"
+          aria-label="Theme selection"
+          {...props}
+        >
           {themes.map((theme) => (
             <button
               key={theme}
@@ -103,7 +116,10 @@ export interface CopyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 }
 
 const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
-  ({ className, text, timeout = 2000, onCopied, size = "md", variant = "icon", label = "Copy", ...props }, ref) => {
+  (
+    { className, text, timeout = 2000, onCopied, size = "md", variant = "icon", label = "Copy", ...props },
+    ref
+  ) => {
     const [copied, setCopied] = React.useState(false);
 
     const handleCopy = async () => {
@@ -113,7 +129,7 @@ const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
         onCopied?.();
         setTimeout(() => setCopied(false), timeout);
       } catch {
-        // Fallback
+        // execCommand fallback for older browsers
         const el = document.createElement("textarea");
         el.value = text;
         document.body.appendChild(el);
@@ -174,7 +190,8 @@ CopyButton.displayName = "CopyButton";
 
 // ─── KeyboardShortcut ──────────────────────────────────────────────────────
 
-export interface KeyboardShortcutProps extends Omit<React.HTMLAttributes<HTMLSpanElement>, "color" | "size"> {
+export interface KeyboardShortcutProps
+  extends Omit<React.HTMLAttributes<HTMLSpanElement>, "color" | "size"> {
   keys: string[];
   separator?: string;
   size?: "sm" | "md" | "lg";
@@ -222,32 +239,35 @@ export interface ResizablePanelProps extends React.HTMLAttributes<HTMLDivElement
 }
 
 const ResizablePanel = React.forwardRef<HTMLDivElement, ResizablePanelProps>(
-  ({
-    className,
-    children,
-    defaultSize = 300,
-    minSize = 100,
-    maxSize = 800,
-    direction = "horizontal",
-    onResize,
-    style,
-    ...props
-  }, ref) => {
+  (
+    {
+      className,
+      children,
+      defaultSize = 300,
+      minSize = 100,
+      maxSize = 800,
+      direction = "horizontal",
+      onResize,
+      style,
+      ...props
+    },
+    ref
+  ) => {
     const [size, setSize] = React.useState(defaultSize);
-    const isDragging = React.useRef(false);
-    const startPos = React.useRef(0);
-    const startSize = React.useRef(defaultSize);
+    const isDragging  = React.useRef(false);
+    const startPos    = React.useRef(0);
+    const startSize   = React.useRef(defaultSize);
 
     const handleMouseDown = (e: React.MouseEvent) => {
       e.preventDefault();
-      isDragging.current = true;
-      startPos.current = direction === "horizontal" ? e.clientX : e.clientY;
-      startSize.current = size;
+      isDragging.current  = true;
+      startPos.current    = direction === "horizontal" ? e.clientX : e.clientY;
+      startSize.current   = size;
 
       const handleMouseMove = (e: MouseEvent) => {
         if (!isDragging.current) return;
-        const pos = direction === "horizontal" ? e.clientX : e.clientY;
-        const delta = pos - startPos.current;
+        const pos     = direction === "horizontal" ? e.clientX : e.clientY;
+        const delta   = pos - startPos.current;
         const newSize = Math.min(maxSize, Math.max(minSize, startSize.current + delta));
         setSize(newSize);
         onResize?.(newSize);
@@ -282,16 +302,18 @@ const ResizablePanel = React.forwardRef<HTMLDivElement, ResizablePanelProps>(
           tabIndex={0}
           className={cn(
             "atlas-resize-handle absolute z-10 flex items-center justify-center",
-            "bg-transparent hover:bg-primary/20 transition-colors cursor-col-resize group",
+            "bg-transparent hover:bg-primary/20 transition-colors group",
             direction === "horizontal"
               ? "right-0 top-0 h-full w-1.5 cursor-col-resize"
               : "bottom-0 left-0 w-full h-1.5 cursor-row-resize"
           )}
         >
-          <div className={cn(
-            "rounded-full bg-border group-hover:bg-primary/50 transition-colors",
-            direction === "horizontal" ? "h-8 w-1" : "w-8 h-1"
-          )} />
+          <div
+            className={cn(
+              "rounded-full bg-border group-hover:bg-primary/50 transition-colors",
+              direction === "horizontal" ? "h-8 w-1" : "w-8 h-1"
+            )}
+          />
         </div>
       </div>
     );
@@ -301,7 +323,8 @@ ResizablePanel.displayName = "ResizablePanel";
 
 // ─── DragDropArea ──────────────────────────────────────────────────────────
 
-export interface DragDropAreaProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onDrop" | "onDragOver"> {
+export interface DragDropAreaProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onDrop" | "onDragOver"> {
   onDrop?: (items: DataTransfer) => void;
   onDragOver?: (e: React.DragEvent) => void;
   accept?: string[];
@@ -313,20 +336,12 @@ export interface DragDropAreaProps extends Omit<React.HTMLAttributes<HTMLDivElem
 }
 
 const DragDropArea = React.forwardRef<HTMLDivElement, DragDropAreaProps>(
-  ({
-    className,
-    onDrop,
-    accept,
-    disabled,
-    active: externalActive,
-    label,
-    icon,
-    hint,
-    children,
-    ...props
-  }, ref) => {
+  (
+    { className, onDrop, accept, disabled, active: externalActive, label, icon, hint, children, ...props },
+    ref
+  ) => {
     const [internalActive, setInternalActive] = React.useState(false);
-    const active = externalActive ?? internalActive;
+    const active       = externalActive ?? internalActive;
     const [dragCounter, setDragCounter] = React.useState(0);
 
     const handleDragEnter = (e: React.DragEvent) => {
@@ -351,9 +366,7 @@ const DragDropArea = React.forwardRef<HTMLDivElement, DragDropAreaProps>(
       e.preventDefault();
       setDragCounter(0);
       setInternalActive(false);
-      if (!disabled) {
-        onDrop?.(e.dataTransfer);
-      }
+      if (!disabled) onDrop?.(e.dataTransfer);
     };
 
     return (
@@ -368,19 +381,21 @@ const DragDropArea = React.forwardRef<HTMLDivElement, DragDropAreaProps>(
         className={cn(
           "atlas-drag-drop flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 text-center",
           "transition-colors duration-150",
-          active && !disabled && "border-primary bg-primary/5",
-          !active && "border-border hover:border-primary/50 hover:bg-muted/30",
-          disabled && "opacity-50 cursor-not-allowed border-border",
+          active && !disabled  && "border-primary bg-primary/5",
+          !active              && "border-border hover:border-primary/50 hover:bg-muted/30",
+          disabled             && "opacity-50 cursor-not-allowed border-border",
           className
         )}
         {...props}
       >
         {children ?? (
           <>
-            <div className={cn(
-              "rounded-full p-3 transition-colors",
-              active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-            )}>
+            <div
+              className={cn(
+                "rounded-full p-3 transition-colors",
+                active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+              )}
+            >
               {icon ?? (
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -408,13 +423,11 @@ const DragDropArea = React.forwardRef<HTMLDivElement, DragDropAreaProps>(
 );
 DragDropArea.displayName = "DragDropArea";
 
+// ═══════════════════════════════════════════════════════════════════════════
+// v0.1.2 additions
+// ═══════════════════════════════════════════════════════════════════════════
 
-// ═══════════════════════════════════════════════════════════════
-// New in v0.1.2
-// ═══════════════════════════════════════════════════════════════
-
-
-// ─── InfiniteScroll ───────────────────────────────────────────────────────
+// ─── InfiniteScroll ────────────────────────────────────────────────────────
 
 export interface InfiniteScrollProps extends React.HTMLAttributes<HTMLDivElement> {
   onLoadMore: () => void | Promise<void>;
@@ -436,20 +449,12 @@ const DefaultLoader = () => (
 );
 
 const InfiniteScroll = React.forwardRef<HTMLDivElement, InfiniteScrollProps>(
-  ({
-    className,
-    children,
-    onLoadMore,
-    hasMore,
-    loading,
-    threshold = 100,
-    loader,
-    endMessage,
-    as: Comp = "div",
-    ...props
-  }, ref) => {
+  (
+    { className, children, onLoadMore, hasMore, loading, threshold = 100, loader, endMessage, as: Comp = "div", ...props },
+    ref
+  ) => {
     const sentinelRef = React.useRef<HTMLDivElement>(null);
-    const loadingRef = React.useRef(false);
+    const loadingRef  = React.useRef(false);
 
     React.useEffect(() => {
       const sentinel = sentinelRef.current;
@@ -472,11 +477,7 @@ const InfiniteScroll = React.forwardRef<HTMLDivElement, InfiniteScrollProps>(
     }, [hasMore, loading, onLoadMore, threshold]);
 
     return (
-      <Comp
-        ref={ref}
-        className={cn("atlas-infinite-scroll", className)}
-        {...props}
-      >
+      <Comp ref={ref} className={cn("atlas-infinite-scroll", className)} {...props}>
         {children}
         <div ref={sentinelRef} aria-hidden="true" />
         {loading && (loader ?? <DefaultLoader />)}
@@ -491,9 +492,10 @@ const InfiniteScroll = React.forwardRef<HTMLDivElement, InfiniteScrollProps>(
 );
 InfiniteScroll.displayName = "InfiniteScroll";
 
-// ─── VirtualList ──────────────────────────────────────────────────────────
+// ─── VirtualList ───────────────────────────────────────────────────────────
 
-export interface VirtualListProps<T> extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
+export interface VirtualListProps<T>
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
   items: T[];
   itemHeight: number;
   renderItem: (item: T, index: number) => React.ReactNode;
@@ -517,13 +519,11 @@ function VirtualList<T>({
   const [scrollTop, setScrollTop] = React.useState(0);
 
   const containerHeight = typeof height === "number" ? height : 400;
-  const totalHeight = items.length * itemHeight;
-
-  const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
-  const visibleCount = Math.ceil(containerHeight / itemHeight) + overscan * 2;
-  const endIndex = Math.min(items.length - 1, startIndex + visibleCount);
-
-  const visibleItems = items.slice(startIndex, endIndex + 1);
+  const totalHeight     = items.length * itemHeight;
+  const startIndex      = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
+  const visibleCount    = Math.ceil(containerHeight / itemHeight) + overscan * 2;
+  const endIndex        = Math.min(items.length - 1, startIndex + visibleCount);
+  const visibleItems    = items.slice(startIndex, endIndex + 1);
 
   return (
     <div
@@ -543,9 +543,9 @@ function VirtualList<T>({
               role="listitem"
               style={{
                 position: "absolute",
-                top: actualIndex * itemHeight,
-                left: 0,
-                right: 0,
+                top:    actualIndex * itemHeight,
+                left:   0,
+                right:  0,
                 height: itemHeight,
               }}
             >
@@ -559,8 +559,21 @@ function VirtualList<T>({
 }
 VirtualList.displayName = "VirtualList";
 
+// ═══════════════════════════════════════════════════════════════════════════
+// v0.1.4 — TypewriterText
+// ═══════════════════════════════════════════════════════════════════════════
+
+export { TypewriterText } from "./TypewriterText";
+export type { TypewriterTextProps } from "./TypewriterText";
+
+// ─── Exports ───────────────────────────────────────────────────────────────
 
 export {
- ThemeSwitcher, CopyButton, KeyboardShortcut, ResizablePanel, DragDropArea ,
-  InfiniteScroll, VirtualList
+  ThemeSwitcher,
+  CopyButton,
+  KeyboardShortcut,
+  ResizablePanel,
+  DragDropArea,
+  InfiniteScroll,
+  VirtualList,
 };

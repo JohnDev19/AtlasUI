@@ -122,23 +122,27 @@ After running `add`, a file like `components/ui/button/index.tsx` appears in you
 ### Basic (10)
 `Button` `IconButton` `Link` `Badge` `Avatar` `AvatarGroup` `Divider` `Tag` `Chip` `Tooltip`
 
+> All interactive components now support a `classic` variant — beveled edges that mimic physical plastic or rubber with a tactile press effect.
+
 ### Layout (10)
 `Container` `Stack` `Grid` `Flex` `Section` `Spacer` `AspectRatio` `Center` `ScrollArea` `Masonry`
 
 ### Navigation (10)
 `Navbar` `Sidebar` `Menu` `DropdownMenu` `Breadcrumb` `Pagination` `Tabs` `CommandPalette` `NavigationMenu` `Stepper`
 
-### Forms (10)
-`Input` `TextArea` `Select` `Checkbox` `RadioGroup` `Switch` `Slider` `RangeSlider` `DatePicker` `TimePicker`
+### Forms (12)
+`Input` `TextArea` `Select` `Checkbox` `RadioGroup` `Switch` `Slider` `RangeSlider` `DatePicker` `TimePicker` `NumberInput` `AvatarUpload`
 
-### Advanced Forms (10)
-`FileUpload` `OTPInput` `ColorPicker` `SearchInput` `PasswordInput` `Combobox` `MultiSelect` `FormField` `FormLabel` `FormError`
+> `Select` now uses a fully custom animated dropdown — no OS picker. Includes scroll buttons, chevron animation, and directional slide-in/out transitions.
 
-### Data Display (10)
-`Card` `Table` `DataTable` `List` `ListItem` `Statistic` `Timeline` `Calendar` `Chart` `CodeBlock`
+### Advanced Forms (14)
+`FileUpload` `OTPInput` `ColorPicker` `SearchInput` `PasswordInput` `Combobox` `MultiSelect` `FormField` `FormLabel` `FormError` `PhoneInput` `TagInput` `CurrencyInput` `RatingInput`
 
-### Feedback (10)
-`Alert` `Toast` `Snackbar` `Progress` `CircularProgress` `Skeleton` `LoadingSpinner` `EmptyState` `StatusIndicator` `Notification`
+### Data Display (19)
+`Card` `Table` `DataTable` `List` `ListItem` `Statistic` `Timeline` `Calendar` `Chart` `CodeBlock` `StatsCard` `TreeView` `JsonViewer` `Heatmap` `KanbanBoard` `SparklineChart` `RadialProgressChart` `GaugeChart` `AuroraCard` `FileCard` `PricingCard`
+
+### Feedback (15)
+`Alert` `Toast` `Snackbar` `Progress` `CircularProgress` `Skeleton` `LoadingSpinner` `EmptyState` `StatusIndicator` `Notification` `BannerAlert` `ConfirmDialog` `FloatingActionButton` `RichTooltip` `Tour` `StepProgress`
 
 ### Overlay (10)
 `Modal` `Dialog` `Drawer` `Popover` `HoverCard` `ContextMenu` `CommandDialog` `Sheet` `Lightbox` `ImageViewer`
@@ -146,8 +150,121 @@ After running `add`, a file like `components/ui/button/index.tsx` appears in you
 ### Media (5)
 `Image` `VideoPlayer` `AudioPlayer` `Carousel` `Gallery`
 
-### Utility (5)
-`ThemeSwitcher` `CopyButton` `KeyboardShortcut` `ResizablePanel` `DragDropArea`
+### Utility (8)
+`ThemeSwitcher` `CopyButton` `KeyboardShortcut` `ResizablePanel` `DragDropArea` `InfiniteScroll` `VirtualList` `TypewriterText`
+
+---
+
+## New in v0.1.4
+
+### Charts
+
+```tsx
+import { SparklineChart, RadialProgressChart, GaugeChart } from "veloria-ui";
+
+// Inline trend line — slots into any stat card
+<SparklineChart data={[12, 18, 14, 22, 19, 28, 31]} color="hsl(var(--primary))" />
+
+// Animated multi-segment ring
+<RadialProgressChart
+  segments={[
+    { value: 65, label: "Series A", color: "#7F77DD" },
+    { value: 25, label: "Series B", color: "#1D9E75" },
+    { value: 10, label: "Series C", color: "#EF9F27" },
+  ]}
+  size={140}
+  centerLabel={<span className="text-lg font-bold">90%</span>}
+/>
+
+// Gauge with animated needle
+<GaugeChart value={72} label="CPU usage" size={200} />
+```
+
+### Modern & Unique
+
+```tsx
+import { AuroraCard, TypewriterText } from "veloria-ui";
+
+// Dark card with mouse-reactive aurora blobs
+<AuroraCard className="p-8 text-white">
+  <h2 className="text-2xl font-bold">Ship faster</h2>
+  <p className="mt-2 text-white/70">Aurora reacts to your cursor.</p>
+</AuroraCard>
+
+// Typewriter cycling through strings
+<TypewriterText
+  strings={["Build anything.", "Ship faster.", "Dark mode ready."]}
+  speed={80}
+  pause={2000}
+/>
+```
+
+### New Form Components
+
+```tsx
+import { NumberInput, AvatarUpload } from "veloria-ui";
+
+<NumberInput value={qty} onChange={setQty} min={1} max={99} step={1} size="md" />
+
+<AvatarUpload
+  value={avatarUrl}
+  onChange={(file, preview) => upload(file)}
+  onRemove={() => setAvatarUrl(undefined)}
+  maxSize={2 * 1024 * 1024}
+  fallback="JD"
+  size="lg"
+/>
+```
+
+### StepProgress
+
+```tsx
+import { StepProgress } from "veloria-ui";
+
+<StepProgress steps={4} current={2} showLabel size="md" />
+// → Step 2 of 4 · 50%
+```
+
+### PricingCard & FileCard
+
+```tsx
+import { PricingCard, FileCard } from "veloria-ui";
+
+<PricingCard
+  name="Pro"
+  price={29}
+  period="/month"
+  description="For teams that ship fast."
+  popular
+  features={[
+    { label: "Unlimited projects", included: true },
+    { label: "Priority support", included: true },
+    { label: "Custom domain", included: false },
+  ]}
+  onCtaClick={() => checkout("pro")}
+/>
+
+<FileCard
+  filename="Q4_report_final.pdf"
+  size={2.4 * 1024 * 1024}
+  progress={100}
+  onDownload={() => download()}
+  onRemove={() => remove()}
+/>
+```
+
+---
+
+## Classic variant
+
+All interactive components now accept `variant="classic"` — a beveled style that mimics physical plastic or rubber:
+
+```tsx
+<Button variant="classic">Classic button</Button>
+<Badge variant="classic" color="success">New</Badge>
+<Card variant="classic" interactive>Classic card</Card>
+<Chip classic>Filter</Chip>
+```
 
 ---
 
@@ -166,6 +283,12 @@ import {
   useKeydown,        // keyboard shortcut listener with modifier support
   useMounted,        // SSR-safe mount check
   useToast,          // fire toasts programmatically
+  useForm,           // form state + validation, no dependencies
+  usePagination,     // pagination logic decoupled from UI
+  useIntersection,   // IntersectionObserver wrapper
+  useWindowSize,     // reactive viewport dimensions, SSR-safe
+  useStep,           // multi-step wizard state
+  useCountdown,      // countdown timer with start/pause/reset
 } from "veloria-ui";
 ```
 
@@ -214,13 +337,14 @@ veloria-ui/
 │   │   ├── basic/           Button, IconButton, Badge, Avatar, Tooltip…
 │   │   ├── layout/          Container, Stack, Grid, ScrollArea, Masonry…
 │   │   ├── navigation/      Navbar, Tabs, DropdownMenu, Stepper…
-│   │   ├── forms/           Input, Select, Checkbox, Slider, Switch…
+│   │   ├── forms/           Input, Select, Checkbox, Slider, NumberInput, AvatarUpload…
 │   │   ├── advanced-forms/  OTPInput, ColorPicker, Combobox, MultiSelect…
-│   │   ├── data-display/    Card, DataTable, Timeline, Calendar, CodeBlock…
-│   │   ├── feedback/        Alert, Toast, Skeleton, EmptyState, Progress…
+│   │   ├── data-display/    Card, DataTable, SparklineChart, RadialProgressChart,
+│   │   │                    GaugeChart, AuroraCard, PricingCard, FileCard…
+│   │   ├── feedback/        Alert, Toast, Skeleton, StepProgress, EmptyState…
 │   │   ├── overlay/         Modal, Drawer, CommandDialog, Lightbox…
 │   │   ├── media/           VideoPlayer, AudioPlayer, Carousel, Gallery…
-│   │   └── utility/         ThemeSwitcher, CopyButton, ResizablePanel…
+│   │   └── utility/         ThemeSwitcher, CopyButton, TypewriterText…
 │   ├── hooks/               utility hooks
 │   ├── styles/              veloria.css — full design token system
 │   ├── types/               shared TypeScript types

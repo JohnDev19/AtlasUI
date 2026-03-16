@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ToastPrimitive from "@radix-ui/react-toast";
+import * as ToastPrimitive    from "@radix-ui/react-toast";
 import * as ProgressPrimitive from "@radix-ui/react-progress";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../utils/cn";
@@ -12,17 +12,19 @@ const alertVariants = cva(
     variants: {
       variant: {
         default: "bg-background text-foreground",
-        info: "border-info/30 bg-info/10 text-info-foreground [&>svg]:text-info",
+        info:    "border-info/30 bg-info/10 text-info-foreground [&>svg]:text-info",
         success: "border-success/30 bg-success/10 text-success-foreground [&>svg]:text-success",
         warning: "border-warning/30 bg-warning/10 text-warning-foreground [&>svg]:text-warning",
-        danger: "border-destructive/30 bg-destructive/10 text-destructive [&>svg]:text-destructive",
+        danger:  "border-destructive/30 bg-destructive/10 text-destructive [&>svg]:text-destructive",
       },
     },
     defaultVariants: { variant: "default" },
   }
 );
 
-export interface AlertProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof alertVariants> {
+export interface AlertProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof alertVariants> {
   icon?: React.ReactNode;
   closable?: boolean;
   onClose?: () => void;
@@ -100,8 +102,8 @@ const toastVariants = cva(
         default: "bg-background border-border",
         success: "bg-success/10 border-success/20 text-success",
         warning: "bg-warning/10 border-warning/20 text-warning",
-        danger: "bg-destructive/10 border-destructive/20 text-destructive",
-        info: "bg-info/10 border-info/20 text-info",
+        danger:  "bg-destructive/10 border-destructive/20 text-destructive",
+        info:    "bg-info/10 border-info/20 text-info",
       },
     },
     defaultVariants: { variant: "default" },
@@ -110,9 +112,14 @@ const toastVariants = cva(
 
 const Toast = React.forwardRef<
   React.ElementRef<typeof ToastPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitive.Root> & VariantProps<typeof toastVariants>
+  React.ComponentPropsWithoutRef<typeof ToastPrimitive.Root> &
+    VariantProps<typeof toastVariants>
 >(({ className, variant, ...props }, ref) => (
-  <ToastPrimitive.Root ref={ref} className={cn(toastVariants({ variant }), className)} {...props} />
+  <ToastPrimitive.Root
+    ref={ref}
+    className={cn(toastVariants({ variant }), className)}
+    {...props}
+  />
 ));
 Toast.displayName = ToastPrimitive.Root.displayName;
 
@@ -120,7 +127,11 @@ const ToastTitle = React.forwardRef<
   React.ElementRef<typeof ToastPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitive.Title>
 >(({ className, ...props }, ref) => (
-  <ToastPrimitive.Title ref={ref} className={cn("text-sm font-semibold", className)} {...props} />
+  <ToastPrimitive.Title
+    ref={ref}
+    className={cn("text-sm font-semibold", className)}
+    {...props}
+  />
 ));
 ToastTitle.displayName = ToastPrimitive.Title.displayName;
 
@@ -128,7 +139,11 @@ const ToastDescription = React.forwardRef<
   React.ElementRef<typeof ToastPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitive.Description>
 >(({ className, ...props }, ref) => (
-  <ToastPrimitive.Description ref={ref} className={cn("text-sm opacity-80", className)} {...props} />
+  <ToastPrimitive.Description
+    ref={ref}
+    className={cn("text-sm opacity-80", className)}
+    {...props}
+  />
 ));
 ToastDescription.displayName = ToastPrimitive.Description.displayName;
 
@@ -170,7 +185,7 @@ const ToastAction = React.forwardRef<
 ));
 ToastAction.displayName = ToastPrimitive.Action.displayName;
 
-// ─── Snackbar ─────────────────────────────────────────────────────────────
+// ─── Snackbar ──────────────────────────────────────────────────────────────
 
 export interface SnackbarProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "color"> {
   open?: boolean;
@@ -183,7 +198,6 @@ export interface SnackbarProps extends Omit<React.HTMLAttributes<HTMLDivElement>
 const Snackbar = React.forwardRef<HTMLDivElement, SnackbarProps>(
   ({ className, open, message, action, variant = "default", position = "bottom-center", ...props }, ref) => {
     if (!open) return null;
-
     return (
       <div
         ref={ref}
@@ -193,13 +207,13 @@ const Snackbar = React.forwardRef<HTMLDivElement, SnackbarProps>(
           "atlas-snackbar fixed z-50 flex items-center gap-4 rounded-lg px-4 py-3 shadow-lg",
           "min-w-[280px] max-w-[480px]",
           position === "bottom-center" && "bottom-4 left-1/2 -translate-x-1/2",
-          position === "bottom-left" && "bottom-4 left-4",
-          position === "bottom-right" && "bottom-4 right-4",
-          position === "top-center" && "top-4 left-1/2 -translate-x-1/2",
+          position === "bottom-left"   && "bottom-4 left-4",
+          position === "bottom-right"  && "bottom-4 right-4",
+          position === "top-center"    && "top-4 left-1/2 -translate-x-1/2",
           variant === "default" && "bg-foreground text-background",
           variant === "success" && "bg-success text-success-foreground",
           variant === "warning" && "bg-warning text-warning-foreground",
-          variant === "danger" && "bg-destructive text-destructive-foreground",
+          variant === "danger"  && "bg-destructive text-destructive-foreground",
           className
         )}
         {...props}
@@ -212,99 +226,104 @@ const Snackbar = React.forwardRef<HTMLDivElement, SnackbarProps>(
 );
 Snackbar.displayName = "Snackbar";
 
-// ─── Progress ─────────────────────────────────────────────────────────────
+// ─── Progress ──────────────────────────────────────────────────────────────
 
-export interface ProgressProps extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> {
+export interface ProgressProps
+  extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> {
   label?: string;
   showValue?: boolean;
   size?: "sm" | "md" | "lg";
   color?: "default" | "success" | "warning" | "danger";
 }
 
-const Progress = React.forwardRef<React.ElementRef<typeof ProgressPrimitive.Root>, ProgressProps>(
-  ({ className, value, label, showValue, size = "md", color = "default", ...props }, ref) => (
-    <div className="atlas-progress w-full">
-      {(label || showValue) && (
-        <div className="flex justify-between items-center mb-1.5">
-          {label && <span className="text-sm font-medium">{label}</span>}
-          {showValue && <span className="text-sm text-muted-foreground">{value ?? 0}%</span>}
-        </div>
+const progressColorMap: Record<string, string> = {
+  default: "bg-primary",
+  success: "bg-success",
+  warning: "bg-warning",
+  danger:  "bg-destructive",
+};
+
+const Progress = React.forwardRef<
+  React.ElementRef<typeof ProgressPrimitive.Root>,
+  ProgressProps
+>(({ className, value, label, showValue, size = "md", color = "default", ...props }, ref) => (
+  <div className="atlas-progress w-full">
+    {(label || showValue) && (
+      <div className="flex items-center justify-between mb-1.5">
+        {label && <span className="text-sm font-medium">{label}</span>}
+        {showValue && <span className="text-sm text-muted-foreground">{value ?? 0}%</span>}
+      </div>
+    )}
+    <ProgressPrimitive.Root
+      ref={ref}
+      value={value}
+      className={cn(
+        "relative overflow-hidden rounded-full bg-secondary w-full",
+        size === "sm" && "h-1",
+        size === "md" && "h-2",
+        size === "lg" && "h-3",
+        className
       )}
-      <ProgressPrimitive.Root
-        ref={ref}
-        className={cn(
-          "relative overflow-hidden rounded-full bg-secondary",
-          size === "sm" && "h-1.5",
-          size === "md" && "h-2.5",
-          size === "lg" && "h-4",
-          className
-        )}
-        {...props}
-      >
-        <ProgressPrimitive.Indicator
-          className={cn(
-            "h-full w-full flex-1 transition-all duration-500 ease-in-out",
-            color === "default" && "bg-primary",
-            color === "success" && "bg-success",
-            color === "warning" && "bg-warning",
-            color === "danger" && "bg-destructive",
-          )}
-          style={{ transform: `translateX(-${100 - (value ?? 0)}%)` }}
-        />
-      </ProgressPrimitive.Root>
-    </div>
-  )
-);
+      {...props}
+    >
+      <ProgressPrimitive.Indicator
+        className={cn("h-full w-full flex-1 transition-all duration-500", progressColorMap[color])}
+        style={{ transform: `translateX(-${100 - (value ?? 0)}%)` }}
+      />
+    </ProgressPrimitive.Root>
+  </div>
+));
 Progress.displayName = "Progress";
 
-// ─── CircularProgress ─────────────────────────────────────────────────────
+// ─── CircularProgress ──────────────────────────────────────────────────────
 
-export interface CircularProgressProps extends React.SVGAttributes<SVGElement> {
+export interface CircularProgressProps {
   value?: number;
   size?: number;
   thickness?: number;
-  showValue?: boolean;
-  label?: string;
   color?: "default" | "success" | "warning" | "danger";
   indeterminate?: boolean;
+  showValue?: boolean;
+  label?: string;
+  className?: string;
 }
+
+const circularColorMap: Record<string, string> = {
+  default: "stroke-primary",
+  success: "stroke-success",
+  warning: "stroke-warning",
+  danger:  "stroke-destructive",
+};
 
 const CircularProgress = ({
   value = 0,
   size = 48,
   thickness = 4,
-  showValue,
-  label,
   color = "default",
-  indeterminate,
+  indeterminate = false,
+  showValue = false,
+  label = "Loading",
   className,
-  ...props
 }: CircularProgressProps) => {
-  const radius = (size - thickness) / 2;
+  const radius       = (size - thickness) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (value / 100) * circumference;
-
-  const colorMap = {
-    default: "stroke-primary",
-    success: "stroke-success",
-    warning: "stroke-warning",
-    danger: "stroke-destructive",
-  };
+  const offset       = circumference - (value / 100) * circumference;
 
   return (
-    <div className={cn("atlas-circular-progress relative inline-flex items-center justify-center", className)}>
+    <div
+      className={cn("atlas-circular-progress relative inline-flex items-center justify-center", className)}
+      style={{ width: size, height: size }}
+    >
       <svg
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
-        fill="none"
         className={indeterminate ? "animate-spin" : ""}
         role="progressbar"
         aria-valuenow={indeterminate ? undefined : value}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-label={label}
-        {...props}
       >
         <circle
           cx={size / 2}
@@ -312,6 +331,7 @@ const CircularProgress = ({
           r={radius}
           strokeWidth={thickness}
           className="stroke-secondary"
+          fill="none"
         />
         <circle
           cx={size / 2}
@@ -321,7 +341,8 @@ const CircularProgress = ({
           strokeDasharray={circumference}
           strokeDashoffset={indeterminate ? circumference * 0.75 : offset}
           strokeLinecap="round"
-          className={cn("transition-all duration-500", colorMap[color])}
+          className={cn("transition-all duration-500", circularColorMap[color])}
+          fill="none"
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </svg>
@@ -333,7 +354,7 @@ const CircularProgress = ({
 };
 CircularProgress.displayName = "CircularProgress";
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────
+// ─── Skeleton ──────────────────────────────────────────────────────────────
 
 export interface SkeletonProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "color"> {
   variant?: "text" | "rect" | "circle";
@@ -357,14 +378,13 @@ const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
         </div>
       );
     }
-
     return (
       <div
         ref={ref}
         className={cn(
           "atlas-skeleton animate-pulse bg-muted",
           variant === "circle" ? "rounded-full" : "rounded-md",
-          variant === "text" && "h-4",
+          variant === "text"   && "h-4",
           className
         )}
         style={{ width, height, ...style }}
@@ -376,7 +396,7 @@ const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
 );
 Skeleton.displayName = "Skeleton";
 
-// ─── LoadingSpinner ───────────────────────────────────────────────────────
+// ─── LoadingSpinner ────────────────────────────────────────────────────────
 
 export interface LoadingSpinnerProps extends React.SVGAttributes<SVGElement> {
   size?: "xs" | "sm" | "md" | "lg" | "xl";
@@ -402,7 +422,7 @@ const LoadingSpinner = ({ size = "md", label = "Loading", className, ...props }:
 );
 LoadingSpinner.displayName = "LoadingSpinner";
 
-// ─── EmptyState ───────────────────────────────────────────────────────────
+// ─── EmptyState ────────────────────────────────────────────────────────────
 
 export interface EmptyStateProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
   icon?: React.ReactNode;
@@ -416,7 +436,7 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
     <div
       ref={ref}
       className={cn(
-        "atlas-empty-state flex flex-col items-center justify-center gap-3 text-center py-16 px-6",
+        "atlas-empty-state flex flex-col items-center justify-center gap-3 py-16 px-6 text-center",
         className
       )}
       {...props}
@@ -436,21 +456,22 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
 );
 EmptyState.displayName = "EmptyState";
 
-// ─── StatusIndicator ──────────────────────────────────────────────────────
+// ─── StatusIndicator ───────────────────────────────────────────────────────
 
-export interface StatusIndicatorProps extends Omit<React.HTMLAttributes<HTMLSpanElement>, "color" | "size"> {
+export interface StatusIndicatorProps
+  extends Omit<React.HTMLAttributes<HTMLSpanElement>, "color" | "size"> {
   status: "online" | "offline" | "busy" | "away" | "idle";
   label?: string;
   pulse?: boolean;
   size?: "sm" | "md" | "lg";
 }
 
-const statusColors = {
-  online: "bg-success",
+const statusColors: Record<string, string> = {
+  online:  "bg-success",
   offline: "bg-muted-foreground",
-  busy: "bg-destructive",
-  away: "bg-warning",
-  idle: "bg-warning/60",
+  busy:    "bg-destructive",
+  away:    "bg-warning",
+  idle:    "bg-warning/60",
 };
 
 const StatusIndicator = React.forwardRef<HTMLSpanElement, StatusIndicatorProps>(
@@ -461,21 +482,25 @@ const StatusIndicator = React.forwardRef<HTMLSpanElement, StatusIndicatorProps>(
       {...props}
     >
       <span className="relative inline-flex">
-        <span className={cn(
-          "rounded-full",
-          statusColors[status],
-          size === "sm" && "h-1.5 w-1.5",
-          size === "md" && "h-2.5 w-2.5",
-          size === "lg" && "h-3.5 w-3.5",
-        )} />
-        {pulse && status === "online" && (
-          <span className={cn(
-            "absolute inline-flex rounded-full animate-ping opacity-75",
+        <span
+          className={cn(
+            "rounded-full",
             statusColors[status],
             size === "sm" && "h-1.5 w-1.5",
             size === "md" && "h-2.5 w-2.5",
             size === "lg" && "h-3.5 w-3.5",
-          )} />
+          )}
+        />
+        {pulse && status === "online" && (
+          <span
+            className={cn(
+              "absolute inline-flex rounded-full animate-ping opacity-75",
+              statusColors[status],
+              size === "sm" && "h-1.5 w-1.5",
+              size === "md" && "h-2.5 w-2.5",
+              size === "lg" && "h-3.5 w-3.5",
+            )}
+          />
         )}
       </span>
       {label && <span className="text-sm capitalize">{label ?? status}</span>}
@@ -484,7 +509,7 @@ const StatusIndicator = React.forwardRef<HTMLSpanElement, StatusIndicatorProps>(
 );
 StatusIndicator.displayName = "StatusIndicator";
 
-// ─── Notification ─────────────────────────────────────────────────────────
+// ─── Notification ──────────────────────────────────────────────────────────
 
 export interface NotificationProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
   title: React.ReactNode;
@@ -520,7 +545,9 @@ const Notification = React.forwardRef<HTMLDivElement, NotificationProps>(
           <p className={cn("text-sm font-medium leading-snug", unread && "font-semibold")}>{title}</p>
           {unread && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" aria-label="Unread" />}
         </div>
-        {description && <p className="mt-0.5 text-sm text-muted-foreground line-clamp-2">{description}</p>}
+        {description && (
+          <p className="mt-0.5 text-sm text-muted-foreground line-clamp-2">{description}</p>
+        )}
         {time && <p className="mt-1 text-xs text-muted-foreground">{time}</p>}
       </div>
       {onClose && (
@@ -540,13 +567,11 @@ const Notification = React.forwardRef<HTMLDivElement, NotificationProps>(
 );
 Notification.displayName = "Notification";
 
+// ═══════════════════════════════════════════════════════════════════════════
+// v0.1.2 additions
+// ═══════════════════════════════════════════════════════════════════════════
 
-// ═══════════════════════════════════════════════════════════════
-// New in v0.1.2
-// ═══════════════════════════════════════════════════════════════
-
-
-// ─── BannerAlert ──────────────────────────────────────────────────────────
+// ─── BannerAlert ───────────────────────────────────────────────────────────
 
 export interface BannerAlertProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
   title?: React.ReactNode;
@@ -558,7 +583,7 @@ export interface BannerAlertProps extends Omit<React.HTMLAttributes<HTMLDivEleme
   icon?: React.ReactNode;
 }
 
-const bannerVariants = {
+const bannerVariants: Record<string, string> = {
   info:    "bg-info/10 border-info/30 text-info-foreground [&_.atlas-banner-icon]:text-info",
   success: "bg-success/10 border-success/30 text-success-foreground [&_.atlas-banner-icon]:text-success",
   warning: "bg-warning/10 border-warning/30 text-warning-foreground [&_.atlas-banner-icon]:text-warning",
@@ -593,11 +618,7 @@ const BannerAlert = React.forwardRef<HTMLDivElement, BannerAlertProps>(
     <div
       ref={ref}
       role="alert"
-      className={cn(
-        "atlas-banner-alert w-full border-y px-4 py-3",
-        bannerVariants[variant],
-        className
-      )}
+      className={cn("atlas-banner-alert w-full border-y px-4 py-3", bannerVariants[variant], className)}
       {...props}
     >
       <div className="flex items-start gap-3 max-w-screen-xl mx-auto">
@@ -629,7 +650,7 @@ const BannerAlert = React.forwardRef<HTMLDivElement, BannerAlertProps>(
 );
 BannerAlert.displayName = "BannerAlert";
 
-// ─── ConfirmDialog ────────────────────────────────────────────────────────
+// ─── ConfirmDialog ─────────────────────────────────────────────────────────
 
 export interface ConfirmDialogProps {
   open?: boolean;
@@ -749,7 +770,7 @@ const ConfirmDialog = ({
 };
 ConfirmDialog.displayName = "ConfirmDialog";
 
-// ─── FloatingActionButton ─────────────────────────────────────────────────
+// ─── FloatingActionButton ──────────────────────────────────────────────────
 
 export interface FABAction {
   icon: React.ReactNode;
@@ -758,7 +779,8 @@ export interface FABAction {
   disabled?: boolean;
 }
 
-export interface FloatingActionButtonProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onClick" | "size"> {
+export interface FloatingActionButtonProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onClick" | "size"> {
   icon?: React.ReactNode;
   label?: string;
   actions?: FABAction[];
@@ -767,46 +789,62 @@ export interface FloatingActionButtonProps extends Omit<React.HTMLAttributes<HTM
   onClick?: () => void;
 }
 
-const positionMap = {
-  "bottom-right":  "fixed bottom-6 right-6 z-40",
-  "bottom-left":   "fixed bottom-6 left-6 z-40",
-  "bottom-center": "fixed bottom-6 left-1/2 -translate-x-1/2 z-40",
+const fabSizes: Record<string, string> = {
+  sm: "h-10 w-10",
+  md: "h-14 w-14",
+  lg: "h-16 w-16",
 };
 
-const fabSizes = {
-  sm: "h-12 w-12 [&>svg]:h-5 [&>svg]:w-5",
-  md: "h-14 w-14 [&>svg]:h-6 [&>svg]:w-6",
-  lg: "h-16 w-16 [&>svg]:h-7 [&>svg]:w-7",
+const fabPositions: Record<string, string> = {
+  "bottom-right":  "bottom-6 right-6",
+  "bottom-left":   "bottom-6 left-6",
+  "bottom-center": "bottom-6 left-1/2 -translate-x-1/2",
 };
 
 const FloatingActionButton = React.forwardRef<HTMLDivElement, FloatingActionButtonProps>(
-  ({ className, icon, label = "Open actions", actions = [], position = "bottom-right", size = "md", onClick, ...props }, ref) => {
+  (
+    {
+      className,
+      icon,
+      label,
+      actions = [],
+      position = "bottom-right",
+      size = "md",
+      onClick,
+      ...props
+    },
+    ref
+  ) => {
     const [open, setOpen] = React.useState(false);
     const hasActions = actions.length > 0;
 
     return (
       <div
         ref={ref}
-        className={cn(positionMap[position], "flex flex-col-reverse items-center gap-3", className)}
+        className={cn("atlas-fab fixed z-40 flex flex-col-reverse items-center gap-2", fabPositions[position], className)}
         {...props}
       >
+        {/* Speed-dial actions */}
         {hasActions && open && (
-          <div className="flex flex-col-reverse gap-2">
+          <div className="flex flex-col-reverse gap-2 mb-2">
             {actions.map((action, i) => (
               <div key={i} className="flex items-center gap-2">
-                <span className="rounded-md bg-foreground/90 px-2 py-1 text-xs text-background font-medium shadow whitespace-nowrap">
-                  {action.label}
-                </span>
+                {label && (
+                  <span className="rounded-md bg-foreground px-2 py-1 text-xs text-background shadow">
+                    {action.label}
+                  </span>
+                )}
                 <button
                   type="button"
-                  disabled={action.disabled}
                   onClick={() => { action.onClick(); setOpen(false); }}
+                  disabled={action.disabled}
                   aria-label={action.label}
                   className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-full bg-background border border-border",
-                    "shadow-md text-foreground hover:bg-accent transition-all",
-                    "[&>svg]:h-4 [&>svg]:w-4",
-                    "disabled:opacity-50 disabled:pointer-events-none"
+                    "flex h-10 w-10 items-center justify-center rounded-full",
+                    "bg-secondary text-secondary-foreground shadow-md",
+                    "hover:bg-accent transition-all active:scale-95",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "disabled:pointer-events-none disabled:opacity-50"
                   )}
                 >
                   {action.icon}
@@ -815,9 +853,11 @@ const FloatingActionButton = React.forwardRef<HTMLDivElement, FloatingActionButt
             ))}
           </div>
         )}
+
+        {/* Main FAB button */}
         <button
           type="button"
-          aria-label={label}
+          aria-label={label ?? "Open actions"}
           aria-expanded={hasActions ? open : undefined}
           onClick={hasActions ? () => setOpen(!open) : onClick}
           className={cn(
@@ -831,7 +871,9 @@ const FloatingActionButton = React.forwardRef<HTMLDivElement, FloatingActionButt
           {icon ?? (
             <svg
               className={cn("transition-transform duration-200", hasActions && open && "rotate-45")}
-              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
               style={{ width: "1.5rem", height: "1.5rem" }}
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -844,7 +886,7 @@ const FloatingActionButton = React.forwardRef<HTMLDivElement, FloatingActionButt
 );
 FloatingActionButton.displayName = "FloatingActionButton";
 
-// ─── RichTooltip ──────────────────────────────────────────────────────────
+// ─── RichTooltip ───────────────────────────────────────────────────────────
 
 export interface RichTooltipProps {
   children: React.ReactNode;
@@ -905,7 +947,9 @@ const RichTooltip = ({
           )}
         >
           {title && <p className="text-sm font-semibold mb-1">{title}</p>}
-          {description && <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>}
+          {description && (
+            <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
+          )}
           {action && <div className="mt-2 pt-2 border-t border-border">{action}</div>}
         </div>
       )}
@@ -914,7 +958,7 @@ const RichTooltip = ({
 };
 RichTooltip.displayName = "RichTooltip";
 
-// ─── Tour ─────────────────────────────────────────────────────────────────
+// ─── Tour ──────────────────────────────────────────────────────────────────
 
 export interface TourStep {
   target?: string;
@@ -941,7 +985,7 @@ const Tour = ({
   onStepChange,
 }: TourProps) => {
   const [internalStep, setInternalStep] = React.useState(0);
-  const step = controlledStep ?? internalStep;
+  const step    = controlledStep ?? internalStep;
   const current = steps[step];
 
   if (!open || !current) return null;
@@ -993,10 +1037,8 @@ const Tour = ({
             </svg>
           </button>
         </div>
-
         <h3 className="text-base font-semibold mb-1">{current.title}</h3>
         <div className="text-sm text-muted-foreground">{current.description}</div>
-
         <div className="mt-5 flex items-center justify-between gap-3">
           <div className="flex gap-1">
             {steps.map((_, i) => (
@@ -1034,11 +1076,19 @@ const Tour = ({
 };
 Tour.displayName = "Tour";
 
+// ═══════════════════════════════════════════════════════════════════════════
+// v0.1.4 — StepProgress
+// ═══════════════════════════════════════════════════════════════════════════
+
+export { StepProgress } from "./StepProgress";
+export type { StepProgressProps } from "./StepProgress";
+
+// ─── Exports ───────────────────────────────────────────────────────────────
 
 export {
-
   Alert, AlertTitle, AlertDescription,
-  ToastProvider, ToastViewport, Toast, ToastTitle, ToastDescription, ToastClose, ToastAction,
+  ToastProvider, ToastViewport,
+  Toast, ToastTitle, ToastDescription, ToastClose, ToastAction,
   Snackbar,
   Progress,
   CircularProgress,
@@ -1047,5 +1097,5 @@ export {
   EmptyState,
   StatusIndicator,
   Notification,
-  BannerAlert, ConfirmDialog, FloatingActionButton, RichTooltip, Tour
+  BannerAlert, ConfirmDialog, FloatingActionButton, RichTooltip, Tour,
 };
