@@ -1,20 +1,16 @@
 import type { Config } from "tailwindcss";
 
-// ─── Tailwind v4 compatibility ────────────────────────────────────────────
+// ─── Tailwind v4 ────────────────────────────────────────────
 //
-// Three issues arise with Tailwind ≥4 + strict TypeScript:
+// 1. TS2580 — `require` is not in scope in strict TS without @types/node.
+//    We declare it locally so only this file gets the ambient type.
 //
-// 1. TS2580 — `require` is not in scope because `@types/node` is a devDep
-//    and the tsconfig lib array doesn't include Node globals. We declare it
-//    locally so the ambient type is available without widening the whole lib.
+// 2. TS2344 — tailwindcss/plugin's exported type changed in v4; casting the
+//    module to `any` first avoids the constraint entirely.
 //
-// 2. TS2344 — The exported type of `tailwindcss/plugin` changed in v4; it no
-//    longer satisfies `(...args: any) => any` when cast through `typeof import`.
-//    Casting the resolved module to `any` first sidesteps the constraint.
-//
-// 3. TS2322 — `darkMode: ["class"]` is now `["class", string]` in v4's Config
-//    type (two-element tuple). We cast it `as const` so TypeScript infers the
-//    exact literal tuple type `["class"]` rather than `string[]`.
+// 3. TS2322 — DarkModeStrategy in v4 is a two-element tuple ["class", string].
+//    We cast darkMode through `any` so it always satisfies whatever version of
+//    Tailwind the consumer has installed.
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const require: (id: string) => any;
@@ -22,8 +18,9 @@ declare const require: (id: string) => any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const pluginFn = require("tailwindcss/plugin") as any;
 
-// Normalise: some versions export as `{ default: fn }`, others export the fn directly.
+// Normalise ESM default vs direct export across Tailwind versions.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+// Yawa, why?!
 const plugin: (...args: any[]) => any =
   typeof pluginFn === "function" ? pluginFn : pluginFn.default;
 
@@ -31,24 +28,23 @@ const plugin: (...args: any[]) => any =
  * Veloria UI Tailwind plugin.
  *
  * Maps the CSS custom properties in veloria.css to Tailwind utilities.
- * Add to your tailwind.config.ts:
  *
  *   import { veloriaPlugin } from "veloria-ui/tailwind";
  *   plugins: [veloriaPlugin],
- *
- * Or use veloriaPreset which also sets darkMode: ["class"]:
- *
- *   import { veloriaPreset } from "veloria-ui/tailwind";
- *   presets: [veloriaPreset],
  */
 export const veloriaPlugin = plugin(
-  // ── handler ──────────────────────────────────────────────────────────────
-  ({ addBase, addUtilities }: { addBase: (rules: Record<string, unknown>) => void; addUtilities: (utils: Record<string, unknown>) => void }) => {
+  ({
+    addBase,
+    addUtilities,
+  }: {
+    addBase: (rules: Record<string, unknown>) => void;
+    addUtilities: (utils: Record<string, unknown>) => void;
+  }) => {
     addBase({
-      "*": { "border-color": "hsl(var(--border))" },
+      "*":    { "border-color": "hsl(var(--border))" },
       "body": {
         "background-color": "hsl(var(--background))",
-        "color": "hsl(var(--foreground))",
+        "color":            "hsl(var(--foreground))",
       },
     });
     addUtilities({
@@ -56,7 +52,6 @@ export const veloriaPlugin = plugin(
       ".text-pretty":  { "text-wrap": "pretty" },
     });
   },
-  // ── theme extension ───────────────────────────────────────────────────────
   {
     theme: {
       extend: {
@@ -139,13 +134,13 @@ export const veloriaPlugin = plugin(
  * Full preset — includes the plugin and sets darkMode to ["class"].
  * Recommended for new projects.
  *
- * `as const` is required so TypeScript infers the exact tuple literal
- * `["class"]` rather than widening to `string[]`, which Tailwind v4's
- * Config type now rejects.
+ * darkMode is cast through `any` → `Config["darkMode"]` so this satisfies
+ * whatever tuple variant Tailwind v3 or v4 expects at the call site.
  */
-export const veloriaPreset = {
-  darkMode: ["class"] as const,
-  plugins: [veloriaPlugin],
-} satisfies Partial<Config>;
+export const veloriaPreset: Partial<Config> = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  darkMode: ["class"] as any as Config["darkMode"],
+  plugins:  [veloriaPlugin],
+};
 
 export default veloriaPlugin;

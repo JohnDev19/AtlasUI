@@ -31,7 +31,6 @@ function deriveType(filename: string): string {
   return ext.slice(0, 4);
 }
 
-// Design-token colour classes per file type
 const TYPE_COLORS: Record<string, string> = {
   PDF:  "bg-destructive/10 text-destructive",
   DOC:  "bg-info/10 text-info",

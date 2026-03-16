@@ -55,7 +55,6 @@ const AuroraCard = React.forwardRef<HTMLDivElement, AuroraCardProps>(
     };
 
     const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-      // Return blobs to neutral position on leave
       setMouse({ x: 50, y: 50 });
       onMouseLeave?.(e);
     };
@@ -67,7 +66,7 @@ const AuroraCard = React.forwardRef<HTMLDivElement, AuroraCardProps>(
         onMouseLeave={handleMouseLeave}
         className={cn(
           "atlas-aurora-card relative overflow-hidden rounded-xl",
-          // Always dark surface — this is the defining characteristic
+          // dark surface... this is the defining characteristic
           "bg-[hsl(224,71%,6%)]",
           className
         )}
@@ -77,7 +76,7 @@ const AuroraCard = React.forwardRef<HTMLDivElement, AuroraCardProps>(
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
           {blobs.map((blob, i) => {
             const size = blob.size ?? 65;
-            // Each blob has a different base position and a different reaction
+            // base position and a different reaction
             // direction so they spread apart as the mouse moves.
             const baseX = [0, 40, 20][i % 3] - size / 4;
             const baseY = [-10, 10, 40][i % 3] - size / 4;

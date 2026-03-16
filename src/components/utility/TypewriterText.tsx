@@ -33,13 +33,13 @@ const TypewriterText = React.forwardRef<HTMLSpanElement, TypewriterTextProps>(
     const [display, setDisplay] = React.useState("");
     const [cursorVisible, setCursorVisible] = React.useState(true);
 
-    // Cursor blink — independent of the typing loop
+    // cursor blink 
     React.useEffect(() => {
       const id = setInterval(() => setCursorVisible((v) => !v), 530);
       return () => clearInterval(id);
     }, []);
 
-    // Typing loop
+    // typing loop
     React.useEffect(() => {
       if (!strings.length) return;
 
@@ -52,24 +52,24 @@ const TypewriterText = React.forwardRef<HTMLSpanElement, TypewriterTextProps>(
         const current = strings[stringIdx];
 
         if (!isDeleting) {
-          // Type one character forward
+          // type one character forward
           charIdx = Math.min(charIdx + 1, current.length);
           setDisplay(current.slice(0, charIdx));
 
           if (charIdx === current.length) {
-            // Reached the end — pause, then start deleting
+            // reached the end .. pause, then start deleting
             isDeleting = true;
             timeout = setTimeout(tick, pause);
           } else {
             timeout = setTimeout(tick, speed);
           }
         } else {
-          // Delete one character
+          // delete one character
           charIdx = Math.max(charIdx - 1, 0);
           setDisplay(current.slice(0, charIdx));
 
           if (charIdx === 0) {
-            // Finished deleting — advance to next string
+            // finished deleting ... advance to next string
             isDeleting = false;
             const nextIdx = stringIdx + 1;
 
@@ -90,7 +90,7 @@ const TypewriterText = React.forwardRef<HTMLSpanElement, TypewriterTextProps>(
       timeout = setTimeout(tick, speed);
 
       return () => clearTimeout(timeout);
-      // Re-run only when the relevant props change.
+      // relevant props change.
       // Note: if `strings` is an inline array literal it will restart on every
       // parent render — memoize with useMemo or useRef in that case.
     }, [strings, speed, deleteSpeed, pause, loop]);

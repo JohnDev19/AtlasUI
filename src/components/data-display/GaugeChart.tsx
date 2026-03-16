@@ -41,7 +41,7 @@ const DEFAULT_ZONES: GaugeZone[] = [
   { from: 80, to: 100, color: "hsl(var(--destructive))" },
 ];
 
-/** Convert polar coords (angle in standard math degrees) to SVG Cartesian. */
+/** polar coords (angle in standard math degrees) to SVG Cartesian. */
 function ptc(cx: number, cy: number, r: number, angleDeg: number) {
   const rad = (angleDeg * Math.PI) / 180;
   return {
@@ -51,7 +51,7 @@ function ptc(cx: number, cy: number, r: number, angleDeg: number) {
 }
 
 /**
- * Build an SVG arc path from startDeg to endDeg (standard math degrees,
+ * SVG arc path from startDeg to endDeg (standard math degrees,
  * going counterclockwise through the top of the circle).
  * 180° = leftmost point, 0° = rightmost point.
  */
@@ -67,7 +67,7 @@ function arcPath(
   const spanDeg = Math.abs(startDeg - endDeg);
   if (spanDeg < 0.5) return ""; // nothing to draw
   const largeArc = spanDeg > 180 ? 1 : 0;
-  // sweep=0 → counterclockwise → upper semicircle going left→right
+  // sweep=0 to counterclockwise to upper semicircle going left to right
   return `M ${start.x.toFixed(3)} ${start.y.toFixed(3)} A ${r} ${r} 0 ${largeArc} 0 ${end.x.toFixed(3)} ${end.y.toFixed(3)}`;
 }
 
@@ -91,7 +91,7 @@ const GaugeChart = React.forwardRef<HTMLDivElement, GaugeChartProps>(
     const clamped = Math.min(Math.max(value, min), max);
     const targetT = (clamped - min) / (max - min);
 
-    // Animate t from 0 (or previous value) to targetT using rAF
+    // t from 0 (or previous value) to targetT using rAF
     const animTRef = React.useRef(animated ? 0 : targetT);
     const [animT, setAnimT] = React.useState(animated ? 0 : targetT);
     const rafRef = React.useRef<number | null>(null);
@@ -123,7 +123,7 @@ const GaugeChart = React.forwardRef<HTMLDivElement, GaugeChartProps>(
     }, [targetT, animated]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const W = size;
-    // Height = half the width + padding for label/needle pivot below arc
+    // height = half the width + padding for label/needle pivot below arc
     const H = Math.round(size * 0.62);
     const cx = W / 2;
     const cy = H - 20; // needle pivot above bottom edge

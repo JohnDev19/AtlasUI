@@ -15,8 +15,8 @@ const cardVariants = cva(
         ghost:    "border-transparent shadow-none bg-transparent",
         filled:   "border-transparent bg-muted",
         /**
-         * Classic — beveled edges that mimic physical plastic or rubber.
-         * A subtle highlight sits on the top-left edge while a deeper
+         * beveled edges
+         * highlight sits on the top-left edge while a deeper
          * shadow falls on the bottom-right, giving the card tactile depth.
          * Use `interactive` together with `classic` for a satisfying press effect.
          */
@@ -27,7 +27,7 @@ const cardVariants = cva(
       },
     },
     compoundVariants: [
-      // Classic interactive: invert the bevel on press to feel like a physical click
+      // invert the bevel on press
       {
         variant: "classic",
         interactive: true,

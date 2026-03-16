@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "../../utils/cn";
 
 export interface SparklineChartProps
-  extends Omit<React.SVGProps<SVGSVGElement>, "viewBox" | "children"> {
+  extends Omit<React.SVGProps<SVGSVGElement>, "viewBox" | "children" | "fill"> {
   /** Array of numeric data points — at least 2 required to draw a line. */
   data: number[];
   /** CSS color string — defaults to currentColor (inherits from parent). */
@@ -34,6 +34,7 @@ const SparklineChart = React.forwardRef<SVGSVGElement, SparklineChartProps>(
   ) => {
     const uid = React.useId().replace(/:/g, "");
 
+    // 2 points for a line
     if (data.length < 2) {
       return (
         <svg
@@ -73,8 +74,7 @@ const SparklineChart = React.forwardRef<SVGSVGElement, SparklineChartProps>(
     const linePath = pts
       .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`)
       .join(" ");
-      
-      // yawa dito ka lang pala.
+
     const areaPath =
       linePath +
       ` L ${pts[pts.length - 1].x.toFixed(2)} ${H} L ${pts[0].x.toFixed(2)} ${H} Z`;
