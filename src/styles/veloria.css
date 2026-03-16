@@ -1,0 +1,113 @@
+/*
+ * Veloria UI — Design System Stylesheet
+ * v0.1.3
+ *
+ * Import once in your app root:
+ *   import "veloria-ui/styles";
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --background:             0 0% 100%;
+    --foreground:             224 71% 4%;
+    --card:                   0 0% 100%;
+    --card-foreground:        224 71% 4%;
+    --popover:                0 0% 100%;
+    --popover-foreground:     224 71% 4%;
+    --primary:                262 83% 58%;
+    --primary-foreground:     0 0% 100%;
+    --secondary:              220 14% 96%;
+    --secondary-foreground:   220 9% 46%;
+    --muted:                  220 14% 96%;
+    --muted-foreground:       220 9% 46%;
+    --accent:                 220 14% 96%;
+    --accent-foreground:      220 9% 10%;
+    --destructive:            0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --success:                142 76% 36%;
+    --success-foreground:     0 0% 100%;
+    --warning:                38 92% 50%;
+    --warning-foreground:     0 0% 100%;
+    --info:                   199 89% 48%;
+    --info-foreground:        0 0% 100%;
+    --border:                 220 13% 91%;
+    --input:                  220 13% 91%;
+    --ring:                   262 83% 58%;
+    --radius:                 0.5rem;
+
+    /* ── Classic Variant Tokens ─────────────────────────────── */
+    --classic-bg:             36 25% 94%;
+    --classic-bg-hover:       36 25% 90%;
+    --classic-surface:        36 20% 97%;
+    --classic-fg:             25 30% 15%;
+    --classic-border:         30 20% 65%;
+    --classic-highlight:      36 60% 98%;
+    --classic-muted:          30 15% 55%;
+    --classic-placeholder:    30 10% 65%;
+    --classic-ring:           30 40% 45%;
+    --classic-input-bg:       36 30% 99%;
+  }
+
+  .dark {
+    --background:             224 71% 4%;
+    --foreground:             210 20% 98%;
+    --card:                   224 71% 4%;
+    --card-foreground:        210 20% 98%;
+    --popover:                224 71% 4%;
+    --popover-foreground:     210 20% 98%;
+    --primary:                262 83% 68%;
+    --primary-foreground:     0 0% 100%;
+    --secondary:              215 28% 17%;
+    --secondary-foreground:   210 20% 98%;
+    --muted:                  215 28% 17%;
+    --muted-foreground:       217 11% 65%;
+    --accent:                 215 28% 17%;
+    --accent-foreground:      210 20% 98%;
+    --destructive:            0 62% 50%;
+    --destructive-foreground: 210 20% 98%;
+    --border:                 215 28% 17%;
+    --input:                  215 28% 17%;
+    --ring:                   262 83% 68%;
+
+    /* ── Classic Dark Tokens ────────────────────────────────── */
+    --classic-bg:             25 20% 12%;
+    --classic-bg-hover:       25 20% 16%;
+    --classic-surface:        25 18% 10%;
+    --classic-fg:             36 30% 88%;
+    --classic-border:         30 15% 30%;
+    --classic-highlight:      36 20% 25%;
+    --classic-muted:          30 12% 50%;
+    --classic-placeholder:    30 10% 40%;
+    --classic-ring:           30 35% 55%;
+    --classic-input-bg:       25 20% 9%;
+  }
+}
+
+/* ── Animations ─────────────────────────────────────────────────────── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(calc(-100% - var(--marquee-gap, 2rem))); }
+}
+@keyframes marquee-reverse {
+  from { transform: translateX(calc(-100% - var(--marquee-gap, 2rem))); }
+  to   { transform: translateX(0); }
+}
+@keyframes ripple {
+  0%   { width: 8px; height: 8px; opacity: 0.6; }
+  100% { width: 300px; height: 300px; opacity: 0; }
+}
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% center; }
+  50%       { background-position: 100% center; }
+}
+
+.animate-marquee         { animation: marquee var(--marquee-duration, 30s) linear infinite; }
+.animate-marquee-reverse { animation: marquee-reverse var(--marquee-duration, 30s) linear infinite; }
+.animate-ripple          { animation: ripple 0.6s ease-out forwards; }
+.animate-gradient-x      { animation: gradient-x 3s ease infinite; background-size: 200% auto; }
