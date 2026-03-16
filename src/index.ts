@@ -1,3 +1,16 @@
+/**
+ * veloria-ui
+ *
+ * Build anything. Ship faster.
+ * Accessible, composable React components — dark-mode ready.
+ *
+ * By JohnDev19 — https://github.com/JohnDev19/Veloria-UI
+ * Docs: https://ui-veloria.vercel.app/
+ * Issues: https://github.com/JohnDev19/Veloria-UI/issues
+ *
+ * @license MIT
+ */
+
 // ─── Types ────────────────────────────────────────────────────────────────
 export type {
   Size,
@@ -22,9 +35,13 @@ export { cn, composeEventHandlers, generateId, isBrowser, isDefined, noop } from
 export { veloriaPlugin, veloriaPreset } from "./tailwind";
 
 // ─── Basic ────────────────────────────────────────────────────────────────
+// Button & IconButton live in dedicated files — import directly to avoid
+// the barrel re-exporting them before they're resolved
+export { Button, buttonVariants } from "./components/basic/Button";
+export type { ButtonProps } from "./components/basic/Button";
+export { IconButton, iconButtonVariants } from "./components/basic/IconButton";
+export type { IconButtonProps } from "./components/basic/IconButton";
 export {
-  Button, buttonVariants,
-  IconButton,
   Link,
   Badge, badgeVariants,
   Avatar,
@@ -39,8 +56,6 @@ export {
   TooltipContent,
 } from "./components/basic";
 export type {
-  ButtonProps,
-  IconButtonProps,
   LinkProps,
   BadgeProps,
   AvatarProps,
@@ -70,6 +85,8 @@ export type {
   GridProps,
   FlexProps,
   SectionProps,
+  SpacerProps,
+  CenterProps,
   MasonryProps,
 } from "./components/layout";
 
@@ -86,12 +103,9 @@ export {
   DropdownMenuSeparator,
   DropdownMenuLabel,
   DropdownMenuGroup,
+  DropdownMenuPortal,
   DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
   DropdownMenuRadioGroup,
-  DropdownMenuCheckboxItem,
-  DropdownMenuRadioItem,
   Breadcrumb,
   Pagination,
   Tabs,
@@ -99,19 +113,16 @@ export {
   TabsTrigger,
   TabsContent,
   Stepper,
-  CommandDialog,
-  CommandItem,
-  CommandGroup,
-  CommandSeparator,
 } from "./components/navigation";
 export type {
   NavbarProps,
   SidebarProps,
   MenuItemProps,
+  BreadcrumbItem,
   BreadcrumbProps,
   PaginationProps,
+  StepperStep,
   StepperProps,
-  CommandDialogProps,
 } from "./components/navigation";
 
 // ─── Forms ────────────────────────────────────────────────────────────────
@@ -308,13 +319,17 @@ export {
   ContextMenuGroup,
   ContextMenuSub,
   ContextMenuRadioGroup,
+  CommandDialog,
+  CommandItem,
+  CommandGroup,
+  CommandSeparator,
   Lightbox,
   ImageViewer,
 } from "./components/overlay";
 export type {
   ModalProps,
   DrawerProps,
-  CommandDialogProps as OverlayCommandDialogProps,
+  CommandDialogProps,
   LightboxProps,
 } from "./components/overlay";
 
