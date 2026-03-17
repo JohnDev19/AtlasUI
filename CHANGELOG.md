@@ -9,6 +9,167 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ## [0.1.5] — 2026-03-17
 
+### CLI — Three major UX enhancements
+
+---
+
+#### `veloria-ui add` — Interactive component picker
+
+Running `veloria-ui add` with no component names now launches a full interactive picker instead of printing a usage hint. The picker is a two-step flow built on `prompts` multiselect:
+
+**Step 1 — Category select**
+
+A multiselect showing all 10 categories with a live `installed/total` counter so you can see at a glance which areas of your project already have components:
+
+```
+? Which categories do you want to browse?
+  ❯ ◉ Basic              2/11 installed
+    ◯ Forms              0/14 installed
+    ◉ Feedback           1/16 installed
+    ◯ Data Display       0/22 installed
+```
+
+**Step 2 — Component select per category**
+
+For each chosen category, a multiselect shows every component with:
+- A `✓` prefix on components that are already installed in your project
+- A truncated description so you know what you're selecting
+- A `[+deps]` hint on components that will auto-pull registry dependencies
+
+```
+? Basic components
+  ❯ ✓  button        Solid, outline, ghost, soft, link, classic variants…
+     ◯  badge         Compact label — solid, outline, soft, classic…
+     ◯  avatar-group  Stacked avatars with overflow count  [+deps]
+     ✓  tooltip       Radix tooltip, all four sides…
+```
+
+Already-installed components are pre-ticked but will be skipped (not re-copied) unless `--force` is passed. A summary line at the end tells you exactly which components were skipped and why.
+
+**New `--dry-run` flag for `add`**
+
+Added to both the interactive and direct modes. Shows what files would be written and which npm packages would be installed, without touching anything:
+
+```bash
+npx veloria-ui add button modal --dry-run
+npx veloria-ui add --dry-run   # works with interactive picker too
+```
+
+Output:
+```
+  Dry run — no files written.
+
+  Would copy to: components/ui/
+    button/index.tsx
+    modal/index.tsx
+
+  Would install: @radix-ui/react-slot, @radix-ui/react-dialog, clsx, …
+```
+
+---
+
+#### `veloria-ui remove` — Uninstall components
+
+New command (alias: `rm`) to remove installed components cleanly.
+
+```bash
+npx veloria-ui remove button
+npx veloria-ui remove button card modal
+npx veloria-ui rm avatar-group   # alias
+```
+
+**Dependent check** — before removing, the CLI scans your other installed components for `registryDeps` entries that point to what you are about to remove. If any are found, it warns you:
+
+```
+  ⚠  The following installed components depend on what you're removing:
+
+    avatar-group  →  depends on  avatar
+    command-palette  →  depends on  command-dialog
+
+  Remove anyway? (dependents may break)  › No
+```
+
+Pass `--force` to skip the warning and remove unconditionally.
+
+**File preview** — shows exactly which files and directories will be deleted before asking for confirmation:
+
+```
+  Files to be removed:
+    components/ui/button/index.tsx
+    components/ui/button/  (directory)
+```
+
+**Lock cleanup** — removes the component entry from `veloria.lock.json` automatically, keeping your lock file accurate.
+
+**Flags:**
+
+| Flag | Description |
+|------|-------------|
+| `<components...>` | One or more component names to remove |
+| `-y, --yes` | Skip confirmation prompt |
+| `--force` | Remove even if other components depend on it |
+
+```bash
+# Remove a single component
+npx veloria-ui remove button
+
+# Remove multiple at once
+npx veloria-ui remove button card modal
+
+# Remove without confirmation
+npx veloria-ui remove skeleton --yes
+
+# Remove even if dependents exist
+npx veloria-ui remove avatar --force
+```
+
+---
+
+#### `add` — Dependency graph display
+
+Every `veloria-ui add` invocation (interactive or direct) now prints a structured dependency tree before the confirmation prompt. The tree shows:
+
+- Which components you explicitly selected
+- Which components are being auto-pulled via `registryDeps` (shown in yellow with an `(auto — registry dep)` label)
+- Which npm packages will be installed as peer dependencies
+
+```
+  Adding 3 components (2 selected + 1 auto)
+
+  ├── command-bar
+  │   └── command-dialog  (auto — registry dep)
+  └── avatar-group
+      └── avatar  (auto — registry dep)
+
+  npm peer deps
+  ├── cmdk
+  ├── @radix-ui/react-dialog
+  └── @radix-ui/react-avatar
+```
+
+For components with no registry deps or npm deps, the output is minimal:
+
+```
+  Adding 1 component
+
+  └── button
+
+  npm peer deps
+  ├── @radix-ui/react-slot
+  ├── class-variance-authority
+  ├── clsx
+  └── tailwind-merge
+```
+
+This replaces the previous flat `Peer deps: …` line and makes the install plan fully transparent before anything is written to disk.
+
+---
+
+### Bug Fixes
+
+- `add` with `--force` on a component that pulls `registryDeps` now correctly overwrites the dep files too, not only the top-level component.
+- `upgrade` hint at the bottom of `list` now correctly says `npx veloria-ui add` (not `add <n>`) to reflect the new interactive mode.
+
 ### React Hook Form Adapter — `veloria-ui/rhf`
 
 A new optional sub-path export that provides zero-boilerplate `Controller` wrappers for every Veloria UI form component. Import from `veloria-ui/rhf` — requires `react-hook-form ^7.0.0` as an optional peer dependency.

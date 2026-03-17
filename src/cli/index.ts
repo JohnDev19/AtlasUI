@@ -10,7 +10,8 @@
  *
  * Commands:
  *   veloria-ui init                    — project setup wizard
- *   veloria-ui add button card modal   — copy components into your project
+ *   veloria-ui add [components...]     — add components (interactive picker if no args)
+ *   veloria-ui remove <components...>  — remove installed components
  *   veloria-ui list                    — browse all components
  *   veloria-ui list --category forms   — filter by category
  *   veloria-ui diff button             — compare local vs latest upstream
@@ -28,7 +29,7 @@ import ora from "ora";
 import prompts from "prompts";
 import fs from "fs-extra";
 import { execa } from "execa";
-import { REGISTRY, COMPONENTS_BY_NAME, CATEGORIES, type Category } from "./registry";
+import { REGISTRY, COMPONENTS_BY_NAME, CATEGORIES, type Category, type ComponentMeta } from "./registry";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const PKG_VERSION: string = (require("../../package.json") as { version: string }).version;
 
@@ -127,20 +128,25 @@ program
 ${chalk.bold.green("  Veloria UI is ready!")}
 
   ${chalk.dim("Next steps:")}
-  ${chalk.cyan("npx veloria-ui add button")}   ${chalk.dim("— copy your first component")}
+  ${chalk.cyan("npx veloria-ui add")}          ${chalk.dim("— pick components interactively")}
+  ${chalk.cyan("npx veloria-ui add button")}   ${chalk.dim("— copy a specific component")}
   ${chalk.cyan("npx veloria-ui list")}          ${chalk.dim("— browse all components")}
 `);
   });
 
 // ─── add ──────────────────────────────────────────────────────────────────
+//
+// Interactive picker when no component names are given.
+// Dep graph display before confirming install.
 
 program
   .command("add [components...]")
-  .description("Add components to your project")
+  .description("Add components (interactive picker if no args given)")
   .option("-y, --yes",        "Skip confirmation prompts")
   .option("--no-install",     "Skip npm/pnpm/yarn install")
   .option("-p, --path <dir>", "Override components directory")
   .option("--force",          "Overwrite existing local files")
+  .option("--dry-run",        "Show what would be added without writing files")
   .action(async (names: string[], opts) => {
     const cwd       = process.cwd();
     const cfgPath   = path.join(cwd, "veloria.config.json");
@@ -148,9 +154,13 @@ program
     const baseDir   = opts.path ?? cfg.aliases?.components?.replace(/^@\//, "") ?? "components/ui";
     const targetDir = path.join(cwd, baseDir);
 
+    // ── Interactive picker ───────────────────────────────
     if (!names.length) {
-      console.log(chalk.dim("\n  Usage: npx veloria-ui add <component> [component…]\n"));
-      return;
+      names = await runInteractivePicker(cwd);
+      if (!names.length) {
+        console.log(chalk.dim("\n  Nothing selected. Exiting.\n"));
+        return;
+      }
     }
 
     const unknown = names.filter((n) => !COMPONENTS_BY_NAME[n]);
@@ -160,11 +170,15 @@ program
       process.exit(1);
     }
 
+    // registry deps
     const toAdd = new Set<string>(names);
     for (const n of names) {
       const c = COMPONENTS_BY_NAME[n];
       (c.registryDeps ?? []).forEach((d) => toAdd.add(d));
     }
+
+    // ── Dep graph display ────────────────────────────────
+    printDepGraph([...toAdd], names);
 
     const allDeps = new Set<string>();
     for (const n of toAdd) {
@@ -172,13 +186,24 @@ program
       c.deps.forEach((d) => allDeps.add(d));
     }
 
-    console.log(chalk.bold.blue(`\n  Adding ${[...toAdd].join(", ")}\n`));
-    if (allDeps.size) console.log(chalk.dim(`  Peer deps: ${[...allDeps].join(", ")}\n`));
+    if (opts.dryRun) {
+      console.log(chalk.bold.yellow("\n  Dry run — no files written.\n"));
+      console.log(chalk.dim(`  Would copy to: ${path.relative(cwd, targetDir)}/`));
+      for (const name of toAdd) {
+        console.log(chalk.dim(`    ${name}/index.tsx`));
+      }
+      if (allDeps.size) {
+        console.log(chalk.dim(`\n  Would install: ${[...allDeps].join(", ")}`));
+      }
+      console.log();
+      return;
+    }
 
     if (!opts.yes) {
       const { ok } = await prompts({
         type: "confirm", name: "ok",
-        message: `Copy to ${path.relative(cwd, targetDir)}?`, initial: true,
+        message: `Copy ${toAdd.size} component${toAdd.size !== 1 ? "s" : ""} to ${path.relative(cwd, targetDir)}?`,
+        initial: true,
       });
       if (!ok) return;
     }
@@ -196,11 +221,9 @@ program
 
       await fs.ensureDir(path.dirname(dest));
 
-      // ── Source resolution ─────────────────────────────────────────────
-      // Priority 1: node_modules — works offline and on Replit (no fetch).
-      // Priority 2: GitHub raw — master branch (correct branch name).
-      // Both paths strip the legacy atlas- CSS prefix → veloria-.
-      // ─────────────────────────────────────────────────────────────────
+      // Priority 1: node_modules (works offline / on Replit)
+      // Priority 2: GitHub raw — master branch
+      // Both paths strip the legacy atlas- prefix to veloria-
       let src: string | null = readFromNodeModules(name, cwd);
       let sourceUrl = "node_modules";
 
@@ -218,7 +241,6 @@ program
         continue;
       }
 
-      // Strip legacy atlas- CSS class prefix → veloria-
       src = src.replace(/\batlas-/g, "veloria-");
 
       await fs.writeFile(dest, src, "utf-8");
@@ -255,6 +277,136 @@ program
     console.log(`\n${chalk.bold.green("  Done!")}  ${path.relative(cwd, targetDir)}\n\n  ${chalk.cyan(`import { ${exNames} } from "@/components/ui/${[...toAdd][0]}"`)}\n`);
   });
 
+// ─── remove ───────────────────────────────────────────────────────────────
+//
+
+program
+  .command("remove <components...>")
+  .alias("rm")
+  .description("Remove installed components from your project")
+  .option("-y, --yes",  "Skip confirmation prompts")
+  .option("--force",    "Remove even if other components depend on it")
+  .action(async (names: string[], opts) => {
+    const cwd = process.cwd();
+
+    // all names first
+    const unknown = names.filter((n) => !COMPONENTS_BY_NAME[n]);
+    if (unknown.length) {
+      console.error(chalk.red(`\n  Unknown component(s): ${unknown.join(", ")}\n`));
+      console.log(chalk.dim("  Run ") + chalk.cyan("npx veloria-ui list") + chalk.dim(" to see all components.\n"));
+      process.exit(1);
+    }
+
+    console.log(chalk.bold.red(`\n  Removing ${names.join(", ")}\n`));
+
+    // ── if anything installed depends on what we're removing ────────
+    const installed = discoverInstalledComponents(cwd);
+    const dependents = findDependents(names, installed);
+
+    if (dependents.length && !opts.force) {
+      console.log(chalk.yellow("  ⚠  The following installed components depend on what you're removing:\n"));
+      for (const { component, dependsOn } of dependents) {
+        console.log(`    ${chalk.cyan(component)} ${chalk.dim("→ depends on")} ${chalk.yellow(dependsOn)}`);
+      }
+      console.log();
+      const { proceed } = await prompts({
+        type: "confirm", name: "proceed",
+        message: "Remove anyway? (dependents may break)",
+        initial: false,
+      });
+      if (!proceed) {
+        console.log(chalk.dim("  Aborted.\n"));
+        return;
+      }
+    }
+
+    // ── Resolve local paths ───────────────────────────────────────────────
+    const cfgPath = path.join(cwd, "veloria.config.json");
+    const cfg     = fs.existsSync(cfgPath) ? (fs.readJsonSync(cfgPath) as { aliases?: { components?: string } }) : {};
+    const baseDir = cfg.aliases?.components?.replace(/^@\//, "") ?? "components/ui";
+
+    const toRemove: Array<{ name: string; localPath: string | null; dir: string }> = names.map((name) => {
+      const localPath = resolveLocalPath(name, cwd);
+      const dir       = path.join(cwd, baseDir, name);
+      return { name, localPath, dir };
+    });
+
+    // ── Preview what will be deleted ─────────────────────────────────────
+    console.log(chalk.dim("  Files to be removed:"));
+    for (const { name, localPath, dir } of toRemove) {
+      if (localPath) {
+        console.log(chalk.dim(`    ${path.relative(cwd, localPath)}`));
+        // if the whole dir would become empty, note the dir too
+        const siblings = fs.existsSync(dir)
+          ? fs.readdirSync(dir).filter((f) => f !== path.basename(localPath))
+          : [];
+        if (siblings.length === 0) {
+          console.log(chalk.dim(`    ${path.relative(cwd, dir)}/  ${chalk.italic("(directory)")}`));
+        }
+      } else {
+        console.log(chalk.dim(`    ${name} — ${chalk.yellow("not found locally")}`));
+      }
+    }
+    console.log();
+
+    if (!opts.yes) {
+      const { ok } = await prompts({
+        type: "confirm", name: "ok",
+        message: `Remove ${names.length} component${names.length !== 1 ? "s" : ""}?`,
+        initial: false,
+      });
+      if (!ok) {
+        console.log(chalk.dim("  Aborted.\n"));
+        return;
+      }
+    }
+
+    // ── Delete files ──────────────────────────────────────────────────────
+    const lock = readLock(cwd);
+    let removed = 0;
+
+    for (const { name, localPath, dir } of toRemove) {
+      if (!localPath) {
+        console.log(chalk.yellow(`  ⚠  ${name} — no local file found, skipping`));
+        // remove from lock even if file is missing
+        delete lock[name];
+        continue;
+      }
+
+      try {
+        await fs.remove(localPath);
+
+        if (fs.existsSync(dir)) {
+          const remaining = fs.readdirSync(dir);
+          if (remaining.length === 0) {
+            await fs.remove(dir);
+          }
+        }
+
+        delete lock[name];
+
+        console.log(chalk.green(`  ✓ ${name}  removed`));
+        removed++;
+      } catch (err) {
+        console.log(chalk.red(`  ✗ ${name}  failed to remove`));
+        console.error(chalk.dim(`    ${String(err)}`));
+      }
+    }
+
+    writeLock(cwd, lock);
+
+    console.log(`\n${chalk.bold.green("  Done!")}  ${removed} component${removed !== 1 ? "s" : ""} removed.\n`);
+
+    if (removed > 0) {
+      console.log(
+        chalk.dim("  veloria.lock.json updated.\n") +
+        chalk.dim("  Tip: run ") +
+        chalk.cyan("npx veloria-ui add") +
+        chalk.dim(" to add components back interactively.\n")
+      );
+    }
+  });
+
 // ─── list ─────────────────────────────────────────────────────────────────
 
 program
@@ -279,7 +431,7 @@ program
     }
 
     console.log(chalk.dim(`  ${REGISTRY.length} components total\n`) +
-      chalk.dim("  Add one: ") + chalk.cyan("npx veloria-ui add <n>\n"));
+      chalk.dim("  Add interactively: ") + chalk.cyan("npx veloria-ui add\n"));
   });
 
 // ─── diff ─────────────────────────────────────────────────────────────────
@@ -407,7 +559,7 @@ program
         console.log(chalk.bold.blue("\n  veloria-ui upgrade\n") +
           chalk.dim("  No components found in your project.\n\n") +
           chalk.dim("  Add some first:\n") +
-          `    ${chalk.cyan("npx veloria-ui add button card modal")}\n`);
+          `    ${chalk.cyan("npx veloria-ui add")}\n`);
         return;
       }
     }
@@ -596,6 +748,196 @@ if (!process.argv.slice(2).length) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// Enhancement helpers
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── Interactive picker ─────────────────────────────────
+//
+// Called when `veloria-ui add` is run with no component names.
+// Shows a two-level UI:
+//   1. Category selector (multi-select or "all")
+//   2. Per-category component multi-select with descriptions
+//
+// Already-installed components are shown with a ✓ prefix so users can
+// see what they have without running `list`.
+
+async function runInteractivePicker(cwd: string): Promise<string[]> {
+  const installed = new Set(discoverInstalledComponents(cwd));
+
+  console.log(chalk.bold.blue("\n  Interactive component picker\n"));
+  console.log(chalk.dim("  Space to select · Enter to confirm · Ctrl+C to cancel\n"));
+
+  // category selection
+  const { selectedCats } = await prompts({
+    type:    "multiselect",
+    name:    "selectedCats",
+    message: "Which categories do you want to browse?",
+    choices: CATEGORIES.map((cat) => {
+      const count     = REGISTRY.filter((c) => c.category === cat).length;
+      const instCount = REGISTRY.filter((c) => c.category === cat && installed.has(c.name)).length;
+      const label     = cat.replace("-", " ").replace(/^\w/, (c) => c.toUpperCase());
+      return {
+        title: `${label.padEnd(18)} ${chalk.dim(`${instCount}/${count} installed`)}`,
+        value: cat,
+      };
+    }),
+    min: 1,
+    hint: "— space to toggle, enter to confirm",
+  });
+
+  if (!selectedCats || !selectedCats.length) return [];
+
+  // component selection per chosen category
+  const selected: string[] = [];
+
+  for (const cat of selectedCats as Category[]) {
+    const items = REGISTRY.filter((c) => c.category === cat);
+    const label = cat.replace("-", " ").replace(/^\w/, (c) => c.toUpperCase());
+
+    console.log();
+
+    const { picks } = await prompts({
+      type:    "multiselect",
+      name:    "picks",
+      message: `${label} components`,
+      choices: items.map((c) => {
+        const isInstalled = installed.has(c.name);
+        const hasDeps     = (c.registryDeps?.length ?? 0) > 0;
+        const title =
+          `${isInstalled ? chalk.green("✓ ") : "  "}${chalk.cyan(c.name.padEnd(26))}` +
+          `${chalk.dim(c.description.length > 48 ? c.description.slice(0, 48) + "…" : c.description)}` +
+          (hasDeps ? chalk.dim(" [+deps]") : "");
+        return {
+          title,
+          value:    c.name,
+          selected: isInstalled, // pre-tick already installed ones
+        };
+      }),
+      hint: "— space to toggle, enter to confirm",
+    });
+
+    if (picks && picks.length) {
+      // add ones not already installed (or re-add if user re-selected)
+      for (const p of picks as string[]) {
+        if (!selected.includes(p)) selected.push(p);
+      }
+    }
+  }
+
+  // avoid redundant copies (user can use --force separately)
+  const newOnes   = selected.filter((n) => !installed.has(n));
+  const alreadyIn = selected.filter((n) => installed.has(n));
+
+  if (alreadyIn.length) {
+    console.log(chalk.dim(`\n  Skipping ${alreadyIn.length} already-installed: ${alreadyIn.join(", ")}`));
+    console.log(chalk.dim("  Use --force to overwrite them.\n"));
+  }
+
+  return newOnes;
+}
+
+// ─── ENHANCEMENT #7 — Dep graph display ──────────────────────────────────
+//
+// Prints a structured tree showing:
+//   • Which components are being added (explicitly requested)
+//   • Which are being pulled in automatically via registryDeps
+//   • Which npm packages will be installed as peer deps
+//
+// Example output:
+//
+//   Adding 2 components
+//   ├── command-bar
+//   │   └── command-dialog  (auto — registry dep)
+//   └── avatar-group
+//       └── avatar  (auto — registry dep)
+//
+//   npm peer deps
+//   ├── cmdk
+//   ├── @radix-ui/react-dialog
+//   └── @radix-ui/react-avatar
+
+function printDepGraph(allNames: string[], explicitNames: string[]): void {
+  const explicitSet = new Set(explicitNames);
+
+  // map: explicit component ... its auto-pulled registry deps
+  const graph = new Map<string, string[]>();
+  for (const name of explicitNames) {
+    const c    = COMPONENTS_BY_NAME[name];
+    const auto = (c.registryDeps ?? []).filter((d) => !explicitSet.has(d));
+    graph.set(name, auto);
+  }
+
+  // all npm deps
+  const allNpmDeps = new Set<string>();
+  for (const name of allNames) {
+    const c = COMPONENTS_BY_NAME[name];
+    c.deps.forEach((d) => allNpmDeps.add(d));
+  }
+
+  // component tree
+  const roots   = [...graph.keys()];
+  const hasNpm  = allNpmDeps.size > 0;
+  const total   = allNames.length;
+
+  console.log(
+    chalk.bold.blue(`\n  Adding ${total} component${total !== 1 ? "s" : ""}`) +
+    (total !== roots.length ? chalk.dim(` (${roots.length} selected + ${total - roots.length} auto)`) : "") + "\n"
+  );
+
+  roots.forEach((name, i) => {
+    const isLast     = i === roots.length - 1 && !hasNpm;
+    const autoDeps   = graph.get(name) ?? [];
+    const connector  = isLast ? "└──" : "├──";
+    const childPfx   = isLast ? "    " : "│   ";
+
+    console.log(`  ${connector} ${chalk.cyan(name)}`);
+
+    autoDeps.forEach((dep, j) => {
+      const isLastDep = j === autoDeps.length - 1;
+      const dc        = isLastDep ? "└──" : "├──";
+      console.log(`  ${childPfx}${dc} ${chalk.yellow(dep)} ${chalk.dim("(auto — registry dep)")}`);
+    });
+  });
+
+  // Print npm deps section
+  if (hasNpm) {
+    const npmList = [...allNpmDeps];
+    console.log(`\n  ${chalk.bold("npm peer deps")}`);
+    npmList.forEach((dep, i) => {
+      const isLast   = i === npmList.length - 1;
+      const connector = isLast ? "└──" : "├──";
+      console.log(`  ${connector} ${chalk.dim(dep)}`);
+    });
+  }
+
+  console.log();
+}
+
+// ─── findDependents ───────────────────────────────────────────────────────
+//
+
+function findDependents(
+  removing: string[],
+  installed: string[]
+): Array<{ component: string; dependsOn: string }> {
+  const removingSet = new Set(removing);
+  const results: Array<{ component: string; dependsOn: string }> = [];
+
+  for (const name of installed) {
+    if (removingSet.has(name)) continue;
+    const c = COMPONENTS_BY_NAME[name];
+    if (!c) continue;
+    for (const dep of (c.registryDeps ?? [])) {
+      if (removingSet.has(dep)) {
+        results.push({ component: name, dependsOn: dep });
+      }
+    }
+  }
+
+  return results;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Shared helpers
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -631,15 +973,6 @@ function sha256(content: string): string {
 
 // ─── Read from node_modules ───────────────────────────────────────────────
 //
-// Priority 1 for source resolution.
-// Reads from the locally-installed veloria-ui package — no network call.
-// Works on Replit and any sandboxed / offline environment.
-//
-// Candidate paths tried in order:
-//   node_modules/veloria-ui/src/components/<category>/<PascalName>.tsx
-//   node_modules/veloria-ui/src/components/<category>/<PascalName>.ts
-//   node_modules/veloria-ui/src/components/<category>/index.tsx
-//   node_modules/veloria-ui/src/components/<category>/index.ts
 
 function readFromNodeModules(name: string, cwd: string): string | null {
   const entry = COMPONENTS_BY_NAME[name];
@@ -666,8 +999,6 @@ function readFromNodeModules(name: string, cwd: string): string | null {
 
 // ─── GitHub path resolution ───────────────────────────────────────────────
 //
-// Priority 2 — fallback when node_modules src is unavailable.
-// IMPORTANT: correct branch is "master", not "main".
 
 function resolveGitHubPaths(name: string): string[] {
   const entry = COMPONENTS_BY_NAME[name];
