@@ -170,7 +170,7 @@ export const REGISTRY: ComponentMeta[] = [
   { name: "typewriter-text",     category: "utility",        description: "Cycles through strings with character-by-character typing and deleting animation.", deps: [] },
 ];
 
-// FIX: Use a plain Record instead of Map so bracket-notation access
+// plain Record instead of Map so bracket-notation access
 // works correctly in index.ts (COMPONENTS_BY_NAME[name]).
 // A Map requires .get(key); plain objects support obj[key] directly.
 export const COMPONENTS_BY_NAME: Record<string, ComponentMeta> = Object.fromEntries(
