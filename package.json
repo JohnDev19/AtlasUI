@@ -2,7 +2,7 @@
   "name": "veloria-ui",
   "version": "0.1.5",
   "private": false,
-  "description": "Veloria UI — Build anything. Ship faster. Accessible, composable React components with Tailwind CSS and dark mode.",
+  "description": "Veloria UI — Build anything. Ship faster. Accessible, composable React components with Tailwind CSS.",
   "keywords": [
     "react",
     "ui",

@@ -31,7 +31,7 @@ export function RhfSlider<T extends FieldValues>({
       name={name}
       control={control}
       render={({ field, fieldState }) => {
-        // Radix Slider uses number[], RHF stores a plain number
+        // radix Slider uses number[], RHF stores a plain number
         const asArray: number[] = Array.isArray(field.value)
           ? field.value
           : [typeof field.value === "number" ? field.value : min];
