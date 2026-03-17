@@ -153,16 +153,14 @@ export const REGISTRY: ComponentMeta[] = [
   { name: "virtual-list",       category: "utility",        description: "Windowed list renderer for large datasets.", deps: [] },
   { name: "typewriter-text",    category: "utility",        description: "Cycles through strings with character-by-character typing and deleting animation.", deps: [] },
 
-  // ── v0.1.3 additions ───────────────────────────────────────────────────
   { name: "classic-variant",    category: "basic",          description: "Classic beveled-edge style for Button, IconButton, Badge, Tag, Chip, Card.", deps: [] },
 
-  // ── v0.1.5 additions ───────────────────────────────────────────────────
   { name: "rich-text-editor",   category: "advanced-forms", description: "Tiptap-powered rich text editor with toolbar, placeholder, link, code, and alignment support.", deps: ["@tiptap/react", "@tiptap/starter-kit", "@tiptap/extension-placeholder", "@tiptap/extension-link", "@tiptap/extension-underline", "@tiptap/extension-text-align", "@tiptap/extension-code-block-lowlight", "lowlight"] },
 ];
 
-// ─── FIX: Use a plain Record instead of Map so bracket-notation access ────
+// ─── FIX: Uplain Record instead of Map so bracket-notation access 
 // works correctly in index.ts (COMPONENTS_BY_NAME[name]).
-// Map requires .get(key); plain objects support obj[key] directly.
+// A Map requires .get(key); plain objects support obj[key] directly.
 export const COMPONENTS_BY_NAME: Record<string, ComponentMeta> = Object.fromEntries(
   REGISTRY.map((c) => [c.name, c])
 );

@@ -781,7 +781,7 @@ function discoverInstalledComponents(cwd: string): string[] {
   const registryNames = new Set(REGISTRY.map((c) => c.name));
   const found = new Set<string>();
 
-  // Scan directory for sub-folders whose name matches a registry entry
+  // scan directory for sub-folders whose name matches a registry entry
   if (fs.existsSync(targetDir)) {
     try {
       const entries = fs.readdirSync(targetDir, { withFileTypes: true });
@@ -795,8 +795,8 @@ function discoverInstalledComponents(cwd: string): string[] {
     }
   }
 
-  // Also include anything tracked in the lock file but not in the scanned folder
-  // (e.g. components placed in a non-standard sub-path)
+  // include anything tracked in the lock file but not in the scanned folder
+  // (like components placed in a non-standard sub-path)
   const lock = readLock(cwd);
   for (const name of Object.keys(lock)) {
     if (registryNames.has(name)) found.add(name);
@@ -854,7 +854,7 @@ async function fetchText(url: string): Promise<string | null> {
 // ─── Local path resolution ────────────────────────────────────────────────
 
 function resolveLocalPath(name: string, cwd: string): string | null {
-  // First check veloria.lock.json for the recorded path
+  // check veloria.lock.json for the recorded path
   const lock = readLock(cwd);
   if (lock[name]?.localPath) {
     const lockPath = path.join(cwd, lock[name].localPath);
