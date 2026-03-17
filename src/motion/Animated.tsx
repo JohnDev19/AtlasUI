@@ -41,7 +41,6 @@ export const Animated = React.forwardRef<HTMLElement, AnimatedProps>(
       onExitComplete: () => setExitDone(true),
     });
 
-    // Merge the forwarded ref with our internal ref
     const mergedRef = React.useCallback(
       (node: HTMLElement | null) => {
         (internalRef as React.MutableRefObject<HTMLElement | null>).current = node;
@@ -51,22 +50,19 @@ export const Animated = React.forwardRef<HTMLElement, AnimatedProps>(
       [internalRef, forwardedRef]
     );
 
-    // Reset exit state when show flips back to true
     React.useEffect(() => {
       if (show) setExitDone(false);
     }, [show]);
 
-    // If show is false and the exit animation is done and we're not keepMounted, unmount
     if (!keepMounted && !show && exitDone) return null;
-
-    // If not keepMounted, don't even render until first shown
+    
     if (!keepMounted && !isVisible && !show) return null;
 
     return (
       <Tag
         ref={mergedRef}
         style={{
-          // Start invisible so the enter animation keyframes take over
+          // invisible so the enter animation keyframes take over
           opacity: 0,
           ...style,
         }}
