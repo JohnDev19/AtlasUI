@@ -573,8 +573,6 @@ Three-state model: `up-to-date`, `upstream-changed` (safe auto-upgrade), `diverg
 
 ### Basic (11) · Layout (10) · Navigation (10)
 
-See the full component tables in the previous docs version — all counts and names unchanged from v0.1.8.
-
 ### Forms (14)
 
 `input`, `textarea`, `select`, `checkbox`, `radio-group`, `switch`, `slider`, `range-slider`, `date-picker`, `time-picker`, `number-input`, `avatar-upload`, `date-range-picker`, `form-field`
